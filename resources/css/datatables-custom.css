@@ -1,0 +1,9 @@
+[aria-current="page"] {
+    box-shadow: 0 3px 20px rgba(0, 0, 0, 0.043137254901960784);
+    --tw-bg-opacity: 1;
+    background-color: rgb(59 89 152 / var(--tw-bg-opacity));
+    color: white;
+    border-radius: 0.375rem;
+    position: relative;
+    font-weight: 500;
+}

@@ -1,0 +1,383 @@
+<?php
+
+namespace App\Http\Controllers\ServiceRequests;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Models\ServiceRequest;
+use App\Models\ServiceRequestCategory;
+use App\Models\ServiceRequestSubCategory;
+use App\Models\WorkOrder;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Validator;
+// use Illuminate\Validation\Rule;
+
+class ServiceRequestController extends Controller
+{
+    public $user;
+    /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            $this->user = Auth::guard('web')->user();
+            return $next($request);
+        });
+    }
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
+    {
+        // TODO: add serviceRequest role for this auth guard
+        if (is_null($this->user) || !$this->user->can('service_request.view')) {
+            abort(403, 'Sorry !! You are Unauthorized to view any service request !');
+        }
+
+        return view('serviceRequests.index');
+    }
+
+    /*
+    * Service Category Controller
+    **/
+    public function serviceCategory()
+    {
+        if (is_null($this->user) || !$this->user->can('role.view')) {
+            abort(403, 'Sorry !! You are Unauthorized to view any service request !');
+        }
+    
+        return view('serviceRequests.category_test');
+    }
+
+    public function serviceCategoryList(Request $request)
+    {
+        $limit = $request->input('length');
+        $start = $request->input('start');
+
+        $data = ServiceRequestSubCategory::leftJoin('sr_category', 'sr_sub_category.sr_category_id', '=', 'sr_category.id')
+            ->select('sr_sub_category.sr_category_id', 'sr_category.name as category_name', 'sr_sub_category.name as sub_category_name')
+            ->groupBy('sr_sub_category.sr_category_id', 'sr_category.name', 'sr_sub_category.name')
+            ->get();
+
+        // Organize the data into an array grouped by sr_category
+        $groupedData = $data->groupBy('category_name')->map(function ($items) {
+            return $items->pluck('sub_category_name')->toArray();
+        });
+
+        // Get a portion of the grouped data based on pagination parameters
+        $slicedData = $groupedData->slice($start, $limit);
+
+        $finalData = array();
+        $totalData = count($groupedData);
+        $totalFiltered = count($groupedData);
+
+        foreach ($slicedData as $categoryName => $subCategories) {
+            $originalData = $data->firstWhere('category_name', $categoryName); // Fetch the original data
+            $nestedData = array(
+                'service_category_name' => $categoryName,
+                'sub_categories' => $subCategories,
+                'id' => optional($originalData)->sr_category_id, // Use optional() to avoid calling a member function on null
+            );
+            $finalData[] = $nestedData;
+        }
+
+        $json_data = array(
+            "draw" => intval($request->input('draw')),
+            "recordsTotal" => intval($totalData),
+            "recordsFiltered" => intval($totalFiltered),
+            "data" => $finalData,
+        );
+
+        echo json_encode($json_data);
+    }
+
+    public function serviceRequestList(Request $request)
+    {
+        $columns = array(
+            0 => 'service_request_no',
+            1 => 'description',
+            2 => 'location',
+            3 => 'status',
+            4 => 'remarks_by_client',
+            5 => 'remarks_by_occ',
+            6 => 'raise_by',
+            7 => 'sr_sub_category_id',
+            8 => 'sr_category_id',
+            9 => 'contract_id',
+            10 => 'created_at',
+
+        );
+
+        $limit = $request->input('length');
+        $start = $request->input('start');
+        $orderColumnIndex = $request->input('order.0.column', 0);
+        $orderColumnName = $columns[$orderColumnIndex] ?? $columns[0];
+        $orderDirection = $request->input('order.0.dir');
+
+        $query = ServiceRequest::leftJoin('sr_category', 'service_request.sr_category_id', '=', 'sr_category.id')
+            ->leftJoin('sr_sub_category', 'service_request.sr_sub_category_id', '=', 'sr_sub_category.id')
+            ->leftJoin('users', 'service_request.raise_by', "=", 'users.id')
+            ->leftJoin('contracts', 'service_request.contract_id', '=', 'contracts.id' )
+            ->select('service_request.id', 'service_request.service_request_no', 'service_request.description', 'service_request.location', 
+            'service_request.remarks_by_client', 'service_request.remarks_by_occ', 'service_request.status',
+            'sr_category.name as category_name', 'sr_sub_category.name as sub_category_name', 'users.username as user_raise', 
+            'contracts.contract_prefix as contract_name', 'service_request.created_at')
+            // ->where('service_request.status', 'in-progress')
+            ->orderBy('service_request.created_at', 'desc');
+
+        // Get total records count
+        $totalData = $query->count();
+
+        // Get total filtered records count
+        $totalFiltered = $query->count();
+
+        // Apply pagination
+        // $filteredData = $query->skip($start)->take($limit)->get();
+        $filteredData = $query->paginate($limit);
+
+        $data = array();
+
+        foreach ($filteredData as $d) {
+            $nestedData = array(
+                'service_request_no' => $d->service_request_no,
+                'description' => $d->description,
+                'location' => $d->location,
+                'client_remark' => $d->remarks_by_client,
+                'occ_remark' => $d->remarks_by_occ,
+                'category_name' => $d->category_name,
+                'sub_category_name' => $d->sub_category_name,
+                'user_raise' => $d->user_raise,
+                'contract_name'=> $d->contract_name,
+                'status' => $d->status,
+                'created_at' => Carbon::parse($d->created_at)->format('Y-m-d H:i:s'),
+                'id' => $d->id,
+            );
+            $data[] = $nestedData;
+        }
+
+        $json_data = array(
+            "draw" => intval($request->input('draw')),
+            "recordsTotal" => intval($totalData),
+            "recordsFiltered" => intval($totalFiltered),
+            "data" => $data,
+        );
+
+        echo json_encode($json_data);
+    }
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        //
+    }
+
+
+    /**
+     * Store a newly created resource in storage for category
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function serviceCategoryStore(Request $request)
+    {
+        // TODO: need to create a service category role to further break down the permissions
+        if (is_null($this->user) || !$this->user->can('role.create')) {
+            abort(403, 'Sorry !! You are Unauthorized to create any category !');
+        }
+
+        // Validation Data
+        $request->validate([
+            'category_name' => 'required|string',
+            'sub_categories' => 'required|array',
+            'sub_categories.*' => 'string',
+        ]);
+
+        // Process Data for category and first or create the category wit the $request->category_name
+        /**
+         * This might need to be reworked for further testing.
+         */
+        $category = ServiceRequestCategory::firstOrCreate(['name' => $request->category_name]);
+
+        $category_id = $category->id;
+
+        // Store the sub-categories based on the $category_id which is from the created category above.
+        foreach ($request->input('sub_categories') as $subCategoryName) {
+            ServiceRequestSubCategory::create([
+                'name' => $subCategoryName,
+                'sr_category_id' => $category_id,
+            ]);
+        }
+        return back();
+
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        if (is_null($this->user) || !$this->user->can('role.create')) {
+            abort(403, 'Sorry !! You are Unauthorized to create any role !');
+        }
+
+        // Validation Data
+        $request->validate([
+            'name' => 'required|max:100|unique:roles'
+        ], [
+            'name.required' => 'Please give a role name'
+        ]);
+
+        dd($request);
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(string $id)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage for service category and sub-category
+     */
+    public function serviceCategoryUpdate(Request $request)
+    {
+        // TODO: need to create a service category role to further break down the permissions
+        if (is_null($this->user) || !$this->user->can('role.edit')) {
+            abort(403, 'Sorry !! You are Unauthorized to edit any category !');
+        }
+
+        // Validation Data
+        $request->validate([
+            'categoryName' => 'required|string',
+            'subCategories' => 'required|array',
+            'subCategories.*' => 'string',
+        ]);
+
+        $categoryName   = $request->categoryName;
+        $subCategories  = $request->subCategories;
+        $categoryOriginalId    = $request->categoryOriginalId;
+
+        dump($request->request);
+
+        try {
+            // Ensure all queries successfully executed
+            DB::beginTransaction();
+            
+            // Update category
+            ServiceRequestCategory::where('id', $categoryOriginalId)
+                ->update([
+                    'name' => $categoryName,
+                ]);
+
+            // Update subcategories
+            ServiceRequestSubCategory::where('sr_category_id', $categoryOriginalId)->delete();
+
+            foreach ($subCategories as $subCategory) {
+                ServiceRequestSubCategory::firstOrCreate([
+                    'sr_category_id' => $categoryOriginalId,
+                    'name' => $subCategory,
+                ]);
+            }
+    
+            // Ensure all queries successfully executed, commit the db changes
+            DB::commit();
+    
+            return response()->json([
+                "success" => "success",
+            ], 200);
+        }catch (\Exception $e) {
+            // If any queries fail, undo all changes
+            DB::rollback();
+    
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id)
+    {
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        //
+    }
+
+    public function serviceCategoryDestroy(Request $request)
+    {
+        // Get the current UTC time
+        $current_UTC = Carbon::now('UTC');
+
+        $delete_category_id = $request->delete_category_id;
+
+        // Validate fields
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'delete_category_id' => [
+                    'required',
+                    'integer',
+                    'exists:sr_category,id',
+                ],
+            ],
+            [
+                'delete_category_id.exists' => 'The category cannot be found.',
+            ]
+        );
+
+        // Handle failed validations
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()->first()], 422);
+        }
+
+        try {
+            // Ensure all queries successfully executed
+            DB::beginTransaction();
+
+            // Update stus to 0 as deleted (soft delete)
+            ServiceRequestSubCategory::where('sr_category_id', $delete_category_id)->delete();
+            ServiceRequestCategory::where('id', $delete_category_id)->delete();
+
+            // Ensure all queries successfully executed, commit the db changes
+            DB::commit();
+
+            return response()->json([
+                "success"   => "success",
+            ], 200);
+        } catch (\Exception $e) {
+            // If any queries fail, undo all changes
+            DB::rollback();
+
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+    }
+}

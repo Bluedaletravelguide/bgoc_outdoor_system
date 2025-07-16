@@ -1,0 +1,54 @@
+version: 0.2
+
+phases:
+  install:
+    on-failure: CONTINUE
+    runtime-versions:
+      php: 8.1
+      nodejs: 16.x
+    commands:
+      - apt-get update -y
+      - curl -sS https://getcomposer.org/installer -o composer-setup.php 
+      - php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+  pre_build:
+    on-failure: CONTINUE
+    commands: 
+      - composer install --ignore-platform-req=ext-sodium
+      - npm install
+      - mv .env.prod .env
+      - mkdir -p /var/app/current/storage/framework/sessions
+      - mkdir -p /var/app/current/bootstrap/cache
+      - chmod -R 775 /var/app/current/storage
+      - chmod -R 664 /var/app/current/storage/*
+      - chmod -v -R 775 /var/app/current/bootstrap/cache
+
+  build:
+    on-failure: ABORT
+    commands:
+      - npm run prod
+      # - php artisan migrate:fresh --seed
+      - php artisan key:generate
+      # - php artisan passport:install
+      - php artisan passport:keys
+      - php artisan optimize:clear
+      - php artisan route:clear
+      - php artisan cache:clear
+      - php artisan view:clear
+      - php artisan config:clear
+      - php artisan route:cache
+      - php artisan view:cache
+      - php artisan clear-compiled
+      - php artisan config:cache
+  post_build:
+    on-failure: ABORT
+    commands:
+      - rm bootstrap/cache/config.php
+
+artifacts:
+  files:
+    - '**/*'
+  name: $(date +%Y-%m-%dT%H:%M:%S).zip
+
+proxy:
+  upload-artifacts: no
+  logs: no
