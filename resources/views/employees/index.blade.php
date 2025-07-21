@@ -1,7 +1,7 @@
 @extends('layouts.main')
 
 @section('title')
-<title>Chulia Middle East - Employees</title>
+<title>BGOC Outdoor System - Users</title>
 @endsection('title')
 
 @section('sidebar')
@@ -11,47 +11,58 @@
 @section('app_content')
 <div class="intro-y flex flex-col sm:flex-row items-center mt-8">
     <h2 class="text-lg font-medium mr-auto">
-        Employees
+        Users
     </h2>
 </div>
 <div class="intro-y box p-5 mt-5">
     <div class="mb-5 p-5 rounded-md" style="background-color:#ECF9FD;">
         <h2 class="text-lg font-medium">
-            Employee Status info
+            User info
         </h2>
         <p class="w-12 flex-none xl:w-auto xl:flex-initial ml-2">
-            <i class="font-bold">User Account Registered</i> - Employee have user registered.
+            <i class="font-bold">User </i> - Lorem Ipsum.
         </p>
-        <P class="w-12 flex-none xl:w-auto xl:flex-initial ml-2">
-            <i class="font-bold">No User Account Registered</i> - No user is registered to Employee.
-        </P>
     </div>
     <!-- Create Modal -->
     <div class="modal" id="basic-modal-create"> 
         <div class="modal__content"> 
             <h2 class="font-medium text-base mr-auto p-2">
-                Create New Employee
+                Create New User
             </h2>
             <!-- BEGIN: Form Layout Create -->
             <div class="intro-y box p-2">
                 <form action="{{ route('employees.create') }}" method="POST">
                 @csrf
-                    <label>Employee Name</label>
-                        <div class="form-group">
-                            <input type="text" id="name" name="name" class="input w-full border mt-2" placeholder="Input text">
+                    
+                    <div class="mt-3 form-group">
+                        <label>Name</label>
+                        <input type="text" id="name" name="name" class="input w-full border mt-2" placeholder="Input text">
+                    </div>
+                    
+                    <div class="mt-3 form-group">
+                        <label>Username</label>
+                        <input type="text" id="name" name="name" class="input w-full border mt-2" placeholder="Input text">
+                    </div>
+                    <div class="mt-3 form-group">
+                        <label>Contact</label>
+                        <div class="relative mt-2">
+                            <input type="text" id="contact" name="contact" class="input pr-12 w-full border col-span-4" placeholder="0123456789">
                         </div>
-                        <div class="mt-3 form-group">
-                            <label>Contact</label>
-                            <div class="relative mt-2">
-                                <input type="text" id="contact" name="contact" class="input pr-12 w-full border col-span-4" placeholder="0123456789">
-                            </div>
+                    </div>
+                    <div class="mt-3 form-group">
+                        <label>Position</label>
+                        <div class="relative mt-2">
+                            <input type="text" id="position" name="position" class="input pr-16 w-full border col-span-4" placeholder="Employee Position">
                         </div>
-                        <div class="mt-3 form-group">
-                            <label>Position</label>
-                            <div class="relative mt-2">
-                                <input type="text" id="position" name="position" class="input pr-16 w-full border col-span-4" placeholder="Employee Position">
-                            </div>
-                        </div>
+                    </div>
+                    <div class="mt-3 form-group">
+                        <label>Password</label>
+                        <input type="text" id="name" name="name" class="input w-full border mt-2" placeholder="Input text">
+                    </div>
+                    <div class="mt-3 form-group">
+                        <label>Confirm Password</label>
+                        <input type="text" id="name" name="name" class="input w-full border mt-2" placeholder="Input text">
+                    </div>
                     <div class="text-right mt-5 p-4">
                         <button type="button" data-dismiss="modal" class="button w-24 border dark:border-dark-5 text-gray-700 dark:text-gray-300 mr-1">Cancel</button>
                         <button type="submit" class="button w-24 bg-theme-1 text-white">Save</button>
@@ -93,7 +104,7 @@
         </form>
         <div class="text-center">
             <a href="javascript:;" data-toggle="modal" data-target="#basic-modal-create" class="button inline-block bg-theme-1 text-white">
-                +Add New Employee
+                + Add New User
             </a> 
         </div>
     </div>
@@ -107,8 +118,8 @@
                     <th class="whitespace-nowrap" width="15%">User ID</th>
                     <th class="whitespace-nowrap" width="15%">Contact</th> 
                     <th class="whitespace-nowrap" width="15%">Position</th>
-                    <th class="whitespace-nowrap" width="15%">User Account Status</th>
-                    <th class="whitespace-nowrap" width="10%">Employee Status</th>
+                    <!-- <th class="whitespace-nowrap" width="15%">User Account Status</th>
+                    <th class="whitespace-nowrap" width="10%">Employee Status</th> -->
                     <th class="whitespace-nowrap" width="20%">Action</th>
                 </tr>
             </thead>
@@ -412,32 +423,32 @@
                     {
                         data: "position",
                     },
-                    {
-                        data: "user",
-                        type: "readonly",
-                        render: function(data, type, row) {
-                            let element = ``
-                            if (data == null) {
-                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 border text-gray-700 dark:border-dark-5 dark:text-gray-300">No Account Registered</a>`;
-                            }else{
-                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-18 text-black">Account Registered</a>`;
-                            }
-                            return element;
-                        }
-                    },
-                    {
-                        data: "status",
-                        type: "readonly",
-                        render: function(data, type, row) {
-                            let element = ``
-                            if (data == '0') {
-                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 border text-gray-700 dark:border-dark-5 dark:text-gray-300">Inactive</a>`;
-                            }else{
-                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-18 text-black">Active</a>`;
-                            }
-                            return element;
-                        }
-                    },
+                    // {
+                    //     data: "user",
+                    //     type: "readonly",
+                    //     render: function(data, type, row) {
+                    //         let element = ``
+                    //         if (data == null) {
+                    //             element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 border text-gray-700 dark:border-dark-5 dark:text-gray-300">No Account Registered</a>`;
+                    //         }else{
+                    //             element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-18 text-black">Account Registered</a>`;
+                    //         }
+                    //         return element;
+                    //     }
+                    // },
+                    // {
+                    //     data: "status",
+                    //     type: "readonly",
+                    //     render: function(data, type, row) {
+                    //         let element = ``
+                    //         if (data == '0') {
+                    //             element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 border text-gray-700 dark:border-dark-5 dark:text-gray-300">Inactive</a>`;
+                    //         }else{
+                    //             element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-18 text-black">Active</a>`;
+                    //         }
+                    //         return element;
+                    //     }
+                    // },
                     {
                         // data: "action",
                         // render: function(data, type, row) {

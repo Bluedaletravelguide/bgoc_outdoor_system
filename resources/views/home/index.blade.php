@@ -30,8 +30,22 @@
                                     <div class="report-box__indicator bg-theme-9 tooltip cursor-pointer" title="33% Higher than last month"> 33% <i data-feather="chevron-up" class="w-4 h-4"></i> </div>
                                 </div> -->
                             </div>
-                            <div class="text-3xl font-bold leading-8 mt-6">{{$servicerequest_new}}</div>
-                            <div class="text-base text-gray-600 mt-1">New</div>
+                            <div class="text-3xl font-bold leading-8 mt-6">123</div>
+                            <div class="text-base text-gray-600 mt-1">Total Billboard</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-span-12 sm:col-span-6 xl:col-span-3 intro-y">
+                    <div class="report-box zoom-in">
+                        <div class="box p-5">
+                            <div class="flex">
+                                <i data-feather="bookmark" class="report-box__icon text-theme-10"></i>
+                                <!-- <div class="ml-auto">
+                                    <div class="report-box__indicator bg-theme-9 tooltip cursor-pointer" title="33% Higher than last month"> 33% <i data-feather="chevron-up" class="w-4 h-4"></i> </div>
+                                </div> -->
+                            </div>
+                            <div class="text-3xl font-bold leading-8 mt-6">123</div>
+                            <div class="text-base text-gray-600 mt-1">Total Active Billboard</div>
                         </div>
                     </div>
                 </div>
@@ -44,8 +58,8 @@
                                     <div class="report-box__indicator bg-theme-6 tooltip cursor-pointer" title="2% Lower than last month"> 2% <i data-feather="chevron-down" class="w-4 h-4"></i> </div>
                                 </div> -->
                             </div>
-                            <div class="text-3xl font-bold leading-8 mt-6">{{$servicerequest_in_progress}}</div>
-                            <div class="text-base text-gray-600 mt-1">In-Progress</div>
+                            <div class="text-3xl font-bold leading-8 mt-6">420</div>
+                            <div class="text-base text-gray-600 mt-1">Total Bookings</div>
                         </div>
                     </div>
                 </div>
@@ -58,8 +72,8 @@
                                     <div class="report-box__indicator bg-theme-9 tooltip cursor-pointer" title="22% Higher than last month"> 22% <i data-feather="chevron-up" class="w-4 h-4"></i> </div>
                                 </div> -->
                             </div>
-                            <div class="text-3xl font-bold leading-8 mt-6">{{$servicerequest_complete}}</div>
-                            <div class="text-base text-gray-600 mt-1">Completed</div>
+                            <div class="text-3xl font-bold leading-8 mt-6">15</div>
+                            <div class="text-base text-gray-600 mt-1">Total Active Bookings</div>
                         </div>
                     </div>
                 </div>
@@ -105,7 +119,7 @@
         </div>
         <!-- END: Daily Report -->
         <!-- BEGIN: Category -->
-        <div class="col-span-12 sm:col-span-6 lg:col-span-3 mt-8">
+        <!-- <div class="col-span-12 sm:col-span-6 lg:col-span-3 mt-8">
             <div class="intro-y flex items-center h-10">
                 <h2 class="text-lg font-medium truncate mr-5">
                     Category
@@ -115,18 +129,31 @@
             <div class="intro-y flex box p-5 mt-5">
                 <canvas class="mt-3" id="report-pie-chart" style="min-height: 250px"></canvas>
             </div>
-        </div>
+        </div> -->
         <!-- END: Category -->
         <!-- BEGIN: Status -->
         <div class="col-span-12 sm:col-span-6 lg:col-span-3 mt-8">
             <div class="intro-y flex items-center h-10">
                 <h2 class="text-lg font-medium truncate mr-5">
-                    Status
+                    Billboard Status
                 </h2>
                 <a href="" class="ml-auto text-theme-1 dark:text-theme-10 truncate">See all</a>
             </div>
             <div class="intro-y box p-5 mt-5">
                 <canvas class="mt-3" id="report-donut-chart" style="min-height: 250px"></canvas>
+            </div>
+        </div>
+        <!-- END: Status -->
+        <!-- BEGIN: Status -->
+        <div class="col-span-12 sm:col-span-6 lg:col-span-3 mt-8">
+            <div class="intro-y flex items-center h-10">
+                <h2 class="text-lg font-medium truncate mr-5">
+                    Booking Status
+                </h2>
+                <a href="" class="ml-auto text-theme-1 dark:text-theme-10 truncate">See all</a>
+            </div>
+            <div class="intro-y box p-5 mt-5">
+                <canvas class="mt-3" id="report-donut-chart2" style="min-height: 250px"></canvas>
             </div>
         </div>
         <!-- END: Status -->
@@ -237,6 +264,7 @@
     const line = document.getElementById('report-line-chart');
     const pie = document.getElementById('report-pie-chart');
     const donut = document.getElementById('report-donut-chart');
+    const donut2 = document.getElementById('report-donut-chart2');
 
     var linedata = @json($groupedData);
     var piedata = @json($groupedCategories);
@@ -304,6 +332,28 @@
   });
 
   new Chart(donut, {
+    type: 'doughnut',
+    options: {
+        plugins: {
+          legend: {
+            display: true
+          },
+          tooltip: {
+            enabled: true
+          }
+        },
+        maintainAspectRatio: true,
+        responsive: true, // This enables automatic resizing based on the container size
+    },
+    data: {
+      labels: donutlabels,
+      datasets: [{
+        data: donutvalues,
+      }]
+    },
+  });
+
+  new Chart(donut2, {
     type: 'doughnut',
     options: {
         plugins: {

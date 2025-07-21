@@ -60,9 +60,9 @@
                             <th class="whitespace-nowrap" width="25%">Name</th>
                             <th class="whitespace-nowrap">Contact No.</th>
                             <th class="whitespace-nowrap">Company</th>
-                            <th class="whitespace-nowrap">User</th>
+                            <!-- <th class="whitespace-nowrap">User</th>
                             <th class="whitespace-nowrap" width="20%">User Account Status</th>
-                            <th class="whitespace-nowrap" width="10%">Client Status</th>
+                            <th class="whitespace-nowrap" width="10%">Client Status</th> -->
                             <th class="whitespace-nowrap" width="5%">Action</th>
                         </tr>
                     </thead>
@@ -375,35 +375,35 @@
                     {
                         data: "company_name",
                     },
-                    {
-                        data: "users_name",
-                    },
-                    {
-                        data: "users_id",
-                        type: "readonly",
-                        render: function(data, type, row) {
-                            let element = ``
-                            if (data == null) {
-                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 border text-gray-700 dark:border-dark-5 dark:text-gray-300">No Account Registered</a>`;
-                            }else{
-                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-18 text-black">Account Registered</a>`;
-                            }
-                            return element;
-                        }
-                    },
-                    {
-                        data: "status",
-                        type: "readonly",
-                        render: function(data, type, row) {
-                            let element = ``
-                            if (data == '0') {
-                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 border text-gray-700 dark:border-dark-5 dark:text-gray-300">Inactive</a>`;
-                            }else{
-                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-18 text-black">Active</a>`;
-                            }
-                            return element;
-                        }
-                    },
+                    // {
+                    //     data: "users_name",
+                    // },
+                    // {
+                    //     data: "users_id",
+                    //     type: "readonly",
+                    //     render: function(data, type, row) {
+                    //         let element = ``
+                    //         if (data == null) {
+                    //             element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 border text-gray-700 dark:border-dark-5 dark:text-gray-300">No Account Registered</a>`;
+                    //         }else{
+                    //             element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-18 text-black">Account Registered</a>`;
+                    //         }
+                    //         return element;
+                    //     }
+                    // },
+                    // {
+                    //     data: "status",
+                    //     type: "readonly",
+                    //     render: function(data, type, row) {
+                    //         let element = ``
+                    //         if (data == '0') {
+                    //             element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 border text-gray-700 dark:border-dark-5 dark:text-gray-300">Inactive</a>`;
+                    //         }else{
+                    //             element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-18 text-black">Active</a>`;
+                    //         }
+                    //         return element;
+                    //     }
+                    // },
                     {
                         data: "id",
                         render: function(data, type, row) {

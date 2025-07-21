@@ -18,6 +18,10 @@
     <link rel="stylesheet" href="{{ mix('dist/css/custom.css') }}" />
     <link rel="stylesheet" href="{{ mix('dist/plugins/css/plugins.css') }}" />
     <!-- <link rel="stylesheet" href="public/dist/css/custom.css" /> -->
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <!-- searchable dropdown -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <!-- END: CSS Assets-->
 </head>
 <!-- END: Head -->
@@ -719,6 +723,21 @@
     <script src="{{ mix('dist/js/app.js') }}"></script>
     <script src="{{ mix('dist/plugins/js/plugins.js') }}"></script>
     <!-- END: JS Assets-->
+
+    {{-- Global AJAX 401 handler --}}
+    <script>
+        $.ajaxSetup({
+            statusCode: {
+                401: function () {
+                    alert('Your session has expired. Redirecting to login...');
+                    window.location.href = '/login';
+                }
+            }
+        });
+    </script>
+    <!-- Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
     @yield('script')
 </body>

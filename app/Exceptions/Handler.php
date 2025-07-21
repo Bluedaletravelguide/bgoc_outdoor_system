@@ -19,6 +19,18 @@ class Handler extends ExceptionHandler
         'password_confirmation',
     ];
 
+    // check session expired then go to login page
+    protected function unauthenticated($request, AuthenticationException $exception)
+    {
+        if ($request->expectsJson()) {
+            // For AJAX/API calls
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
+
+        // For regular web requests, redirect to login
+        return redirect()->guest(route('login'));
+    }
+
     /**
      * Register the exception handling callbacks for the application.
      */
@@ -32,11 +44,16 @@ class Handler extends ExceptionHandler
     /**
      * Check if token is provided in API requests
      */
+    // public function render($request, Throwable $e)
+    // {
+    //     if ($e instanceof AuthenticationException) {
+    //         return response()->json($e->getMessage());
+    //     }
+    //     return parent::render($request, $e);
+    // }
+
     public function render($request, Throwable $e)
     {
-        if ($e instanceof AuthenticationException) {
-            return response()->json($e->getMessage());
-        }
         return parent::render($request, $e);
     }
 }

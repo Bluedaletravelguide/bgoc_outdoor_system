@@ -1,7 +1,7 @@
 @extends('layouts.main')
 
 @section('title')
-<title>Chulia Middle East - Service Request</title>
+<title>BGOC Outdoor System - Billboard Booking</title>
 @endsection('title')
 
 @section('sidebar')
@@ -11,111 +11,31 @@
 @section('app_content')
 <div class="intro-y flex flex-col sm:flex-row items-center mt-8">
     <h2 class="text-lg font-medium mr-auto">
-        Service Request
+        Billboard Booking
     </h2>
 </div>
 <div class="intro-y box p-5 mt-5">
     <div class="mb-5 p-5 rounded-md" style="background-color:#ECF9FD;">
         <h2 class="text-lg font-medium">
-            Service Request
+            Billboard Booking
         </h2>
         <p class="w-12 flex-none xl:w-auto xl:flex-initial ml-2">
-            <i class="font-bold">Service Request</i> - Lorem Ipsum.
+            <i class="font-bold">Billboard Booking</i> - Lorem Ipsum.
         </p>
     </div>
-    <!-- Create Modal -->
-    <div class="row flex flex-col sm:flex-row sm:items-end xl:items-start mb-2">
-        <div class="modal" id="addServiceRequestModal">
-            <div class="modal__content">
-                <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
-                    <h2 class="font-medium text-base mr-auto">Add Service Request</h2>
-                </div>
-                <form>
-                    <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
-                    <div class="col-span-12 sm:col-span-12">
-                            <label>Project</label>
-                            <select class="input w-full border mt-2 flex-1" id="ServiceRequestAddProject" required>
-                                <option disabled selected hidden value>Select a project</option>
-                                @foreach ($projects as $project)
-                                    <option value="{{ $project->id }}">{{ $project->project_prefix }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Description</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" placeholder="Enter a Description" id="ServiceRequestAddDescription" required>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Client Remark</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" placeholder="Enter a Client Remark" id="ServiceRequestAddClientRemark" required>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Priority</label>
-                            <select class="input w-full border mt-2 flex-1" id="ServiceRequestAddPriority" required>
-                                <option value="" disabled selected hidden value>Select Priority</option>
-                                <option value="1">Low</option>
-                                <option value="2">Medium</option>
-                                <option value="3">High</option>
-                                <option value="4">Very High</option>
-                            </select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Category</label>
-                            <select class="input w-full border mt-2 flex-1" id="ServiceRequestAddCategory" required>
-                                <option disabled selected hidden value>Select a category</option>
-                                @foreach ($mainCategory as $maincategory)
-                                    <option value="{{ $maincategory->id }}">{{ $maincategory->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Sub Category</label>
-                            <select class="input w-full border mt-2 flex-1" id="ServiceRequestAddSubCategory" required>
-                                <option disabled selected hidden value>Select a sub category</option>
-                                {{-- @foreach ($subCategory as $subcategory)
-                                    <option value="{{ $subcategory->sr_category_id }}">{{ $subcategory->name }}</option>
-                                @endforeach --}}
-                            </select>
-                        </div>
 
-                        {{-- <div class="col-span-12 sm:col-span-12">
-                            <label>Employee Name</label>
-                            <select class="input w-full border mt-2 flex-1" id="inhouseUsersAddEmployee" required>
-                            </select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Password</label>
-                            <input type="password" class="input w-full border mt-2 flex-1" placeholder="Password" id="inhouseUsersAddPassword" required>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Password Confirmation</label>
-                            <input type="password" class="input w-full border mt-2 flex-1" placeholder="Password" id="inhouseUsersAddPasswordConfirmation" required>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Email</label>
-                            <input type="email" class="input w-full border mt-2 flex-1" placeholder="example@gmail.com" id="inhouseUsersAddEmail" required>
-                        </div> --}}
-                    </div>
-
-                    <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
-                        <button type="submit" class="button w-20 bg-theme-1 text-white" id="ServiceRequestAddButton">Submit</button>
-                    </div>
-                </form>
-            </div>
-        </div> 
-    </div>
-    <!-- Modal End -->
-    <!-- Table Filter -->
+    <!-- Billboard booking Filter -->
     <div class="flex flex-col sm:flex-row sm:items-end xl:items-start mb-2 mt-2">
         <form class="xl:flex sm:mr-auto" id="employee_table">
-            <div class="row sm:flex items-center sm:mr-4">
+            <!-- <div class="row sm:flex items-center sm:mr-4">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Company</label>
                 <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="inputCompany">
                     <option value="All">All</option>
-                    <option value="Org1">Org1</option>
+                    <option value="Org1">Bluedale Integrated (M) Sdn Bhd</option>
+                    <option value="Org1">Bluedale Publishing (M) Sdn Bhd</option>
                 </select>
-            </div>
-            <div class="row sm:flex items-center sm:mr-4">
+            </div> -->
+            <!-- <div class="row sm:flex items-center sm:mr-4">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Role</label>
                     <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputEmployeeRole">
                         <option value="All">All</option>
@@ -125,15 +45,36 @@
                         <option value="Employee_Supervisor">In-House Supervisor</option>
                         <option value="Employee_Technician">In-House Technician</option>
                     </select>
+            </div> -->
+            <div class="row sm:flex items-center sm:mr-4">
+                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">State</label>
+                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="inputServiceRequestStatus">
+                    <option value="All" selected="">-- Select State --</option>
+                    <option value="NEW">Selangor</option>
+                    <option value="ACCEPTED">Kuala Lumpur</option>
+                    <option value="CLOSED">Negeri Sembilan</option>
+                    <option value="REJECTED">Johor</option>
+                </select>
             </div>
             <div class="row sm:flex items-center sm:mr-4">
-                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Service Request<br>Status</label>
+                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">District</label>
                 <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="inputServiceRequestStatus">
-                    <option value="All" selected="">All</option>
-                    <option value="NEW">New</option>
-                    <option value="ACCEPTED">Accepted</option>
-                    <option value="CLOSED">Closed</option>
-                    <option value="REJECTED">Rejected</option>
+                    <option value="All" selected="">-- Select District --</option>
+                    <option value="NEW">Subang Jaya</option>
+                    <option value="ACCEPTED">Ampang</option>
+                    <option value="CLOSED">Cheras</option>
+                    <option value="REJECTED">Puchong</option>
+                </select>
+            </div>
+            <div class="row sm:flex items-center sm:mr-4">
+                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Location</label>
+                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="inputServiceRequestStatus">
+                    <option value="All" selected="">-- Select Location --</option>
+                    <option value="All">Taman Mayang 1</option>
+                    <option value="NEW">Taman Mayang 2</option>
+                    <option value="ACCEPTED">Jalan Raja Bot</option>
+                    <option value="CLOSED">Jalan Tun Razak</option>
+                    <option value="REJECTED">PLUS Highway</option>
                 </select>
             </div>
             <div class="mt-2 xl:mt-0">
@@ -142,31 +83,97 @@
         </form>
 
         <div class="text-center"> 
-            <a href="javascript:;" data-toggle="modal" data-target="#addServiceRequestModal" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-32 text-white">
+            <a href="javascript:;" data-toggle="modal" data-target="#addBillboardBookingModal" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-32 text-white">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus w-4 h-4">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
-                Add New Service Request
+                Add New Billboard Job Order
             </a> 
         </div> 
     </div>
     <!-- Filter End -->
+    
+    <!-- Billboard Booking Calendar -->
+    <div class="mb-5 p-5 rounded-md border border-dashed border-theme-1">
+        <h2 class="text-base font-bold mb-3 text-theme-1">Calendar View</h2>
+        <div id="billboard-booking-calendar" class="mb-5"></div>
+    </div>
+
+    <!-- Table Filter -->
+    <div class="flex flex-col sm:flex-row sm:items-end xl:items-start mb-2 mt-2">
+        <form class="xl:flex sm:mr-auto" id="employee_table">
+            <div class="row sm:flex items-center sm:mr-4">
+                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Company</label>
+                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="inputCompany">
+                    <option value="All">All</option>
+                    <option value="Org1">Bluedale Integrated (M) Sdn Bhd</option>
+                    <option value="Org1">Bluedale Publishing (M) Sdn Bhd</option>
+                </select>
+            </div>
+            <!-- <div class="row sm:flex items-center sm:mr-4">
+                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Role</label>
+                    <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputEmployeeRole">
+                        <option value="All">All</option>
+                        <option value="superadmin">Superadmin</option>
+                        <option value="teamleader">Team Leader</option>
+                        <option value="Employee_OCC_Operator">OCC Operator</option>
+                        <option value="Employee_Supervisor">In-House Supervisor</option>
+                        <option value="Employee_Technician">In-House Technician</option>
+                    </select>
+            </div> -->
+            <div class="row sm:flex items-center sm:mr-4">
+                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">State</label>
+                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="inputServiceRequestStatus">
+                    <option value="All" selected="">All</option>
+                    <option value="NEW">Selangor</option>
+                    <option value="ACCEPTED">Kuala Lumpur</option>
+                    <option value="CLOSED">Negeri Sembilan</option>
+                    <option value="REJECTED">Johor</option>
+                </select>
+            </div>
+            <div class="row sm:flex items-center sm:mr-4">
+                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">District</label>
+                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="inputServiceRequestStatus">
+                    <option value="All" selected="">All</option>
+                    <option value="NEW">Petaling Jaya</option>
+                    <option value="NEW">Subang Jaya</option>
+                    <option value="ACCEPTED">Ampang</option>
+                    <option value="CLOSED">Cheras</option>
+                    <option value="REJECTED">Puchong</option>
+                </select>
+            </div>
+            <div class="row sm:flex items-center sm:mr-4">
+                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Status</label>
+                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="inputServiceRequestStatus">
+                    <option value="All" selected="">All</option>
+                    <option value="NEW">Ongoing</option>
+                    <option value="ACCEPTED">Pending Install</option>
+                    <option value="CLOSED">Pending Payment</option>
+                </select>
+            </div>
+            <div class="mt-2 xl:mt-0">
+                <button type="button" class="button w-full sm:w-16 bg-theme-1 text-white" id="filterServiceRequestButton">Filter</button>
+            </div>
+        </form> 
+    </div>
+    <!-- Filter End -->
+
     <!-- Service Request table -->
     <div class="overflow-x-auto scrollbar-hidden">
         <table class="table mt-5" id="service_request_table">
             <thead>
                 <tr class="bg-theme-1 text-white">
-                    <th class="whitespace-nowrap">#</th>
-                    <th class="whitespace-nowrap">Service Request No.</th>
-                    <th class="whitespace-nowrap">Description</th>
-                    <th class="whitespace-nowrap">Client Remark</th>
-                    <th class="whitespace-nowrap">Team Leader Remark</th>
-                    <th class="whitespace-nowrap">Location</th> 
+                    <th class="whitespace-nowrap">No.</th>
+                    <th class="whitespace-nowrap">Site Number</th>
+                    <th class="whitespace-nowrap">Client Name</th>
+                    <th class="whitespace-nowrap">Location</th>
+                    <th class="whitespace-nowrap">Start Date</th>
+                    <th class="whitespace-nowrap">End Date</th> 
+                    <th class="whitespace-nowrap">Duration</th>
                     <th class="whitespace-nowrap">Status</th>
-                    <th class="whitespace-nowrap">Raised by</th>
-                    <th class="whitespace-nowrap">Created At</th>
-                    <th class="whitespace-nowrap">Work Order</th>
+                    <th class="whitespace-nowrap">Remarks</th>
+                    <th class="whitespace-nowrap">Calendar</th>
                     <th class="whitespace-nowrap flex flex-row">Action</th>
                 </tr>
             </thead>
@@ -181,6 +188,152 @@
 @endsection('app_content')
 
 @section('modal_content')
+<!-- Create Modal -->
+    <div class="row flex flex-col sm:flex-row sm:items-end xl:items-start mb-2">
+        <div class="modal" id="addBillboardBookingModal">
+            <div class="modal__content">
+                <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
+                    <h2 class="font-medium text-base mr-auto">Add New Job Order</h2>
+                </div>
+                <form>
+                    <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>Site Number</label>
+                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="SEL-0001" disabled>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>Client</label>
+                            <select id="ServiceRequestAddClient" class="input w-full border mt-2 select2-client" required>
+                                <option disabled selected hidden value="">Select a client</option>
+                                <option value="1">ABC Corporation</option>
+                                <option value="2">BlueTech Solutions</option>
+                                <option value="3">GreenField Ltd</option>
+                                <option value="4">Visionary Co</option>
+                                <option value="5">Skyline Advertising</option>
+                            </select>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>Location</label>
+                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="" required>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>District</label>
+                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="" required>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>State</label>
+                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="" required>
+                        </div>
+                        <div class="col-span-12 sm:col-span-6">
+                            <label for="start_date" class="form-label">Start Date</label>
+                            <input type="text" id="start_date" class="input border mt-2" placeholder="Select start date">
+                        </div>
+                        <div class="col-span-12 sm:col-span-6">
+                            <label for="end_date" class="form-label">End Date</label>
+                            <input type="text" id="end_date" class="input border mt-2" placeholder="Select end date">
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>Artwork by</label>
+                            <select id="ServiceRequestAddClient" class="input w-full border mt-2 select" required>
+                                <option disabled selected hidden value="">Select an option</option>
+                                <option value="1">Client</option>
+                                <option value="2">Bluedale</option>
+                            </select>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>DBP Approval</label>
+                            <select id="ServiceRequestAddClient" class="input w-full border mt-2 select" required>
+                                <option disabled selected hidden value="">Select an option</option>
+                                <option value="1">Yes</option>
+                                <option value="2">No</option>
+                            </select>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>Remarks</label>
+                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="" required>
+                        </div>
+                    </div>
+
+                    <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
+                        <button type="submit" class="button w-20 bg-theme-1 text-white" id="ServiceRequestAddButton">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div> 
+    </div>
+<!-- Create Modal End -->
+
+<!-- View Job Order Modal -->
+    <div class="row flex flex-col sm:flex-row sm:items-end xl:items-start mb-2">
+        <div class="modal" id="viewBillboardJobOrderModal">
+            <div class="modal__content">
+                <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
+                    <h2 class="font-medium text-base mr-auto">Job Order Detail</h2>
+                </div>
+                <form>
+                    <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>Site Number</label>
+                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="SEL-0001" disabled>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>Client</label>
+                            <select id="ServiceRequestAddClient" class="input w-full border mt-2 select2-client" disabled>
+                                <option disabled selected hidden value="">Select a client</option>
+                                <option value="1">ABC Corporation</option>
+                                <option value="2">BlueTech Solutions</option>
+                                <option value="3">GreenField Ltd</option>
+                                <option value="4">Visionary Co</option>
+                                <option value="5">Skyline Advertising</option>
+                            </select>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>Location</label>
+                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="" disabled>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>District</label>
+                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="" disabled>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>State</label>
+                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="" disabled>
+                        </div>
+                        <div class="col-span-12 sm:col-span-6">
+                            <label for="start_date" class="form-label">Start Date</label>
+                            <input type="text" id="start_date" class="input border mt-2" placeholder="Select start date" disabled>
+                        </div>
+                        <div class="col-span-12 sm:col-span-6">
+                            <label for="end_date" class="form-label">End Date</label>
+                            <input type="text" id="end_date" class="input border mt-2" placeholder="Select end date" disabled>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>Artwork by</label>
+                            <select id="ServiceRequestAddClient" class="input w-full border mt-2 select" disabled>
+                                <option disabled selected hidden value="">Select an option</option>
+                                <option value="1">Client</option>
+                                <option value="2">Bluedale</option>
+                            </select>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>DBP Approval</label>
+                            <select id="ServiceRequestAddClient" class="input w-full border mt-2 select" disabled>
+                                <option disabled selected hidden value="">Select an option</option>
+                                <option value="1">Yes</option>
+                                <option value="2">No</option>
+                            </select>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>Remarks</label>
+                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="" disabled>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div> 
+    </div>
+<!-- View Modal End -->
+
 <!-- BEGIN: Service Request Reject Modal -->
 <div class="modal" id="serviceRequestRejectModal">
     <div class="modal__content">
@@ -253,6 +406,24 @@
 @endsection('modal_content')
 
 @section('script')
+
+<!-- FullCalendar v5.11.3 - Includes global `FullCalendar` object -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+
+<!-- searchable dropdown -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('.select2-client').select2({
+            placeholder: "Select a client",
+            allowClear: true,
+            width: '100%'
+        });
+    });
+</script>
+
 <script>
     	
     $(document).ready(function() {
@@ -261,6 +432,8 @@
         var filterServiceRequestStatus;
         var originalServiceRequestId;
         var lastClickedLink;
+        let startPicker = null;
+        let endPicker = null;
 
         // Listen to below buttons
         document.getElementById("filterServiceRequestButton").addEventListener("click", filterServiceRequestButton);
@@ -268,6 +441,55 @@
         document.getElementById("serviceRequestDeleteButton").addEventListener("click", serviceRequestDeleteButton);
         document.getElementById("ServiceRequestAddButton").addEventListener("click", ServiceRequestAddButton);
         // document.getElementById("openWorkOrderDetailButton").addEventListener("click", openWorkOrderDetail);
+
+        // Billboard Booking Calendar
+        var calendarEl = document.getElementById('billboard-booking-calendar');
+
+        if (calendarEl) {
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                height: 500,
+                events: [
+                    {
+                        title: 'Majlis Bandaraya Petaling Jaya',
+                        start: '2025-07-18',
+                        end: '2025-07-20',
+                        color: '#22C55E',
+                        display: 'block'
+                    },
+                    {
+                        title: 'Majlis Pembandaran Kuala Lumpur',
+                        start: '2025-07-22',
+                        end: '2025-07-25',
+                        color: '#F97316',
+                        display: 'block'
+                    }
+                ]
+            });
+            calendar.render();
+        }
+
+        // Init Flatpickr only once when modal is opened
+        $('[data-target="#addBillboardBookingModal"]').on('click', function () {
+            setTimeout(() => {
+                if (!startPicker) {
+                    startPicker = flatpickr("#start_date", {
+                        dateFormat: "Y-m-d",
+                        onChange: function (selectedDates, dateStr) {
+                            if (endPicker) {
+                                endPicker.set('minDate', dateStr);
+                            }
+                        }
+                    });
+                }
+
+                if (!endPicker) {
+                    endPicker = flatpickr("#end_date", {
+                        dateFormat: "Y-m-d"
+                    });
+                }
+            }, 200); // slight delay after modal opens
+        });
 
         // When "filterServiceRequestButton" button is clicked, initiate initInHouseUsersDatatable
         function filterServiceRequestButton() {
@@ -467,7 +689,13 @@
                 
                 columns: [
                     {
-                        data: "id",
+                        data: null, // <-- important
+                        name: 'no',
+                        orderable: false,
+                        searchable: false,
+                        render: function (data, type, row, meta) {
+                            return meta.row + meta.settings._iDisplayStart + 1;
+                        }
                     },
                     {
                         data: "service_request_no",
@@ -479,10 +707,13 @@
                         data: "client_remark",
                     },
                     {
-                        data: "teamleader_remark",
+                        data: "created_at",
                     },
                     {
-                        data: "location",
+                        data: "created_at",
+                    },
+                    {
+                        data: "user_raise",
                     },
                     {
                         data: "status",
@@ -504,12 +735,8 @@
                         }
                     },
                     {
-                        data: "user_raise",
+                        data: "client_remark",
                     },
-                    {
-                        data: "created_at",
-                    },
-                    
                     {
                         data: "WO_detail",
                         render: function(data, type, row) {
@@ -526,31 +753,56 @@
                         }
                     },
                     {
-                        data: "action",
+                        data: "id",
                         render: function(data, type, row) {
-                            let element = ``;
-                            
-                            // Check if the status is 'NEW'
-                            if (row.status === 'NEW') {
-                                // Show "Reject" button if the user is superadmin or teamleader
-                                element = `@if (Auth::guard('web')->user()->hasRole(['superadmin', 'team_leader']))
-                                            <a href="javascript:;" data-toggle="modal" data-target="#serviceRequestRejectModal" 
-                                            id="reject-` + data + `"
-                                            class="button w-24 inline-block mr-2 mb-2 bg-theme-6 text-white">
-                                            Reject
-                                            </a>
-                                            @elseif (Auth::guard('web')->user()->hasRole('client_user'))
-                                            <a href="javascript:;" data-toggle="modal" data-target="#serviceRequestDeleteModal" 
-                                            id="delete-` + data + `"
-                                            class="button w-24 inline-block mr-2 mb-2 bg-theme-6 text-white">
-                                            Delete
-                                            </a>
-                                            @endif`;
-                            }
+                            let element = `
+                            <div class="flex items-center space-x-2">
+                                <!-- Edit Button -->
+                                <a href="javascript:;" id="profile-` + data + `"
+                                    class="button w-24 inline-block mr-2 mb-2 bg-theme-1 text-white" data-toggle="button"" >
+                                    Edit
+                                </a>
+
+                                <!-- Delete Button -->
+                                <a class="flex items-center text-theme-6" href="javascript:;" data-toggle="modal" data-target="#clientUsersDeleteModal" id="delete-client-` + data + `">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 w-4 h-4 mr-1">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                                    </svg> 
+                                </a>
+                            </div>`;
 
                             return element;
                         }
                     },
+                    // {
+                    //     data: "action",
+                    //     render: function(data, type, row) {
+                    //         let element = ``;
+                            
+                    //         // Check if the status is 'NEW'
+                    //         if (row.status === 'NEW') {
+                    //             // Show "Reject" button if the user is superadmin or teamleader
+                    //             element = `@if (Auth::guard('web')->user()->hasRole(['superadmin', 'team_leader']))
+                    //                         <a href="javascript:;" data-toggle="modal" data-target="#serviceRequestRejectModal" 
+                    //                         id="reject-` + data + `"
+                    //                         class="button w-24 inline-block mr-2 mb-2 bg-theme-6 text-white">
+                    //                         Reject
+                    //                         </a>
+                    //                         @elseif (Auth::guard('web')->user()->hasRole('client_user'))
+                    //                         <a href="javascript:;" data-toggle="modal" data-target="#serviceRequestDeleteModal" 
+                    //                         id="delete-` + data + `"
+                    //                         class="button w-24 inline-block mr-2 mb-2 bg-theme-6 text-white">
+                    //                         Delete
+                    //                         </a>
+                    //                         @endif`;
+                    //         }
+
+                    //         return element;
+                    //     }
+                    // },
                 ],
             });
 
@@ -635,6 +887,7 @@
 
             document.getElementById("ServiceRequestAddButton").disabled = true;
             document.getElementById('ServiceRequestAddButton').style.display = 'none';
+            client_id: document.getElementById("ServiceRequestAddClient").value,
 
             $.ajax({
                 type: 'POST',

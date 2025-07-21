@@ -18,14 +18,11 @@
 <div class="intro-y box p-5 mt-5">
     <div class="mb-5 p-5 rounded-md" style="background-color:#ECF9FD;">
         <h2 class="text-lg font-medium">
-            Employee Status info
+            Billboard
         </h2>
         <p class="w-12 flex-none xl:w-auto xl:flex-initial ml-2">
-            <i class="font-bold">User Account Registered</i> - Employee have user registered.
+            <i class="font-bold">Billboard</i> - Lorem ipsum.
         </p>
-        <P class="w-12 flex-none xl:w-auto xl:flex-initial ml-2">
-            <i class="font-bold">No User Account Registered</i> - No user is registered to Employee.
-        </P>
     </div>
     
     <!-- BEGIN: Work Order Filter-->
@@ -44,22 +41,46 @@
             @if (Auth::guard('web')->user()->hasRole(['superadmin', 'employee_occ_admin', 'employee_occ_operator']))
             <div class="sm:flex items-center sm:mr-4">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">State</label>
-                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputOnGoingWorkOrderTechnician">
+                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputOnGoingWorkOrderStatus">
                     <option value="all">All</option>
-                    @foreach ($technicians as $technician)
-                    <option value="{{ $technician->id }}">{{ $technician->name }}</option>
-                    @endforeach
+                    <option value="new">Selangor</option>
+                    <option value="started">Kuala Lumpur</option>
+                    <option value="completed">Perak</option>
                 </select>
             </div>
             
 
             <div class="sm:flex items-center sm:mr-4">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">District</label>
-                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputOnGoingWorkOrderTeamLeader">
+                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputOnGoingWorkOrderStatus">
                     <option value="all">All</option>
-                    @foreach ($teamleaders as $teamleader)
-                    <option value="{{ $teamleader->id }}">{{ $teamleader->name }}</option>
-                    @endforeach
+                    <option value="new">Petaling jaya</option>
+                    <option value="started">Subang Jaya</option>
+                    <option value="completed">Ampang</option>
+                </select>
+            </div>
+
+            <br>
+
+            <div class="sm:flex items-center sm:mr-4">
+                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Type</label>
+                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputOnGoingWorkOrderStatus">
+                    <option value="all">All</option>
+                    <option value="new">Billboard</option>
+                    <option value="started">Tempboard</option>
+                    <option value="completed">Bunting</option>
+                    <option value="completed">Banner</option>
+                </select>
+            </div>
+
+            <div class="sm:flex items-center sm:mr-4">
+                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Size</label>
+                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputOnGoingWorkOrderStatus">
+                    <option value="all">All</option>
+                    <option value="new">30 X 30</option>
+                    <option value="started">30 X 20</option>
+                    <option value="completed">20 X 10</option>
+                    <option value="completed">40 X 50</option>
                 </select>
             </div>
             @endif
@@ -68,6 +89,16 @@
                 <button type="button" class="button w-full sm:w-16 bg-theme-32 text-white" id="filterOnGoingWorkOrderButton">Filter</button>
             </div>
         </form>
+
+        <div class="text-center"> 
+            <a href="javascript:;" data-toggle="modal" data-target="#addBillboardBookingModal" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-32 text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus w-4 h-4">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Add New Billboard
+            </a> 
+        </div> 
     </div>
     <!-- END:  Work Order Filter -->
 
@@ -98,8 +129,12 @@
             <thead>
                 <tr class="bg-theme-1 text-white">
                     <th>No</th>
-                    <th>Site</th>
-                    <th>Road Name</th>
+                    <th>Site Number</th>
+                    <th>Type</th>
+                    <th>Size</th>
+                    <th>Lighting</th>
+                    <th>Area</th>
+                    <th>Region</th>
                     <th>Date Registered</th>
                     <th>Status</th>
                     <th class="dt-exclude-export dt-no-sort">Show Detail</th>
@@ -113,6 +148,94 @@
 @endsection('app_content')
 
 @section('modal_content')
+<!-- Create Modal -->
+    <div class="row flex flex-col sm:flex-row sm:items-end xl:items-start mb-2">
+        <div class="modal" id="addBillboardBookingModal">
+            <div class="modal__content">
+                <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
+                    <h2 class="font-medium text-base mr-auto">Add New Billboard</h2>
+                </div>
+                <form>
+                    <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>Billboard Type</label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputOnGoingWorkOrderStatus">
+                                <option value="">-- Select Bilboard Type --</option>
+                                <option value="new">Billboard</option>
+                                <option value="started">Temp Board</option>
+                                <option value="completed">Bunting</option>
+                                <option value="completed">Banner</option>
+                            </select>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>Billboard Size</label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputOnGoingWorkOrderStatus">
+                                <option value="new">30 X 20</option>
+                                <option value="started">50 X 40</option>
+                                <option value="completed">10 X 20</option>
+                                <option value="completed">50 X 50</option>
+                            </select>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>Lighting</label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputOnGoingWorkOrderStatus">
+                                <option value="new">LED</option>
+                                <option value="started">Solar</option>
+                                <option value="completed">No lighting</option>
+                            </select>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>State</label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputOnGoingWorkOrderStatus">
+                                <option value="">-- Select State --</option>
+                                <option value="new">Selangor</option>
+                                <option value="started">Kuala Lumpur</option>
+                                <option value="completed">Perak</option>
+                            </select>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>District</label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputOnGoingWorkOrderStatus">
+                                <option value="">-- Select District --</option>
+                                <option value="new">Petaling Jaya</option>
+                                <option value="started">Subang Jaya</option>
+                                <option value="completed">Ampang</option>
+                            </select>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>Location</label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputOnGoingWorkOrderStatus">
+                                <option value="">-- Select Location --</option>
+                                <option value="new">Taman Mayang 1</option>
+                                <option value="started">Taman Mayang 2</option>
+                                <option value="completed">Ampang Park</option>
+                            </select>
+                        </div>
+                        <div class="col-span-12 sm:col-span-6">
+                            <label for="start_date" class="form-label">GPS Longitude</label>
+                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="" required>
+                        </div>
+
+                        <div class="col-span-12 sm:col-span-6">
+                            <label for="end_date" class="form-label">GPS Latitude</label>
+                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="" required>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>Traffic Volume</label>
+                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="" required>
+                        </div>
+                    </div>
+
+                    <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
+                        <button type="submit" class="button w-20 bg-theme-1 text-white" id="ServiceRequestAddButton">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div> 
+    </div>
+<!-- Create Modal End -->
+
+
 <!-- BEGIN: Work Order Edit Modal -->
 <div class="modal" id="workOrderEditModal">
     <div class="modal__content">
@@ -404,6 +527,18 @@
                         render: function (data, type, row, meta) {
                             return meta.row + meta.settings._iDisplayStart + 1;
                         }
+                    },
+                    {
+                        data: "work_order_no",
+                    },
+                    {
+                        data: "type",
+                    },
+                    {
+                        data: "type",
+                    },
+                    {
+                        data: "type",
                     },
                     {
                         data: "work_order_no",

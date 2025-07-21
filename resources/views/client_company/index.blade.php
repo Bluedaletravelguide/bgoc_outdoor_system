@@ -68,8 +68,8 @@
                             <th>Company Name</th>
                             <th>Address</th>
                             <th>Phone No.</th>
-                            <th class="text-center dt-no-sort">Contract Status</th>
-                            <th>Contract Type</th>
+                            <!-- <th class="text-center dt-no-sort">Contract Status</th>
+                            <th>Contract Type</th> -->
                             <th class="dt-exclude-export dt-no-sort ">Actions</th>
                         </tr>
                     </thead>
@@ -111,7 +111,38 @@
                     <input type="text" class="input w-full border mt-2 flex-1" placeholder="Phone No." id="clientCompanyAddPhone" required>
                 </div>
             </div>
+            <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
+                <h2 class="font-medium text-base mr-auto">Add PIC</h2>
+            </div>
+            <div id="subCategoriesContainer">
+                <div class="sub-category">
+                    <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>Name</label>
+                            <input type="text" class="input w-full border mt-2" placeholder="Name" name="pic_names[]" required>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>Contact No.</label>
+                            <input type="text" class="input w-full border mt-2" placeholder="Contact No." name="pic_contacts[]" required>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>Designation</label>
+                            <div class="flex items-center mt-2">
+                                <input type="text" class="input w-full border" placeholder="Designation" name="pic_designations[]" required>
+                            </div>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <div class="flex items-center mt-2">
+                                <a href="javascript:void(0);" class="button bg-theme-6 text-white " onclick="removeSubCategory(this)">
+                                    Remove
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
+                <button type="button" onclick="editSubCategoryAdd()" class="button w-20 bg-theme-1 text-white mt-2">Add PIC</button>
                 <button type="submit" class="button w-20 bg-theme-1 text-white" id="clientCompanyAddButton">Submit</button>
             </div>
         </form>
@@ -170,6 +201,61 @@
 
 @section('script')
 <script>
+
+    // Add a new PIC input field
+    function editSubCategoryAdd() {
+        var subCategoryTemplate = `
+            <div class="sub-category">
+                <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>Name</label>
+                        <input type="text" class="input w-full border mt-2" placeholder="Name" name="pic_names[]" required>
+                    </div>
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>Contact No.</label>
+                        <input type="text" class="input w-full border mt-2" placeholder="Contact No." name="pic_contacts[]" required>
+                    </div>
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>Designation</label>
+                        <div class="flex items-center mt-2">
+                            <input type="text" class="input w-full border" placeholder="Designation" name="pic_designations[]" required>
+                        </div>
+                    </div>
+                    <div class="col-span-12 sm:col-span-12">
+                        <div class="flex items-center mt-2">
+                            <a href="javascript:void(0);" class="button bg-theme-6 text-white " onclick="removeSubCategory(this)">
+                                Remove
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        $("#subCategoriesContainer").append(subCategoryTemplate);
+    }
+
+    // Remove a subcategory input field in edit modal
+    function removeSubCategoryField(button) {
+        var container = $(button).closest('.sub-category');
+        var inputField = container.find('input');
+        var hasData = inputField.val();
+
+        console.log("data:", inputField);
+
+        // Remove the subcategory field
+        container.remove();
+
+        // If it had existing data, remove it from the modal
+        if (hasData) {
+            inputField.remove();
+        }
+    }
+    // Remove a subcategory input field in add modal
+    function removeSubCategory(button) {
+        $(button).closest('.sub-category').remove();
+    }
+
     $(document).ready(function() {
         // Global variables
         var filterContractStatus;
@@ -316,27 +402,27 @@
                     {
                         data: "phone",
                     },
-                    {
-                        data: "project_status",
-                        render: function(data, type, row) {
-                            var element;
+                    // {
+                    //     data: "project_status",
+                    //     render: function(data, type, row) {
+                    //         var element;
 
-                            if (data == "Active") {
-                                element = `<div class="cursor-pointer rounded-full bg-theme-9 px-2 py-1 text-xs font-medium text-center text-white">
-                                                Active
-                                            </div>`;
-                            } else {
-                                element = `<div class="cursor-pointer rounded-full bg-theme-13 px-2 py-1 text-xs font-medium text-center text-white">
-                                                Inactive
-                                            </div>`;
-                            }
+                    //         if (data == "Active") {
+                    //             element = `<div class="cursor-pointer rounded-full bg-theme-9 px-2 py-1 text-xs font-medium text-center text-white">
+                    //                             Active
+                    //                         </div>`;
+                    //         } else {
+                    //             element = `<div class="cursor-pointer rounded-full bg-theme-13 px-2 py-1 text-xs font-medium text-center text-white">
+                    //                             Inactive
+                    //                         </div>`;
+                    //         }
 
-                            return element;
-                        }
-                    },
-                    {
-                        data: "project_type",
-                    },
+                    //         return element;
+                    //     }
+                    // },
+                    // {
+                    //     data: "project_type",
+                    // },
                     {
                         data: "id",
                         render: function(data, type, row) {

@@ -1,7 +1,7 @@
 @extends('layouts.main')
 
 @section('title')
-<title>Chulia Middle East - Service Category</title>
+<title>BGOC Outdoor System - Location</title>
 @endsection('title')
 
 @section('sidebar')
@@ -11,7 +11,7 @@
 @section('app_content')
 <div class="intro-y flex flex-col sm:flex-row items-center mt-8">
     <h2 class="text-lg font-medium mr-auto">
-        Service Category
+        location
     </h2>
 </div>
 
@@ -20,8 +20,8 @@
     <!-- BEGIN: User Status Info -->
     <div class="rounded-md px-5 py-4 mb-2 bg-gray-200 text-gray-600">
         <ul>
-            <li> <b> Category </b> - Main category.</li>
-            <li> <b> Sub-category </b> - Sub-category</li>
+            <li> <b> State </b> - Lorem ipsum.</li>
+            <li> <b> District </b> - Lorem ipsum.</li>
         </ul>
     </div>
     <!-- END: User Status Info -->
@@ -34,7 +34,7 @@
                 <!-- BEGIN: Filter -->
                 <form class="xl:flex sm:mr-auto">
                     <div class="sm:flex items-center sm:mr-4">
-                        <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Role</label>
+                        <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Location</label>
                         <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputCategoryStatus">
                             <option value="all">All</option>
                             <option value="superadmin">Superadmin</option>
@@ -57,7 +57,7 @@
                             <line x1="12" y1="5" x2="12" y2="19"></line>
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                         </svg>
-                        Add New Service Category
+                        Add New Location
                     </a>
                 </div>
                 <!-- END: Add New User -->
@@ -69,8 +69,9 @@
                 <table class="table table-report table mt-5" id="categories_table">
                     <thead>
                         <tr class="bg-theme-32 text-white">
-                            <th>Category</th>
-                            <th>Sub Category</th>
+                            <th>State</th>
+                            <th>District</th>
+                            <th>Location</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -91,20 +92,43 @@
 <div class="modal" id="categoryEditModal">
     <div class="modal__content">
         <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
-            <h2 class="font-medium text-base mr-auto">Edit Category</h2>
+            <h2 class="font-medium text-base mr-auto">Edit Location</h2>
         </div>
         <form>
             <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Category Name</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Category Name" id="categoryEditName" required>
+                    <label>State</label>
+                    <!-- <input type="text" class="input w-full border mt-2 flex-1" placeholder="Category Name" id="categoryEditName" required> -->
+                    <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="categoryEditName">
+                        <option value="all">All</option>
+                        <option value="new">Selangor</option>
+                        <option value="started">Kuala Lumpur</option>
+                        <option value="completed">Perak</option>
+                    </select>
                 </div>
-                <div class="col-span-12 sm:col-span-12">
-                    <label>Sub Categories</label>
+                <!-- <div class="col-span-12 sm:col-span-12">
+                    <label>District</label>
                     <div id="subCategoryContainer"></div>
-                    
+                </div> -->
+
+                <div class="col-span-12 sm:col-span-12">
+                    <label>District</label>
+                    <!-- <input type="text" class="input w-full border mt-2 flex-1" placeholder="Category Name" id="categoryEditName" required> -->
+                    <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="categoryEditName">
+                        <option value="all">All</option>
+                        <option value="new">Petaling Jaya</option>
+                        <option value="started">subang Jaya</option>
+                        <option value="completed">Teluk Intan</option>
+                    </select>
+                </div>
+
+                <div class="col-span-12 sm:col-span-12">
+                    <label>Location</label>
+                    <div id="subCategoryContainer"></div>
                 </div>
             </div>
+
+            
 
             <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
                 <button type="button" onclick="editSubCategoryAdd()" class="button w-20 bg-theme-1 text-white mt-2">Add</button>
@@ -323,6 +347,9 @@ $(document).ready(function() {
     
                     },
                     {
+                        data: "service_category_name",
+                    },
+                    {
                         data: "id",
                         render: function(data, type, row) {
                             let element = `
@@ -399,7 +426,7 @@ $(document).ready(function() {
                 original_employee_username = $(event.target).closest('tr').find('ul li:nth-child(' + '2' + ')').text();
 
                 // Grab row client company id
-                categoryOriginalId = $(event.target).closest('tr').find('td:nth-child(3) a').attr('id').split('-')[1];
+                categoryOriginalId = $(event.target).closest('tr').find('td:nth-child(4) a').attr('id').split('-')[1];
 
                 var listItemValues = [];
                 $(event.target).closest('tr').find('ul li').each(function() {
