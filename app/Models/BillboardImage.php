@@ -24,17 +24,17 @@ class BillboardImage extends Model
         'updated_at'
     ];
 
-    public function billboard()
+    public function billboards()
     {
         return $this->belongsTo(Billboard::class);
     }
 
-    public function client()
+    public function clients()
     {
         return $this->belongsTo(Client::class);
     }
 
-    public function user()
+    public function users()
     {
         return $this->hasMany(User::class);
     }

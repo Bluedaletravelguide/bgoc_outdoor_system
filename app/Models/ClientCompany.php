@@ -14,7 +14,7 @@ class ClientCompany extends Model
      *
      * @var string
      */
-    protected $table = 'client_company';
+    protected $table = 'client_companies';
 
     protected $fillable = [
         'company_prefix',

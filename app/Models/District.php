@@ -24,7 +24,7 @@ class District extends Model
     ];
 
 
-    public function state()
+    public function states()
     {
         // Assuming type is used to determine the building
         // You can adjust this logic based on your actual data structure

@@ -26,7 +26,7 @@ class Location extends Model
     ];
 
 
-    public function district()
+    public function districts()
     {
         // Assuming type is used to determine the building
         // You can adjust this logic based on your actual data structure
