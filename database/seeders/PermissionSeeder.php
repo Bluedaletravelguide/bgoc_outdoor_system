@@ -75,9 +75,19 @@ class PermissionSeeder extends Seeder
                 ]
             ],
             [
+                'group_name' => 'client_company',
+                'permissions' => [
+                    // client Company Permissions
+                    'client_company.create',
+                    'client_company.view',
+                    'client_company.edit',
+                    'client_company.delete',
+                ]
+            ],
+            [
                 'group_name' => 'billboard',
                 'permissions' => [
-                    // work order Permissions
+                    // billboard Permissions
                     'billboard.create',
                     'billboard.view',
                     'billboard.edit',
@@ -87,7 +97,7 @@ class PermissionSeeder extends Seeder
             [
                 'group_name' => 'billboard_booking',
                 'permissions' => [
-                    // service request Permissions
+                    // billboard booking Permissions
                     'billboard_booking.create',
                     'billboard_booking.view',
                     'billboard_booking.edit',
@@ -118,12 +128,11 @@ class PermissionSeeder extends Seeder
 
 
         // Create a new role for "admin"
-        $roleAdmin = Role::create(['name' => 'client_user', 'guard_name' => 'web']);
+        $roleAdmin = Role::create(['name' => 'admin', 'guard_name' => 'web']);
 
-        $admin = User::where('username', 'client_user')->first();
+        $admin = User::where('username', 'admin')->first();
         if ($admin) {
             $admin->assignRole($roleAdmin);
-            // $admin->assignRole($role_client_user_api);
         }
 
         /**
@@ -136,6 +145,8 @@ class PermissionSeeder extends Seeder
             'profile.edit',
             'client.view',
             'client.edit',
+            'client_company.view',
+            'client_company.edit',
             'billboard_booking.create',
             'billboard_booking.view',
             'billboard_booking.edit',
@@ -179,7 +190,10 @@ class PermissionSeeder extends Seeder
             'billboard_booking.view',
             'billboard_booking.edit',
             'billboard_booking.delete',
+            'billboard.create',
             'billboard.view',
+            'billboard.edit',
+            'billboard.delete',
             'dashboard.view',
             'dashboard.edit',
         ];
@@ -214,9 +228,6 @@ class PermissionSeeder extends Seeder
 
         // Define the permissions for the "marketing" role
         $permissionsMarketingWeb = [
-            // 'user.create',
-            // 'user.view',
-            // 'user.edit',
             'profile.view',
             'profile.edit',
             'billboard.view',

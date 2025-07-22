@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use App\Models\State;
 use App\Models\District;
 use App\Models\Location;
+use App\Models\Billboard;
 use Illuminate\Support\Facades\DB;
 
 class LocationSeeder extends Seeder
@@ -15,10 +16,10 @@ class LocationSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
         // Truncate child tables first
-        DB::table('billboards')->truncate();
-        DB::table('locations')->truncate();
-        DB::table('districts')->truncate();
-        DB::table('states')->truncate();
+        Billboard::truncate();
+        Location::truncate();
+        District::truncate();
+        State::truncate();
 
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 

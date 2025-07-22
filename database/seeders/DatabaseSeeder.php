@@ -19,8 +19,6 @@ class DatabaseSeeder extends Seeder
             LocationSeeder::class,
             BillboardSeeder::class,
             UserSeeder::class,
-            // v05_assetsSeeder::class,
-            // WorkOrdersSeeder::class
         ]);
     }
 }

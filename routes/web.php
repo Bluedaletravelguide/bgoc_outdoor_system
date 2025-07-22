@@ -135,6 +135,3 @@ Route::group(['middleware' => ['auth']], function () {
     // notification 2
     Route::post('send',[HomeController::class,"sendnotification"]);
 });
-
-    //
-    Route::get('/team-leaders', [UserController::class, 'getTeamLeaders']);

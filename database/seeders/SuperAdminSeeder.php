@@ -32,7 +32,7 @@ class SuperAdminSeeder extends Seeder
         $admin = User::where('username', 'admin')->first();
 
         if (is_null($admin)) {
-            // Create the 'clientUser' user
+            // Create the 'admin' user
             $admin = new User();
             $admin->name = "Admin";
             $admin->email = "admin@bluedale.com.my";
@@ -53,26 +53,5 @@ class SuperAdminSeeder extends Seeder
             $sales->password = Hash::make('password');
             $sales->save();
         }
-
-        for ($i = 1; $i <= 5; $i++) {
-            $username = "marketing" . $i;
-            $email = "marketing" . $i . "@bluedale.com.my";
-            $name = "Marketing " . $i;
-        
-            // Check if the 'marketing' user already exists
-            $marketing = User::where('username', $username)->first();
-        
-            if (is_null($marketing)) {
-                // Create the user
-                $marketing = new User();
-                $marketing->name = $name;
-                $marketing->email = $email;
-                $marketing->username = $username;
-                // $marketing->type = "employee";
-                $marketing->password = Hash::make('password');
-                $marketing->save();
-            }
-        }
-
     }
 }
