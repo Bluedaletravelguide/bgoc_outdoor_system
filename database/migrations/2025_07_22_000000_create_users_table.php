@@ -23,22 +23,6 @@ return new class extends Migration
             $table->rememberToken();
             $table->timestamps();
         });
-
-        Schema::create('employees', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('contact');
-            $table->string('position');
-            $table->unsignedBigInteger('user_id')->nullable();
-            $table->integer('status')->default(1);
-            $table->dateTime('created_at', $precision = 0)->useCurrent();
-            $table->dateTime('updated_at', $precision = 0)->nullable()->useCurrentOnUpdate();
-            $table->dateTime('deleted_at', $precision = 0)->nullable();
-
-            $table->foreign('user_id')
-                ->references('id')
-                ->on('users');
-        });
     }
 
     /**

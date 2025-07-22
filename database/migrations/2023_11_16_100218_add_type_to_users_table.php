@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            // Add type field in users table
-            // Values: client / vendor / employee
-            $table->string('type')->after('username')->default(1);
-        });
+        // Schema::table('users', function (Blueprint $table) {
+        //     // Add type field in users table
+        //     // Values: superadmin / admin / sales / marketing
+        //     $table->string('type')->after('username')->default(1);
+        // });
     }
 
     /**

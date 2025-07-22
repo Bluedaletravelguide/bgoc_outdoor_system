@@ -26,9 +26,10 @@ return new class extends Migration
         Schema::create('clients', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('contact');
+            $table->string('email');
+            $table->string('phone');
+            $table->string('designation');
             $table->unsignedBigInteger('company_id');
-            $table->unsignedBigInteger('user_id')->nullable();
             $table->integer('status')->default(1);
             $table->dateTime('created_at', $precision = 0)->useCurrent();
             $table->dateTime('updated_at', $precision = 0)->nullable()->useCurrentOnUpdate();
@@ -38,10 +39,6 @@ return new class extends Migration
                 ->references('id')
                 ->on('client_company')
                 ->onDelete('cascade');
-
-            $table->foreign('user_id')
-                ->references('id')
-                ->on('users');
         });
     }
 

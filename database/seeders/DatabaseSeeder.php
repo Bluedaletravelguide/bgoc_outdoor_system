@@ -16,11 +16,11 @@ class DatabaseSeeder extends Seeder
         $this->call([
             SuperAdminSeeder::class,
             PermissionSeeder::class,
-            ServiceRequestCategorySeeder::class,
-            ServiceRequestSubCategorySeeder::class,
-            v02_serviceRequest::class,
+            LocationSeeder::class,
+            BillboardSeeder::class,
+            UserSeeder::class,
             // v05_assetsSeeder::class,
-            WorkOrdersSeeder::class
+            // WorkOrdersSeeder::class
         ]);
     }
 }

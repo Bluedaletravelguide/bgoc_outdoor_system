@@ -23,13 +23,9 @@ class PermissionSeeder extends Seeder
          * 3. role                      [C|R|U|D]
          * 4. profile                   [R|U]
          * 5. client                    [C|R|U|D]
-         * 6. work_order                [C|R|U|D]
-         * 7. service_request           [C|R|U|D]
-         * 8. service_request_category  [C|R|U|D]
-         * 9. employee                  [C|R|U|D]
-         * 10. onsite                   [C|R|U|D]
-         * 11. vendor                   [C|R|U|D]
-         * 12. project                 [C|R|U|D]
+         * 6. client_company            [C|R|U|D]
+         * 7. billboard                 [C|R|U|D]
+         * 8. billboard_booking         [C|R|U|D]
          */
         $permissions = [
 
@@ -79,93 +75,23 @@ class PermissionSeeder extends Seeder
                 ]
             ],
             [
-                'group_name' => 'work_order',
+                'group_name' => 'billboard',
                 'permissions' => [
                     // work order Permissions
-                    'work_order.create',
-                    'work_order.view',
-                    'work_order.edit',
-                    'work_order.delete',
+                    'billboard.create',
+                    'billboard.view',
+                    'billboard.edit',
+                    'billboard.delete',
                 ]
             ],
             [
-                'group_name' => 'service_request',
+                'group_name' => 'billboard_booking',
                 'permissions' => [
                     // service request Permissions
-                    'service_request.create',
-                    'service_request.view',
-                    'service_request.edit',
-                    'service_request.delete',
-                ]
-            ],
-            [
-                'group_name' => 'service_request_category',
-                'permissions' => [
-                    // service request category Permissions
-                    'service_request_category.create',
-                    'service_request_category.view',
-                    'service_request_category.edit',
-                    'service_request_category.delete',
-                ]
-            ],
-            [
-                'group_name' => 'employee',
-                'permissions' => [
-                    // employee Permissions
-                    'employee.create',
-                    'employee.view',
-                    'employee.edit',
-                    'employee.delete',
-                ]
-            ],
-            [
-                'group_name' => 'onsite',
-                'permissions' => [
-                    // onsite Permissions
-                    'onsite.create',
-                    'onsite.view',
-                    'onsite.edit',
-                    'onsite.delete',
-                ]
-            ],
-            [
-                'group_name' => 'vendor',
-                'permissions' => [
-                    // vendor Permissions
-                    'vendor.create',
-                    'vendor.view',
-                    'vendor.edit',
-                    'vendor.delete',
-                ]
-            ],
-            [
-                'group_name' => 'project',
-                'permissions' => [
-                    // project Permissions
-                    'project.create',
-                    'project.view',
-                    'project.edit',
-                    'project.delete',
-                ]
-            ],
-            [
-                'group_name' => 'asset',
-                'permissions' => [
-                    // asset Permissions
-                    'asset.create',
-                    'asset.view',
-                    'asset.edit',
-                    'asset.delete',
-                ]
-            ],
-            [
-                'group_name' => 'supplier',
-                'permissions' => [
-                    // suppliers Permissions
-                    'suppliers.create',
-                    'suppliers.view',
-                    'suppliers.edit',
-                    'suppliers.delete',
+                    'billboard_booking.create',
+                    'billboard_booking.view',
+                    'billboard_booking.edit',
+                    'billboard_booking.delete',
                 ]
             ],
         ];
@@ -184,17 +110,19 @@ class PermissionSeeder extends Seeder
         }
 
         // Assign super admin role permission to superadmin user
-        $admin = User::where('username', 'superadmin')->first();
-        if ($admin) {
-            $admin->assignRole($roleSuperAdmin);
+        $superAdmin = User::where('username', 'superadmin')->first();
+        if ($superAdmin) {
+            $superAdmin->assignRole($roleSuperAdmin);
         }
 
-        // Create a new role for "client_user"
-        $role_client_user_web = Role::create(['name' => 'client_user', 'guard_name' => 'web']);
+
+
+        // Create a new role for "admin"
+        $roleAdmin = Role::create(['name' => 'client_user', 'guard_name' => 'web']);
 
         $admin = User::where('username', 'client_user')->first();
         if ($admin) {
-            $admin->assignRole($role_client_user_web);
+            $admin->assignRole($roleAdmin);
             // $admin->assignRole($role_client_user_api);
         }
 
@@ -202,29 +130,26 @@ class PermissionSeeder extends Seeder
          * just a line to separate 
          * 
         */
-        // Define the permissions for the "client_user" role
-        $permissionsClientUserWeb = [
+        // Define the permissions for the "admin" role
+        $permissionsAdminWeb = [
             'profile.view',
             'profile.edit',
             'client.view',
             'client.edit',
-            'service_request.create',
-            'service_request.view',
-            'service_request.edit',
-            'service_request.delete',
-            // 'work_order.create',
-            // 'work_order.view',
-            // 'work_order.delete',
+            'billboard_booking.create',
+            'billboard_booking.view',
+            'billboard_booking.edit',
+            'billboard_booking.delete',
             'dashboard.view',
             'dashboard.edit',
         ];
 
-        foreach ($permissionsClientUserWeb as $permissionsClientUserWeb) {
+        foreach ($permissionsAdminWeb as $adminPermission) {
             // Create the permission if it doesn't exist
-            Permission::firstOrCreate(['name' => $permissionsClientUserWeb]);
+            Permission::firstOrCreate(['name' => $adminPermission]);
 
             // Assign the permission to the "coo" role
-            $role_client_user_web->givePermissionTo($permissionsClientUserWeb);
+            $roleAdmin->givePermissionTo($adminPermission);
         }
 
         /**
@@ -235,39 +160,36 @@ class PermissionSeeder extends Seeder
         // Reset cached roles and permissions
         app()['cache']->forget('spatie.permission.cache');
 
-        // Create a new role for "team_leader"
-        $role_team_leader_web = Role::create(['name' => 'team_leader', 'guard_name' => 'web']);
+        // Create a new role for "sales"
+        $roleSales = Role::create(['name' => 'sales', 'guard_name' => 'web']);
 
-        $admin = User::where('username', 'team_leader')->first();
-        if ($admin) {
-            $admin->assignRole($role_team_leader_web);
+        $sales = User::where('username', 'sales')->first();
+        if ($sales) {
+            $sales->assignRole($roleSales);
         }
 
-        // Define the permissions for the "team_leader" role
-        $permissionsTeamLeaderWeb = [
-            'user.create',
+        // Define the permissions for the "sales" role
+        $permissionsSalesWeb = [
             'user.view',
             'user.edit',
             'profile.view',
             'profile.edit',
-            'client.create',
             'client.view',
-            'service_request.create',
-            'service_request.view',
-            'service_request.edit',
-            'service_request.delete',
-            // 'service_request_category.view',
-            'work_order.view',
+            'billboard_booking.create',
+            'billboard_booking.view',
+            'billboard_booking.edit',
+            'billboard_booking.delete',
+            'billboard.view',
             'dashboard.view',
             'dashboard.edit',
         ];
 
-        foreach ($permissionsTeamLeaderWeb as $permissionsTeamLeaderWeb) {
+        foreach ($permissionsSalesWeb as $salesPermission) {
         //     // Create the permission if it doesn't exist
-            Permission::firstOrCreate(['name' => $permissionsTeamLeaderWeb]);
+            Permission::firstOrCreate(['name' => $salesPermission]);
 
-        //     // Assign the permission to the "team_leader" role
-            $role_team_leader_web->givePermissionTo($permissionsTeamLeaderWeb);
+        //     // Assign the permission to the "sales" role
+            $roleSales->givePermissionTo($salesPermission);
         }
 
         /**
@@ -279,36 +201,38 @@ class PermissionSeeder extends Seeder
         app()['cache']->forget('spatie.permission.cache');
 
         
-        // Create a new role for "employee_technician"
-        $role_employee_technician_web = Role::create(['name' => 'employee_technician', 'guard_name' => 'web']);
-        // $role_employee_technician_api = Role::create(['name' => 'employee_technician', 'guard_name' => 'api']);
+        // Create a new role for "marketing"
+        $roleMarketing = Role::create(['name' => 'marketing', 'guard_name' => 'web']);
+        // $role_marketing_api = Role::create(['name' => 'marketing', 'guard_name' => 'api']);
 
-        $employee_technicians = User::where('username', 'like', '%technician%')->get();
-        if ($employee_technicians) {
-            foreach ($employee_technicians as $technician) {
-                $technician->assignRole($role_employee_technician_web);
+        $marketings = User::where('username', 'like', '%marketing%')->get();
+        if ($marketings) {
+            foreach ($marketings as $marketingPermission) {
+                $marketingPermission->assignRole($roleMarketing);
             }
         }
 
-        // Define the permissions for the "employee_technician" role
-        $permissionsEmployeeTechnicianWeb = [
+        // Define the permissions for the "marketing" role
+        $permissionsMarketingWeb = [
             // 'user.create',
             // 'user.view',
             // 'user.edit',
             'profile.view',
             'profile.edit',
-            'work_order.view',
-            'work_order.edit',
+            'billboard.view',
+            'billboard.edit',
+            'billboard_booking.view',
+            'billboard_booking.edit',
             'dashboard.view',
             'dashboard.edit',
         ];
 
-        foreach ($permissionsEmployeeTechnicianWeb as $permissionsEmployeeTechnicianWeb) {
+        foreach ($permissionsMarketingWeb as $marketingPermission) {
             // Create the permission if it doesn't exist
-            Permission::firstOrCreate(['name' => $permissionsEmployeeTechnicianWeb]);
+            Permission::firstOrCreate(['name' => $marketingPermission]);
 
-            // Assign the permission to the "coo" role
-            $role_employee_technician_web->givePermissionTo($permissionsEmployeeTechnicianWeb);
+            // Assign the permission to the "marketing" role
+            $roleMarketing->givePermissionTo($marketingPermission);
         }
     }
 }

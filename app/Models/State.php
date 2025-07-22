@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class PurchaseOrder extends Model
+class State extends Model
 {
     use HasFactory;
 
@@ -14,17 +14,11 @@ class PurchaseOrder extends Model
      *
      * @var string
      */
-    protected $table = 'purchase_orders';
+    protected $table = 'states';
 
     protected $fillable = [
-        'receipt_reference_number',
-        'price',
-        'purchase_date',
-        'warranty_from',
-        'warranty_until',
-        'description',
-        'supplier_id',
+        'name',
         'created_at',
-        'updated_at'
+        'updated_at',
     ];
 }

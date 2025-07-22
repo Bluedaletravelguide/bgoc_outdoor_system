@@ -11,21 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('projects', function (Blueprint $table) {
-            $table->id();
-            $table->string('project_prefix');
-            $table->date('from_date')->default(null)->nullable();
-            $table->date('to_date')->default(null)->nullable();
-            $table->string('type');
-            $table->unsignedBigInteger('client_company_id');
-            $table->dateTime('created_at', $precision = 0)->useCurrent();
-            $table->dateTime('updated_at', $precision = 0)->nullable()->useCurrentOnUpdate();
+        // Schema::create('projects', function (Blueprint $table) {
+        //     $table->id();
+        //     $table->string('project_prefix');
+        //     $table->date('from_date')->default(null)->nullable();
+        //     $table->date('to_date')->default(null)->nullable();
+        //     $table->string('type');
+        //     $table->unsignedBigInteger('client_company_id');
+        //     $table->dateTime('created_at', $precision = 0)->useCurrent();
+        //     $table->dateTime('updated_at', $precision = 0)->nullable()->useCurrentOnUpdate();
 
-            $table->foreign('client_company_id')
-                ->references('id')
-                ->on('client_company')
-                ->onDelete('cascade');
-        });
+        //     $table->foreign('client_company_id')
+        //         ->references('id')
+        //         ->on('client_company')
+        //         ->onDelete('cascade');
+        // });
 
         // Schema::create('onsite_team', function (Blueprint $table) {
         //     $table->id();

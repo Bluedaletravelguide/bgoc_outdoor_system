@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
-class UsersSeeder extends Seeder
+class UserSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -18,9 +18,9 @@ class UsersSeeder extends Seeder
         // List all the roles
         $roles = [
             'superadmin',
-            'client_user',
-            'team_leader',
-            'employee_technician',
+            'admin',
+            'sales',
+            'marketing',
         ];
 
         // Insert the roles to "roles" table
@@ -31,13 +31,9 @@ class UsersSeeder extends Seeder
         // List all the usernames
         $usernames = [
             'superadmin',
-            'client_user',
-            'team_leader',
-            'employee_technician_1',
-            'employee_technician_2',
-            'employee_technician_3',
-            'employee_technician_4',
-            'employee_technician_5',
+            'admin',
+            'sales',
+            'marketing',
         ];
 
         // To create user accounts
@@ -51,16 +47,10 @@ class UsersSeeder extends Seeder
             if (is_null($user)) {
                 $user = new User();
                 $user->name = ucwords(str_replace('_', ' ', $username)); // Convert underscores to spaces and capitalize words
-                $user->email = $username . "@mmdt.cc";
+                $user->email = $username . "@bluedale.com.my";
                 $user->username = $username;
                 $user->status = 1;
                 $user->password = Hash::make('password');
-
-                if ($role->name == "superadmin" || str_contains($role->name, "technician") || str_contains($role->name, "team_leader")) {
-                    $user->type = "employee";
-                } else if ($role->name == "client_user") {
-                    $user->type = "client";
-                } 
 
                 $user->save();
 

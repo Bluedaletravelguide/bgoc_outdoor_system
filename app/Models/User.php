@@ -24,11 +24,9 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'username',
-        'type',
         'status',
         'email',
         'password',
-        'picture'
     ];
 
     /**
@@ -83,15 +81,5 @@ class User extends Authenticatable
             }
         }
         return $hasPermission;
-    }
-
-    public function vendors()
-    {
-        return $this->belongsToMany(Vendor::class);
-    }
-
-    public function client_company()
-    {
-        return $this->hasManyThrough(ClientCompany::class, Client::class, 'user_id', 'id', 'id', 'company_id');
     }
 }
