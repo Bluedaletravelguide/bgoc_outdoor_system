@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('client_company', function (Blueprint $table) {
+        Schema::create('client_companies', function (Blueprint $table) {
             $table->id();
             $table->string('company_prefix', 4)->unique();
             $table->string('name')->unique();
@@ -37,7 +37,7 @@ return new class extends Migration
 
             $table->foreign('company_id')
                 ->references('id')
-                ->on('client_company')
+                ->on('client_companies')
                 ->onDelete('cascade');
         });
     }
@@ -47,7 +47,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('client_company');
+        Schema::dropIfExists('client_companies');
         Schema::dropIfExists('clients');
     }
 };

@@ -28,7 +28,7 @@ class BillboardSeeder extends Seeder
 
         // Create 10 client companies
         for ($i = 1; $i <= 10; $i++) {
-            DB::table('client_company')->insert([
+            DB::table('client_companies')->insert([
                 'company_prefix' => strtoupper($faker->lexify('????')),
                 'name' => $faker->company,
                 'address' => $faker->address,
@@ -57,8 +57,18 @@ class BillboardSeeder extends Seeder
         // ✅ 2. Pluck client IDs
         $clientIds = Client::pluck('id')->toArray();
 
+        $prefixMap = [
+            'Billboard' => 'BB',
+            'Tempboard' => 'TB',
+            'Bunting'   => 'BT',
+            'Banner'    => 'BN',
+        ];
+
         // ✅ 3. Create billboards
         for ($i = 1; $i <= 50; $i++) {
+            $type = $faker->randomElement(array_keys($prefixMap));
+            $prefix = $prefixMap[$type];
+
             DB::table('billboards')->insert([
                 'location_id' => $faker->randomElement($locationIds),
                 'site_number' => strtoupper($faker->bothify('????-####')),
@@ -66,8 +76,10 @@ class BillboardSeeder extends Seeder
                 'gps_longitude' => $faker->longitude(99.6, 119.3), // Malaysia approx. lng range
                 'traffic_volume' => $faker->numerify('#######'),
                 'size'=> $faker->randomElement(['15x10', '12x15', '10x10', '12x12', '8x8']),
-                'type'=> $faker->randomElement(['BB', 'TB', 'Bunting', 'Banner']),
                 'lighting' => $faker->randomElement(['TNB', 'SOLAR', 'None']),
+                'type'            => $type,
+                'prefix'            => $prefix, // Add this
+                'status'=> 1,
                 'created_at' => Carbon::now()->subDays(rand(0, 10))->toDateTimeString(), // Random timestamp between today and 10 days ago
                 'updated_at' => Carbon::now()->subDays(rand(0, 10))->toDateTimeString(), // Random timestamp between today and 10 days ago
             ]);

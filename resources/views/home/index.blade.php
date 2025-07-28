@@ -30,7 +30,7 @@
                                     <div class="report-box__indicator bg-theme-9 tooltip cursor-pointer" title="33% Higher than last month"> 33% <i data-feather="chevron-up" class="w-4 h-4"></i> </div>
                                 </div> -->
                             </div>
-                            <div class="text-3xl font-bold leading-8 mt-6">123</div>
+                            <div class="text-3xl font-bold leading-8 mt-6">{{ $billboard_total }}</div>
                             <div class="text-base text-gray-600 mt-1">Total Billboard</div>
                         </div>
                     </div>
@@ -44,7 +44,7 @@
                                     <div class="report-box__indicator bg-theme-9 tooltip cursor-pointer" title="33% Higher than last month"> 33% <i data-feather="chevron-up" class="w-4 h-4"></i> </div>
                                 </div> -->
                             </div>
-                            <div class="text-3xl font-bold leading-8 mt-6">123</div>
+                            <div class="text-3xl font-bold leading-8 mt-6">{{ $billboard_active }}</div>
                             <div class="text-base text-gray-600 mt-1">Total Active Billboard</div>
                         </div>
                     </div>
@@ -58,7 +58,7 @@
                                     <div class="report-box__indicator bg-theme-6 tooltip cursor-pointer" title="2% Lower than last month"> 2% <i data-feather="chevron-down" class="w-4 h-4"></i> </div>
                                 </div> -->
                             </div>
-                            <div class="text-3xl font-bold leading-8 mt-6">420</div>
+                            <div class="text-3xl font-bold leading-8 mt-6">{{ $billboard_booking_total }}</div>
                             <div class="text-base text-gray-600 mt-1">Total Bookings</div>
                         </div>
                     </div>
@@ -72,7 +72,7 @@
                                     <div class="report-box__indicator bg-theme-9 tooltip cursor-pointer" title="22% Higher than last month"> 22% <i data-feather="chevron-up" class="w-4 h-4"></i> </div>
                                 </div> -->
                             </div>
-                            <div class="text-3xl font-bold leading-8 mt-6">15</div>
+                            <div class="text-3xl font-bold leading-8 mt-6">{{ $billboard_booking_active }}</div>
                             <div class="text-base text-gray-600 mt-1">Total Active Bookings</div>
                         </div>
                     </div>
@@ -167,9 +167,9 @@
                         Attention
                     </h2>
                 </div>
-                @foreach($highAttention as $attention)
+                @foreach($attentions as $attention)
                     @if($loop->index < 4)
-                    <a href="javascript:;" onclick="window.open('{{ route('workOrderProfile.index', ['id' => $attention -> id] )}}')" >
+                    <!-- <a href="javascript:;" onclick="window.open('{{ route('workOrderProfile.index', ['id' => $attention -> id] )}}')" > -->
                         <div class="mt-5">
                             <div class="intro-x">
                                 <div class="box px-5 py-3 mb-3 flex items-center zoom-in">
@@ -177,8 +177,8 @@
                                         <i data-feather="alert-circle" class="report-box__icon text-theme-6"></i>
                                     </div>
                                     <div class="ml-4 mr-auto">
-                                        <div class="font-medium">{{$attention->work_order_no}}</div>
-                                        <div class="text-gray-600 text-xs mt-0.5">More than 24 hours and have not been assigned to supervisor, high attention required!</div>
+                                        <div class="font-medium">{{$attention->billboard_id}}</div>
+                                        <div class="text-gray-600 text-xs mt-0.5">More than 24 hours and have not been take action, high attention required!</div>
                                     </div>
                                     <!-- <div class="text-theme-9">+$99</div> -->
                                 </div>
@@ -256,7 +256,7 @@
 @endsection('app_content')
 
 @section('script')
-<script src="{{ asset('/dist/js/chart.umd.js')}}"></script>
+<!-- <script src="{{ asset('/dist/js/chart.umd.js')}}"></script> -->
 <!-- <script src="./node_modules/chart.js/dist/chart.js"></script> -->
 
 <script>
@@ -266,16 +266,23 @@
     const donut = document.getElementById('report-donut-chart');
     const donut2 = document.getElementById('report-donut-chart2');
 
-    var linedata = @json($groupedData);
-    var piedata = @json($groupedCategories);
-    var donutdata = @json($groupedStatus);
+    var donutdata = @json($billboard_status);
+    var donutdata2 = @json($booking_status);
 
-    var linelabels = Object.keys(linedata);
-    var linevalues = Object.values(linedata);
-    var pielabels = Object.keys(piedata);
-    var pievalues = Object.values(piedata);
+    // var linelabels = Object.keys(linedata);
+    // var linevalues = Object.values(linedata);
+    // var pielabels = Object.keys(piedata);
+    // var pievalues = Object.values(piedata);
     var donutlabels = Object.keys(donutdata);
     var donutvalues = Object.values(donutdata);
+    var donutlabels2 = Object.keys(donutdata2);
+    var donutvalues2 = Object.values(donutdata2);
+
+    const donutColors2 = {
+        'Ongoing': '#22C55E',           // Green
+        'Pending Install': '#3B82F6',   // Blue
+        'Pending Payment': '#EF4444'   // Red
+    };
 
     // var ctx = document.getElementById('report-line-chart').getContext('10d');
     // var lineChart = new Chart(ctx, {
@@ -309,8 +316,83 @@
     //     },
     // });
 
-  new Chart(pie, {
-    type: 'pie',
+//   new Chart(pie, {
+//     type: 'pie',
+//     options: {
+//         plugins: {
+//             legend: {
+//                 display: true
+//             },
+//             tooltip: {
+//                 enabled: true
+//             }
+//         },
+//         maintainAspectRatio: true,
+//         responsive: true, // This enables automatic resizing based on the container size
+//     },
+//     data: {
+//       labels: pielabels,
+//       datasets: [{
+//         data: pievalues,
+//       }]
+//     },
+//   });
+
+//   new Chart(donut, {
+//         type: 'doughnut',
+//         data: {
+//             labels: donutlabels,
+//             datasets: [{
+//                 data: donutvalues,
+//                 backgroundColor: [
+//                     '#22C55E', // green
+//                     '#F97316', // orange
+//                     '#3B82F6', // blue
+//                     '#EF4444', // red
+//                 ],
+//                 borderWidth: 1,
+//             }]
+//         },
+//         options: {
+//             responsive: true,
+//             maintainAspectRatio: false,
+//             plugins: {
+//                 legend: {
+//                     display: true,
+//                     position: 'bottom'
+//                 },
+//                 tooltip: {
+//                     enabled: true
+//                 }
+//             }
+//         }
+//     });
+
+    new Chart(donut, {
+    type: 'doughnut',
+    options: {
+        plugins: {
+          legend: {
+            display: true
+          },
+          tooltip: {
+            enabled: true
+          }
+        },
+        maintainAspectRatio: true,
+        responsive: true, // This enables automatic resizing based on the container size
+    },
+    data: {
+      labels: donutlabels,
+      datasets: [{
+                data: donutvalues,
+                backgroundColor: ['#EF4444', '#22C55E'], // Green for Active, Red for Inactive
+            }]
+    },
+  });
+
+  new Chart(donut2, {
+    type: 'doughnut',
     options: {
         plugins: {
             legend: {
@@ -321,84 +403,40 @@
             }
         },
         maintainAspectRatio: true,
-        responsive: true, // This enables automatic resizing based on the container size
+        responsive: true
     },
     data: {
-      labels: pielabels,
-      datasets: [{
-        data: pievalues,
-      }]
-    },
-  });
-
-  new Chart(donut, {
-    type: 'doughnut',
-    options: {
-        plugins: {
-          legend: {
-            display: true
-          },
-          tooltip: {
-            enabled: true
-          }
-        },
-        maintainAspectRatio: true,
-        responsive: true, // This enables automatic resizing based on the container size
-    },
-    data: {
-      labels: donutlabels,
-      datasets: [{
-        data: donutvalues,
-      }]
-    },
-  });
-
-  new Chart(donut2, {
-    type: 'doughnut',
-    options: {
-        plugins: {
-          legend: {
-            display: true
-          },
-          tooltip: {
-            enabled: true
-          }
-        },
-        maintainAspectRatio: true,
-        responsive: true, // This enables automatic resizing based on the container size
-    },
-    data: {
-      labels: donutlabels,
-      datasets: [{
-        data: donutvalues,
-      }]
-    },
-  });
-  
-  new Chart(line, {
-    type: 'line',
-    data: {
-      labels: linelabels,
-      datasets: [{
-        label: 'Count of Records',
-        data: linevalues,
-        borderWidth: 1
-      }]
-    },
-    options: {
-      scales: {
-        y: {
-          beginAtZero: true
-        }
-      },
-      maintainAspectRatio: false,
-      responsive: true, // This enables automatic resizing based on the container size
+        labels: donutlabels2,
+        datasets: [{
+            data: donutvalues2,
+            backgroundColor: donutlabels2.map(label => donutColors2[label] || '#D1D5DB') // fallback gray
+        }]
     }
-  });
+});
+  
+//   new Chart(line, {
+//     type: 'line',
+//     data: {
+//       labels: linelabels,
+//       datasets: [{
+//         label: 'Count of Records',
+//         data: linevalues,
+//         borderWidth: 1
+//       }]
+//     },
+//     options: {
+//       scales: {
+//         y: {
+//           beginAtZero: true
+//         }
+//       },
+//       maintainAspectRatio: false,
+//       responsive: true, // This enables automatic resizing based on the container size
+//     }
+//   });
 
 
 //   document.addEventListener('DOMContentLoaded', function () {
-//             var data = @json($groupedData);
 
 //             var labels = Object.keys(data);
 //             var values = Object.values(data);

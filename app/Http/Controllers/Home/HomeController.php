@@ -9,8 +9,11 @@ use App\Models\WorkOrder;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
-//
+
 use App\Models\User;
+use App\Models\Billboard;
+use App\Models\BillboardBooking;
+
 use Spatie\Permission\Models\Role;
 use Notification;
 use App\Notifications\SendEmailNotification;
@@ -66,18 +69,7 @@ class HomeController extends Controller
 
             return "Email has been sent successfully!";
         }
-   }
-
-//     //                                                          
-
-//     public function getTeamLeaders()                                                                              
-// {
-//     $teamLeaders = User::whereHas('roles', function ($query) {
-//         $query->where('id', 3);
-//     })->get();                             
-
-//     return response()->json($teamLeaders); // Return as JSON (or pass to a view)                                                                                 
-// }                                                  
+    }                                                 
 
     /**
      * Create a new controller instance.         
@@ -96,25 +88,21 @@ class HomeController extends Controller
      */
     public function index()
     {
-        Log::info("home controller");
-        $servicerequest_new = ServiceRequest::where('status','new')
-                                            ->count();
 
-        $servicerequest_in_progress = ServiceRequest::where('status','accepted')
-                                                    ->count();
+        $billboard_total = Billboard::count();
 
-        // $servicerequest_reject = ServiceRequest::where('status','rejected')
-        //                                             ->count();
+        $billboard_active = Billboard::where('status', 1)->count();
         
-        $servicerequest_complete = ServiceRequest::where('status','closed')
-                                                    ->count();
+        $billboard_booking_total = BillboardBooking::count();
+
+        $billboard_booking_active = BillboardBooking::where('status', 'ongoing')->count();
 
         
         $startDate = Carbon::now()->subDays(20);
         $startDate1D = Carbon::now()->subDays(1)->startOfDay();
         $endDate = Carbon::now();
 
-        $dataLast10Days = ServiceRequest::where('created_at', '>=', $startDate)
+        $dataLast10Days = Billboard::where('created_at', '>=', $startDate)
                                         ->where('created_at', '<=', $endDate)
                                         ->get();
 
@@ -124,31 +112,45 @@ class HomeController extends Controller
             return $group->count();
         });
 
-        // $groupedCategories = ServiceRequest::leftJoin('sr_category', 'sr_category.id', '=', 'service_request.sr_category_id')
-        //                                 ->groupBy('sr_category_id')
-        //                                 ->selectRaw('sr_category_id, COUNT(*) as count')
-        //                                 ->pluck('count', 'sr_category_id');
+        $billboard_status_counts = Billboard::select('status', DB::raw('count(*) as total'))
+                                ->groupBy('status')
+                                ->pluck('total', 'status');
+        
+        // Map status values to labels
+        $billboard_status = [];
+        foreach ($billboard_status_counts as $key => $value) {
+            $label = $key == 1 ? 'Active' : 'Inactive';
+            $billboard_status[$label] = $value;
+        }
 
-        $groupedCategories = DB::table('service_request')
-                                ->join('sr_category', 'service_request.sr_category_id', '=', 'sr_category.id')
-                                ->select('sr_category.name', DB::raw('COUNT(service_request.id) as order_count'))
-                                ->groupBy('sr_category.name')
-                                ->get()
-                                ->pluck('order_count', 'name');
+        $billboard_status_counts = BillboardBooking::select('status', DB::raw('count(*) as total'))
+        ->groupBy('status')
+        ->pluck('total', 'status')
+        ->toArray();
 
-        $groupedStatus = ServiceRequest::groupBy('status')
-                                        ->selectRaw('status, COUNT(*) as count')
-                                        ->pluck('count', 'status');
+        // Map DB status to readable labels
+        $labelMap = [
+            'ongoing' => 'Ongoing',
+            'pending_install' => 'Pending Install',
+            'pending_payment' => 'Pending Payment',
+        ];
 
-        $highAttention = WorkOrder::where('created_at', '<', $startDate1D)
-                                    ->where('priority', '=', 'High')
-                                    ->whereNull('assigned_teamleader')->get();
+        $booking_status = [];
+        foreach ($billboard_status_counts as $status => $count) {
+            $label = $labelMap[$status] ?? ucfirst(str_replace('_', ' ', $status));
+            $booking_status[$label] = $count;
+        }
 
-        // dump($startDate);
-        // dump($endDate);
-        // dd($groupedData);
+        $attentions = Billboard::where('created_at', '<', $startDate1D)->get();
 
-        return view('home.index', [ ], compact('servicerequest_new', 'servicerequest_in_progress', 'servicerequest_complete', 
-        'groupedData', 'groupedCategories', 'groupedStatus', 'highAttention'));
+        logger('bb total:', ['count' => $billboard_total]);
+        logger('bb total:', ['count' => $billboard_active]);
+        // logger('bk total: ' , $billboard_booking_total);
+        // logger('bk active: ' , $billboard_booking_active);
+        // logger('bb status: ' , $billboard_total);
+        // logger('bk status: ' , $billboard_total);
+
+        return view('home.index', [ ], compact('billboard_total', 'billboard_active', 'billboard_booking_total', 
+        'billboard_booking_active', 'billboard_status', 'booking_status', 'attentions'));
     }
 }

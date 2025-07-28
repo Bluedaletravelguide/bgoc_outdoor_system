@@ -13,6 +13,9 @@ use App\Http\Controllers\ClientCompany\ClientCompanyController;
 use App\Http\Controllers\WorkOrder\WorkOrderController;
 use App\Http\Controllers\WorkOrderProfile\WorkOrderProfileController;
 use App\Http\Controllers\PushNotificationController;
+
+use App\Http\Controllers\Billboard\BillboardController;
+use App\Http\Controllers\Location\LocationController;
 use Illuminate\Support\Facades\Storage;
 
 /*
@@ -36,6 +39,49 @@ Route::get('/', function () {
 
 Route::group(['middleware' => ['auth']], function () {
     Route::resource('/home', HomeController::class)->only(['index']);
+
+    // Location
+    Route::post('/get-districts', [LocationController::class, 'getDistrictsByState'])->name('location.getDistricts');
+    Route::post('/get-locations', [LocationController::class, 'getLocationsByDistrict'])->name('location.getLocations');
+
+
+    // Billboard
+    Route::get('/billboard', [BillboardController::class, 'index'])->name('billboard.index');
+    Route::post('/billboard/list', [BillboardController::class, 'list'])->name('billboard.list');
+    Route::post('/billboard/create', [BillboardController::class, 'create'])->name('billboard.create');
+    Route::post('/billboard/delete', [BillboardController::class, 'delete'])->name('billboard.delete');
+    
+    Route::post('/billboard/edit', [WorkOrderController::class, 'edit'])->name('billboard.edit');
+    Route::post('/billboard/updateStatus', [WorkOrderController::class, 'update'])->name('billboard.update');
+    Route::get('/notification', [PushNotificationController::class, 'notificationHistory']);
+
+    // Billboard Booking
+    Route::get('/serviceRequest', [ServiceRequestController::class, 'Index'])->name('serviceRequest.index');
+    Route::post('/serviceRequest/list', [ServiceRequestController::class, 'serviceRequestList'])->name('serviceRequest.list.index');
+    // Route::get('/service-request/pre-create', [ServiceRequestController::class, 'serviceRequestPreCreate']);
+    Route::get('/get-subcategories/{sr_category_id}', [ServiceRequestController::class, 'getSubcategories']);
+    Route::post('/serviceRequest/create', [ServiceRequestController::class, 'create'])->name('serviceRequest.create');
+    Route::post('/serviceRequest/store', [ServiceRequestController::class, 'store'])->name('serviceRequest.store');
+    Route::post('/serviceRequest/edit', [ServiceRequestController::class, 'edit'])->name('serviceRequest.edit');
+    Route::put('/serviceRequest/update/{id}', [ServiceRequestController::class, 'Update'])->name('serviceRequest.update');
+    Route::post('/serviceRequest/delete', [ServiceRequestController::class, 'delete'])->name('serviceRequest.delete');
+    Route::post('/serviceRequest/reject', [ServiceRequestController::class, 'reject'])->name('serviceRequest.reject');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // Users Employee
     Route::get('/users', [UsersController::class, 'index'])->name('users');
@@ -95,7 +141,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/serviceRequestCategory/update', [ServiceRequestController::class, 'serviceCategoryUpdate'])->name('serviceRequest.category.update');
     Route::post('/serviceRequestCategory/delete', [ServiceRequestController::class, 'serviceCategoryDestroy'])->name('serviceRequest.category.destroy');
 
-    // Service Request
+    // Billboard Booking
     Route::get('/serviceRequest', [ServiceRequestController::class, 'Index'])->name('serviceRequest.index');
     Route::post('/serviceRequest/list', [ServiceRequestController::class, 'serviceRequestList'])->name('serviceRequest.list.index');
     // Route::get('/service-request/pre-create', [ServiceRequestController::class, 'serviceRequestPreCreate']);
@@ -114,12 +160,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/projects/edit', [ProjectsController::class, 'edit'])->name('projects.edit');
     Route::post('/projects/delete', [ProjectsController::class, 'delete'])->name('projects.delete');
 
-    // Work Order
-    Route::get('/workOrder', [WorkOrderController::class, 'index'])->name('workOrder.index');
-    Route::post('/workOrder/onGoingWorkOder/list', [WorkOrderController::class, 'list'])->name('workOrder.list');
-    Route::post('/workOrder/edit', [WorkOrderController::class, 'edit'])->name('workOrder.edit');
-    Route::post('/workOrder/updateStatus', [WorkOrderController::class, 'update'])->name('workOrder.update');
-    Route::get('/notification', [PushNotificationController::class, 'notificationHistory']);
+    
 
     // Work Order Profile
     Route::get('/workOrderProfile/{id}', [WorkOrderProfileController::class, 'redirectNewTab'])->name('workOrderProfile.index');

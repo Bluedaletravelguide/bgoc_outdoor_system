@@ -15,6 +15,7 @@ return new class extends Migration
     {
         Schema::create('states', function (Blueprint $table) {
             $table->id();
+            $table->string('prefix');
             $table->string('name');
             $table->dateTime('created_at', $precision = 0)->useCurrent();
             $table->dateTime('updated_at', $precision = 0)->nullable()->useCurrentOnUpdate();

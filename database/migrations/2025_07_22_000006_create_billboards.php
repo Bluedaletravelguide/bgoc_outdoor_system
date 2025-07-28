@@ -21,7 +21,9 @@ return new class extends Migration
             $table->string('traffic_volume');
             $table->string('size');
             $table->string('type');
+            $table->string('prefix');
             $table->string('lighting');
+            $table->string('status');
             $table->unsignedBigInteger('created_by')->nullable();;
             $table->unsignedBigInteger('updated_by')->nullable();;
             $table->dateTime('created_at', $precision = 0)->useCurrent();
