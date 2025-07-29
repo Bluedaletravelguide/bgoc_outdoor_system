@@ -1,7 +1,7 @@
 @extends('layouts.main')
 
 @section('title')
-<title>Chulia Middle East - Client Company</title>
+<title>BGOC Outdoor System - Client Company</title>
 @endsection('title')
 
 @section('sidebar')
@@ -24,19 +24,11 @@
                 <!-- BEGIN: Filter -->
                 <form class="xl:flex sm:mr-auto">
                     <div class="sm:flex items-center sm:mr-4">
-                        <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Contract Status</label>
+                        <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Company Status</label>
                         <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputContractStatus">
                             <option value="all">All</option>
-                            <option value="Active">Active</option>
-                            <option value="Inactive">Inactive</option>
-                        </select>
-                    </div>
-                    <div class="sm:flex items-center sm:mr-4">
-                        <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Contract Type</label>
-                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputContractType">
-                            <option value="all">All</option>
-                            <option value="On-Site">On-Site</option>
-                            <option value="On-Demand">On-Demand</option>
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
                         </select>
                     </div>
                     <div class="mt-2 xl:mt-0">
@@ -64,6 +56,7 @@
                 <table class="table mt-5" id="client_company_table">
                     <thead>
                         <tr class="bg-theme-32 text-white">
+                            <th>No</th>
                             <th>Company Prefix</th>
                             <th>Company Name</th>
                             <th>Address</th>
@@ -114,16 +107,20 @@
             <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
                 <h2 class="font-medium text-base mr-auto">Add PIC</h2>
             </div>
-            <div id="subCategoriesContainer">
-                <div class="sub-category">
+            <div id="picContainer">
+                <div class="pic">
                     <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                         <div class="col-span-12 sm:col-span-12">
                             <label>Name</label>
                             <input type="text" class="input w-full border mt-2" placeholder="Name" name="pic_names[]" required>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Contact No.</label>
-                            <input type="text" class="input w-full border mt-2" placeholder="Contact No." name="pic_contacts[]" required>
+                            <label>Email</label>
+                            <input type="text" class="input w-full border mt-2" placeholder="Email" name="pic_emails[]" required>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>Phone No.</label>
+                            <input type="text" class="input w-full border mt-2" placeholder="Phone No." name="pic_phones[]" required>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
                             <label>Designation</label>
@@ -133,7 +130,7 @@
                         </div>
                         <div class="col-span-12 sm:col-span-12">
                             <div class="flex items-center mt-2">
-                                <a href="javascript:void(0);" class="button bg-theme-6 text-white " onclick="removeSubCategory(this)">
+                                <a href="javascript:void(0);" class="button bg-theme-6 text-white " onclick="removePIC(this)">
                                     Remove
                                 </a>
                             </div>
@@ -142,8 +139,8 @@
                 </div>
             </div>
             <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
-                <button type="button" onclick="editSubCategoryAdd()" class="button w-20 bg-theme-1 text-white mt-2">Add PIC</button>
-                <button type="submit" class="button w-20 bg-theme-1 text-white" id="clientCompanyAddButton">Submit</button>
+                <button type="button" onclick="picAdd()" class="button w-20 bg-theme-1 text-white mt-2">Add PIC</button>
+                <button type="submit" class="button w-20 bg-theme-1 text-white" id="addClientCompany">Submit</button>
             </div>
         </form>
     </div>
@@ -203,17 +200,21 @@
 <script>
 
     // Add a new PIC input field
-    function editSubCategoryAdd() {
-        var subCategoryTemplate = `
-            <div class="sub-category">
+    function picAdd() {
+        var picTemplate = `
+            <div class="pic">
                 <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                     <div class="col-span-12 sm:col-span-12">
                         <label>Name</label>
                         <input type="text" class="input w-full border mt-2" placeholder="Name" name="pic_names[]" required>
                     </div>
                     <div class="col-span-12 sm:col-span-12">
-                        <label>Contact No.</label>
-                        <input type="text" class="input w-full border mt-2" placeholder="Contact No." name="pic_contacts[]" required>
+                        <label>Email</label>
+                        <input type="text" class="input w-full border mt-2" placeholder="Phone No." name="pic_emails[]" required>
+                    </div>
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>Phone No.</label>
+                        <input type="text" class="input w-full border mt-2" placeholder="Phone No." name="pic_phones[]" required>
                     </div>
                     <div class="col-span-12 sm:col-span-12">
                         <label>Designation</label>
@@ -223,7 +224,7 @@
                     </div>
                     <div class="col-span-12 sm:col-span-12">
                         <div class="flex items-center mt-2">
-                            <a href="javascript:void(0);" class="button bg-theme-6 text-white " onclick="removeSubCategory(this)">
+                            <a href="javascript:void(0);" class="button bg-theme-6 text-white " onclick="removePIC(this)">
                                 Remove
                             </a>
                         </div>
@@ -232,12 +233,12 @@
             </div>
         `;
 
-        $("#subCategoriesContainer").append(subCategoryTemplate);
+        $("#picContainer").append(picTemplate);
     }
 
-    // Remove a subcategory input field in edit modal
-    function removeSubCategoryField(button) {
-        var container = $(button).closest('.sub-category');
+    // Remove a pic input field in edit modal
+    function removePIC(button) {
+        var container = $(button).closest('.pic');
         var inputField = container.find('input');
         var hasData = inputField.val();
 
@@ -251,28 +252,24 @@
             inputField.remove();
         }
     }
-    // Remove a subcategory input field in add modal
-    function removeSubCategory(button) {
-        $(button).closest('.sub-category').remove();
-    }
 
     $(document).ready(function() {
         // Global variables
-        var filterContractStatus;
+        var filterClientCompanyStatus;
         var filterContractType;
         var originalCompanyId;
         var lastClickedLink;
 
         // Listen to below buttons
         document.getElementById("filterClientCompanyButton").addEventListener("click", filterClientCompanyButton);
-        document.getElementById("clientCompanyAddButton").addEventListener("click", clientCompanyAddButton);
+        document.getElementById("addClientCompany").addEventListener("click", addClientCompany);
         document.getElementById("clientCompanyDeleteButton").addEventListener("click", clientCompanyDeleteButton);
 
         // When "filterClientCompanyButton" button is clicked, initiate initClientCompanyDatatable
         function filterClientCompanyButton() {
-            filterContractStatus = document.getElementById("inputContractStatus").value;
-            filterContractType = document.getElementById("inputContractType").value;
-            initClientCompanyDatatable(filterContractStatus, filterContractType);
+            filterClientCompanyStatus = document.getElementById("inputContractStatus").value;
+            // filterContractType = document.getElementById("inputContractType").value;
+            initClientCompanyDatatable(filterClientCompanyStatus, filterContractType);
         };
 
         // When page first loads, load table
@@ -282,7 +279,7 @@
         (function() {
             var client_company_table = $('#client_company_table')[0].altEditor;
 
-            document.getElementById('clientCompanyAddButton').addEventListener('click', function(e) {
+            document.getElementById('addClientCompany').addEventListener('click', function(e) {
                 // Prevent the default form submission behavior
                 e.preventDefault();
             });
@@ -336,7 +333,7 @@
                     type: "POST",
                     data: function(d) {
                         d._token = $('meta[name="csrf-token"]').attr('content');
-                        d.status = filterContractStatus;
+                        d.status = filterClientCompanyStatus;
                         d.type = filterContractType;
                         return d;
                     },
@@ -390,7 +387,17 @@
                     targets: 'dt-no-sort',
                     orderable: false
                 }],
-                columns: [{
+                columns: [
+                    {
+                        data: null, // <-- important
+                        name: 'no',
+                        orderable: false,
+                        searchable: false,
+                        render: function (data, type, row, meta) {
+                            return meta.row + meta.settings._iDisplayStart + 1;
+                        }
+                    },
+                    {
                         data: "company_prefix",
                     },
                     {
@@ -402,6 +409,20 @@
                     {
                         data: "phone",
                     },
+                    // {
+                    //     data: "status",
+                    //     type: "readonly",
+                    //     render: function(data, type, row) {
+                    //         let element = ``
+                    //         if (data == 1){
+                    //             element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-9 text-white">ACTIVE</a>`;
+                    //         } else if (data == 0){
+                    //             element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-6 text-white">INACTIVE</a>`;
+                    //         }
+                            
+                    //         return element;
+                    //     }
+                    // },
                     // {
                     //     data: "project_status",
                     //     render: function(data, type, row) {
@@ -491,44 +512,43 @@
         };
 
         // Add New Client Company
-        function clientCompanyAddButton() {
+        function addClientCompany() {
+            let pics = [];
+            $('#picContainer .pic').each(function () {
+                pics.push({
+                    name: $(this).find('input[name="pic_names[]"]').val(),
+                    email: $(this).find('input[name="pic_emails[]"]').val(),
+                    phone: $(this).find('input[name="pic_phones[]"]').val(),
+                    designation: $(this).find('input[name="pic_designations[]"]').val()
+                });
+            });
+
             $.ajax({
                 type: 'POST',
                 url: "{{ route('client-company.create') }}",
                 data: {
                     _token: $('meta[name="csrf-token"]').attr('content'),
-                    prefix: document.getElementById("clientCompanyAddPrefix").value,
-                    name: document.getElementById("clientCompanyAddName").value,
-                    address: document.getElementById("clientCompanyAddAddress").value,
-                    phone: document.getElementById("clientCompanyAddPhone").value
+                    prefix: $('#clientCompanyAddPrefix').val(),
+                    name: $('#clientCompanyAddName').val(),
+                    address: $('#clientCompanyAddAddress').val(),
+                    companyPhone: $('#clientCompanyAddPhone').val(),
+                    pics: pics
                 },
                 success: function(response) {
-                    // Close modal after successfully edited
-                    var element = "#clientCompanyAddModal";
-                    closeAltEditorModal(element);
-
-                    // Show successful toast
+                    closeAltEditorModal("#clientCompanyAddModal");
                     window.showSubmitToast("Successfully added.", "#91C714");
 
-                    // Clean fields
-                    document.getElementById("clientCompanyAddPrefix").value = "";
-                    document.getElementById("clientCompanyAddName").value = "";
-                    document.getElementById("clientCompanyAddAddress").value = "";
-                    document.getElementById("clientCompanyAddPhone").value = "";
-
-                    // Reload table
+                    // Clear form
+                    $('#clientCompanyAddModal input').val("");
                     $('#client_company_table').DataTable().ajax.reload();
                 },
-                error: function(xhr, status, error) {
-                    // Display the validation error message
-                    var response = JSON.parse(xhr.responseText);
-                    var error = "Error: " + response.error;
-
-                    // Show fail toast
-                    window.showSubmitToast(error, "#D32929");
+                error: function(xhr) {
+                    let response = JSON.parse(xhr.responseText);
+                    window.showSubmitToast("Error: " + response.error, "#D32929");
                 }
             });
         }
+
 
         // Open modal to edit client company
         function clientCompanyEditModal() {
@@ -537,13 +557,13 @@
 
             $(document).on('click', "[id^='client_company_table'] tbody tr td:not(:last-child)", function() {
                 // Place values to edit form fields in the modal
-                document.getElementById("clientCompanyEditPrefix").value = $(event.target).closest('tr').find('td:nth-child(' + '1' + ')').text();
-                document.getElementById("clientCompanyEditName").value = $(event.target).closest('tr').find('td:nth-child(' + '2' + ')').text();
-                document.getElementById("clientCompanyEditAddress").value = $(event.target).closest('tr').find('td:nth-child(' + '3' + ')').text();
-                document.getElementById("clientCompanyEditPhone").value = $(event.target).closest('tr').find('td:nth-child(' + '4' + ')').text();
+                document.getElementById("clientCompanyEditPrefix").value = $(event.target).closest('tr').find('td:nth-child(' + '2' + ')').text();
+                document.getElementById("clientCompanyEditName").value = $(event.target).closest('tr').find('td:nth-child(' + '3' + ')').text();
+                document.getElementById("clientCompanyEditAddress").value = $(event.target).closest('tr').find('td:nth-child(' + '4' + ')').text();
+                document.getElementById("clientCompanyEditPhone").value = $(event.target).closest('tr').find('td:nth-child(' + '5' + ')').text();
 
                 // Grab row client company id
-                originalCompanyId = $(event.target).closest('tr').find('td:nth-child(7) a').attr('id').split('-')[1];
+                originalCompanyId = $(event.target).closest('tr').find('td:nth-child(6) a').attr('id').split('-')[1];
 
                 // Open modal
                 var element = "#clientCompanyEditModal";
@@ -565,9 +585,9 @@
                     _token: $('meta[name="csrf-token"]').attr('content'),
                     prefix: prefix,
                     name: name,
-                    original_company_id: originalCompanyId,
+                    id: originalCompanyId,
                     address: address,
-                    phone: phone
+                    companyPhone: companyPhone
                 },
                 success: function(response) {
                     // Close modal after successfully edited
@@ -613,7 +633,7 @@
                 url: "{{ route('client-company.delete') }}",
                 data: {
                     _token: $('meta[name="csrf-token"]').attr('content'),
-                    delete_company_id: deleteCompanyId
+                    id: deleteCompanyId
                 },
                 success: function (response) {
                     // Close modal after successfully deleted

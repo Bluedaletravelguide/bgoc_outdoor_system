@@ -22,7 +22,8 @@ class ClientCompany extends Model
         'address',
         'phone',
         'created_at',
-        'updated_at'
+        'updated_at',
+        'deleted_at'
     ];
 
     public function clients()

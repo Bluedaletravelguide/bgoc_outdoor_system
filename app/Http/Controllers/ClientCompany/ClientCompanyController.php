@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 use App\Models\ClientCompany;
+use App\Models\Client;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use App\Models\User;
@@ -47,20 +48,16 @@ class ClientCompanyController extends Controller
      */
     public function list(Request $request)
     {
-        // Set the time zone to Dubai
-        $today = Carbon::today('Asia/Dubai');
 
         $status = $request->input('status');
-        $type = $request->input('type');
 
         $columns = array(
             0 => 'company_prefix',
             1 => 'name',
             2 => 'address',
             3 => 'phone',
-            4 => 'project_status',
-            5 => 'project_type',
-            6 => 'id',
+            4 => 'status',
+            5 => 'id',
         );
 
         $limit = $request->input('length');
@@ -69,31 +66,11 @@ class ClientCompanyController extends Controller
         $orderColumnName = $columns[$orderColumnIndex];
         $orderDirection = $request->input('order.0.dir');
 
-        $query = ClientCompany::leftJoin('projects', 'projects.client_company_id', '=', 'client_company.id')
-            ->select('client_company.*', 'projects.from_date as from_date', 'projects.to_date as to_date', 'projects.type as project_type', 'projects.client_company_id')
-            ->where('status', '1')
+        $query = ClientCompany::select('client_companies.*')
             ->orderBy($orderColumnName, $orderDirection);
 
-        if ($type != "all") {
-            $query->where('projects.type', $type);
-        }
-
-        // Filter by project status if $status is provided
-        if ($status === "Active" || $status === "Inactive") {
-            $query->where(function ($query) use ($status, $today) {
-                if ($status === "Active") {
-                    $query->whereDate('projects.from_date', '<=', $today)
-                        ->whereDate('projects.to_date', '>=', $today);
-                } elseif ($status === "Inactive") {
-                    // $query->where(function ($query) {
-                    $query->where(function ($query) use ($today) {
-                        $query->whereDate('projects.from_date', '>', $today)
-                            ->orWhereDate('projects.to_date', '<', $today);
-                    })
-                        ->orWhereNull('projects.from_date')
-                        ->orWhereNull('projects.to_date');;
-                }
-            });
+        if ($status != "all") {
+            $query->where('client_companies.status', $status);
         }
 
         // Get total records count
@@ -103,11 +80,10 @@ class ClientCompanyController extends Controller
 
         if (!empty($searchValue)) {
             $query->where(function ($query) use ($searchValue) {
-                $query->where('client_company.company_prefix', 'LIKE', "%{$searchValue}%")
-                    ->orWhere('client_company.name', 'LIKE', "%{$searchValue}%")
-                    ->orWhere('client_company.address', 'LIKE', "%{$searchValue}%")
-                    ->orWhere('client_company.phone', 'LIKE', "%{$searchValue}%")
-                    ->orWhere('projects.type', 'LIKE', "%{$searchValue}%");
+                $query->where('client_companies.company_prefix', 'LIKE', "%{$searchValue}%")
+                    ->orWhere('client_companies.name', 'LIKE', "%{$searchValue}%")
+                    ->orWhere('client_companies.address', 'LIKE', "%{$searchValue}%")
+                    ->orWhere('client_companies.phone', 'LIKE', "%{$searchValue}%");
             });
         }
 
@@ -120,15 +96,13 @@ class ClientCompanyController extends Controller
         $data = array();
 
         foreach ($filteredData as $d) {
-            $project_status = ($d->from_date <= $today && $d->to_date >= $today) ? 'Active' : 'Inactive';
 
             $nestedData = array(
                 'company_prefix'    => $d->company_prefix,
                 'name'              => $d->name,
                 'address'           => $d->address,
                 'phone'             => $d->phone,
-                'project_status'   => $project_status,
-                'project_type'     => $d->project_type,
+                'status'            => $d->status,
                 'id'                => $d->id,
             );
             $data[] = $nestedData;
@@ -149,10 +123,13 @@ class ClientCompanyController extends Controller
      */
     public function create(Request $request)
     {
-        $prefix     = $request->prefix;
-        $name       = $request->name;
-        $address    = $request->address;
-        $phone      = $request->phone;
+        $prefix         = $request->prefix;
+        $name           = $request->name;
+        $address        = $request->address;
+        $companyPhone   = $request->companyPhone;
+        $pics           = $request->pics;       // person-in-charge
+
+        logger('kampeni: ' . $request);
 
         // Validate fields
         $validator = Validator::make(
@@ -162,13 +139,13 @@ class ClientCompanyController extends Controller
                     'required',
                     'string',
                     'max:4',
-                    'unique:client_company,company_prefix',
+                    'unique:client_companies,company_prefix',
                     'regex:/^\S*$/', // No spaces allowed
                 ],
                 'name' => [
                     'required',
                     'string',
-                    'unique:client_company,name',
+                    'unique:client_companies,name',
                     'max:255',
                 ],
                 'address' => [
@@ -176,11 +153,16 @@ class ClientCompanyController extends Controller
                     'string',
                     'max:255',
                 ],
-                'phone' => [
+                'companyPhone' => [
                     'required',
                     'regex:/^\+?[0-9]+$/',
                     'max:255',
                 ],
+                'pics' => 'required|array|min:1',
+                'pics.*.name' => 'required|string|max:255',
+                'pics.*.email' => 'required|string|email|max:255',
+                'pics.*.phone' => 'required|string|max:255',
+                'pics.*.designation' => 'nullable|string|max:255',
             ],
             [
                 'prefix.required' => 'The "Company Prefix" field is required.',
@@ -213,12 +195,23 @@ class ClientCompanyController extends Controller
             DB::beginTransaction();
 
             // Insert new client company
-            $user = ClientCompany::create([
+            $company = ClientCompany::create([
                 'company_prefix'    => $prefix,
                 'name'              => $name,
                 'address'           => $address,
-                'phone'             => $phone,
+                'phone'             => $companyPhone,
             ]);
+
+            foreach ($pics as $pic) {
+                Client::create([
+                    'company_id'      => $company->id,
+                    'name'            => $pic['name'],
+                    'email'           => $pic['email'],
+                    'phone'           => $pic['phone'],
+                    'designation'     => $pic['designation'] ?? null,
+                    'status'           => 1,
+                ]);
+            }
 
             // Ensure all queries successfully executed, commit the db changes
             DB::commit();
@@ -241,7 +234,7 @@ class ClientCompanyController extends Controller
     {
         $prefix                 = $request->prefix;
         $name                   = $request->name;
-        $original_company_id    = $request->original_company_id;
+        $id                     = $request->id;
         $address                = $request->address;
         $phone                  = $request->phone;
 
@@ -253,19 +246,19 @@ class ClientCompanyController extends Controller
                     'required',
                     'string',
                     'max:4',
-                    Rule::unique('client_company', 'company_prefix')->ignore($original_company_id), // Exclude original value but still checks for uniqueness
+                    Rule::unique('client_companies', 'company_prefix')->ignore($id), // Exclude original value but still checks for uniqueness
                     'regex:/^\S*$/', // No spaces allowed
                 ],
                 'name' => [
                     'required',
                     'string',
-                    Rule::unique('client_company', 'name')->ignore($original_company_id), // Exclude original value but still checks for uniqueness
+                    Rule::unique('client_companies', 'name')->ignore($id), // Exclude original value but still checks for uniqueness
                     'max:255',
                 ],
-                'original_company_id' => [
+                'id' => [
                     'required',
                     'integer',
-                    'exists:client_company,id,status,1', // Ensure company status is 1 (active)
+                    'exists:client_companies,id,status,1', // Ensure company status is 1 (active)
                 ],
                 'address' => [
                     'required',
@@ -290,7 +283,7 @@ class ClientCompanyController extends Controller
                 'name.max' => 'The "Company Name" must not be greater than :max characters.',
                 'name.unique' => 'The "Company Name" is already been taken.',
 
-                'original_company_id.exists' => 'The selected Client Company was deleted from the system!',
+                'id.exists' => 'The selected Client Company was deleted from the system!',
 
                 'address.required' => 'The "Address" field is required.',
                 'address.string' => 'The "Address" must be a string.',
@@ -312,7 +305,7 @@ class ClientCompanyController extends Controller
             DB::beginTransaction();
 
             // Update client company
-            ClientCompany::where('id', $original_company_id)
+            ClientCompany::where('id', $id)
                 ->update([
                     'company_prefix'    => $prefix,
                     'name'              => $name,
@@ -342,20 +335,20 @@ class ClientCompanyController extends Controller
         // Get the current UTC time
         $current_UTC = Carbon::now('UTC');
 
-        $delete_company_id = $request->delete_company_id;
+        $id = $request->id;
 
         // Validate fields
         $validator = Validator::make(
             $request->all(),
             [
-                'delete_company_id' => [
+                'id' => [
                     'required',
                     'integer',
-                    'exists:client_company,id',
+                    'exists:client_companies,id',
                 ],
             ],
             [
-                'delete_company_id.exists' => 'The client company cannot be found.',
+                'id.exists' => 'The client company cannot be found.',
             ]
         );
 
@@ -369,7 +362,7 @@ class ClientCompanyController extends Controller
             DB::beginTransaction();
 
             // Update stus to 0 as deleted (soft delete)
-            ClientCompany::where('id', $delete_company_id)
+            ClientCompany::where('id', $id)
                 ->update([
                     'status'        => '0',
                     'deleted_at'    => $current_UTC
