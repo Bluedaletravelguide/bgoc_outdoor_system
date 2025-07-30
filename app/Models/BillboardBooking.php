@@ -31,17 +31,17 @@ class BillboardBooking extends Model
         'updated_at'
     ];
 
-    public function billboards()
+    public function billboard()
     {
         return $this->belongsTo(Billboard::class);
     }
 
-    public function clients()
+    public function client()
     {
         return $this->belongsTo(Client::class);
     }
 
-    public function users()
+    public function user()
     {
         return $this->hasMany(User::class);
     }

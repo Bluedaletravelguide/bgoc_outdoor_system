@@ -26,7 +26,7 @@ class Client extends Model
         'updated_at'
     ];
 
-    public function client_companies()
+    public function client_company()
     {
         return $this->belongsToMany(ClientCompany::class);
     }
