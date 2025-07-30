@@ -18,8 +18,8 @@ class BillboardImage extends Model
 
     protected $fillable = [
         'billboard_id',
-        'url',
-        'type',
+        'image_path',
+        'image_type',
         'created_at',
         'updated_at'
     ];

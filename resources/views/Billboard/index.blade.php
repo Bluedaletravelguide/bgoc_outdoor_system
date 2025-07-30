@@ -595,12 +595,12 @@
                         }
                     },
                     {
-                        data: "WO_detail",
+                        data: "id",
                         render: function(data, type, row) {
-                            var a = "{{ route('workOrderProfile.index', ['id'=>':data'] )}}".replace(':data', data);
+                            var a = "{{ route('billboard.detail', ['id'=>':data'] )}}".replace(':data', data);
                             let element = 
                                 `<div class="flex flex-row">
-                                    <a href="javascript:;" id="profile-` + data + `"
+                                    <a href="javascript:;" id="detail-` + data + `"
                                         class="button w-24 inline-block mr-2 mb-2 bg-theme-9 text-white" data-toggle="button" onclick="window.open('${a}')" >
                                         Details
                                     </a>

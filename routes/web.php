@@ -7,8 +7,6 @@ use App\Http\Controllers\Employees\EmployeesController;
 use App\Http\Controllers\Roles\RolesController;
 use App\Http\Controllers\Clients\ClientsController;
 use App\Http\Controllers\ServiceRequests\ServiceRequestController;
-use App\Http\Controllers\Projects\ProjectsController;
-use App\Http\Controllers\Vendors\VendorsController;
 use App\Http\Controllers\ClientCompany\ClientCompanyController;
 use App\Http\Controllers\WorkOrder\WorkOrderController;
 use App\Http\Controllers\WorkOrderProfile\WorkOrderProfileController;
@@ -50,10 +48,17 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/billboard/list', [BillboardController::class, 'list'])->name('billboard.list');
     Route::post('/billboard/create', [BillboardController::class, 'create'])->name('billboard.create');
     Route::post('/billboard/delete', [BillboardController::class, 'delete'])->name('billboard.delete');
-    
     Route::post('/billboard/edit', [WorkOrderController::class, 'edit'])->name('billboard.edit');
     Route::post('/billboard/updateStatus', [WorkOrderController::class, 'update'])->name('billboard.update');
     Route::get('/notification', [PushNotificationController::class, 'notificationHistory']);
+
+    // Billboard Detail
+    Route::get('/billboardDetail/{id}', [BillboardController::class, 'redirectNewTab'])->name('billboard.detail');
+    Route::post('/workOrderProfile/addActivity', [WorkOrderProfileController::class, 'create'])->name('workOrderProfile.create');
+    Route::post('/workOrderProfile/deleteComment', [WorkOrderProfileController::class, 'deleteComment'])->name('workOrderProfile.deleteComment');
+    Route::post('/workOrderProfile/store', [WorkOrderProfileController::class, 'store'])->name('workOrderProfile.store');
+    Route::post('/workOrderProfile/temp-upload', [WorkOrderProfileController::class, 'tempUpload'])->name('tempUpload');
+    Route::get('/billboard/{id}/download', [BillboardController::class, 'downloadPdf'])->name('billboard.download');
 
     // Billboard Booking
     Route::get('/serviceRequest', [ServiceRequestController::class, 'Index'])->name('serviceRequest.index');
@@ -66,6 +71,20 @@ Route::group(['middleware' => ['auth']], function () {
     Route::put('/serviceRequest/update/{id}', [ServiceRequestController::class, 'Update'])->name('serviceRequest.update');
     Route::post('/serviceRequest/delete', [ServiceRequestController::class, 'delete'])->name('serviceRequest.delete');
     Route::post('/serviceRequest/reject', [ServiceRequestController::class, 'reject'])->name('serviceRequest.reject');
+
+    // Clients
+    Route::get('/clients', [ClientsController::class, 'index'])->name('clients.index');
+    Route::post('/clients/list', [ClientsController::class, 'list'])->name('clients.list');
+    Route::post('/clients/create', [ClientsController::class, 'create'])->name('clients.create');
+    Route::post('/clients/edit', [ClientsController::class, 'edit'])->name('clients.edit');
+    Route::post('/clients/delete', [ClientsController::class, 'delete'])->name('clients.delete');
+
+    // Client Company
+    Route::get('/client-company', [ClientCompanyController::class, 'index'])->name('client-company.index');
+    Route::post('/client-company/list', [ClientCompanyController::class, 'list'])->name('client-company.list');
+    Route::post('/client-company/create', [ClientCompanyController::class, 'create'])->name('client-company.create');
+    Route::post('/client-company/edit', [ClientCompanyController::class, 'edit'])->name('client-company.edit');
+    Route::post('/client-company/delete', [ClientCompanyController::class, 'delete'])->name('client-company.delete');
 
 
 
@@ -105,19 +124,9 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/employees/edit', [EmployeesController::class, 'edit'])->name('employees.edit');
     Route::delete('/employees/delete/{id}', [EmployeesController::class, 'Destroy'])->name('employees.destroy');
 
-    // Clients
-    Route::get('/clients', [ClientsController::class, 'index'])->name('clients.index');
-    Route::post('/clients/list', [ClientsController::class, 'list'])->name('clients.list');
-    Route::post('/clients/create', [ClientsController::class, 'create'])->name('clients.create');
-    Route::post('/clients/edit', [ClientsController::class, 'edit'])->name('clients.edit');
-    Route::post('/clients/delete', [ClientsController::class, 'delete'])->name('clients.delete');
+    
 
-    // Client Company
-    Route::get('/client-company', [ClientCompanyController::class, 'index'])->name('client-company.index');
-    Route::post('/client-company/list', [ClientCompanyController::class, 'list'])->name('client-company.list');
-    Route::post('/client-company/create', [ClientCompanyController::class, 'create'])->name('client-company.create');
-    Route::post('/client-company/edit', [ClientCompanyController::class, 'edit'])->name('client-company.edit');
-    Route::post('/client-company/delete', [ClientCompanyController::class, 'delete'])->name('client-company.delete');
+    
 
     // Roles
     Route::get('/roles', [RolesController::class, 'Index'])->name('roles.index');
@@ -126,13 +135,6 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/roles/edit/{id}', [RolesController::class, 'Edit'])->name('roles.edit');
     Route::put('/roles/update/{id}', [RolesController::class, 'Update'])->name('roles.update');
     Route::delete('/roles/delete/{id}', [RolesController::class, 'Destroy'])->name('roles.destroy');
-
-    // Work Order Activity
-    // Route::get('/workOrderActivity', [WorkOrderProfileController::class, 'index'])->name('vendors.index');
-    Route::post('/vendors/list', [VendorsController::class, 'list'])->name('vendors.list');
-    Route::post('/vendors/create', [VendorsController::class, 'create'])->name('vendors.create');
-    Route::post('/vendors/edit', [VendorsController::class, 'edit'])->name('vendors.edit');
-    Route::post('/vendors/delete', [VendorsController::class, 'delete'])->name('vendors.delete');
     
     // Service Request Category
     Route::get('/serviceRequestCategory', [ServiceRequestController::class, 'serviceCategory'])->name('serviceRequest.category');
@@ -152,18 +154,11 @@ Route::group(['middleware' => ['auth']], function () {
     Route::put('/serviceRequest/update/{id}', [ServiceRequestController::class, 'Update'])->name('serviceRequest.update');
     Route::post('/serviceRequest/delete', [ServiceRequestController::class, 'delete'])->name('serviceRequest.delete');
     Route::post('/serviceRequest/reject', [ServiceRequestController::class, 'reject'])->name('serviceRequest.reject');
-    
-    // Projects
-    Route::get('/projects', [ProjectsController::class, 'index'])->name('projects.index');
-    Route::post('/projects/list', [ProjectsController::class, 'list'])->name('projects.list');
-    Route::post('/projects/create', [ProjectsController::class, 'create'])->name('projects.create');
-    Route::post('/projects/edit', [ProjectsController::class, 'edit'])->name('projects.edit');
-    Route::post('/projects/delete', [ProjectsController::class, 'delete'])->name('projects.delete');
 
     
 
     // Work Order Profile
-    Route::get('/workOrderProfile/{id}', [WorkOrderProfileController::class, 'redirectNewTab'])->name('workOrderProfile.index');
+    // Route::get('/workOrderProfile/{id}', [WorkOrderProfileController::class, 'redirectNewTab'])->name('workOrderProfile.index');
     Route::post('/workOrderProfile/addActivity', [WorkOrderProfileController::class, 'create'])->name('workOrderProfile.create');
     Route::post('/workOrderProfile/deleteComment', [WorkOrderProfileController::class, 'deleteComment'])->name('workOrderProfile.deleteComment');
     Route::post('/workOrderProfile/store', [WorkOrderProfileController::class, 'store'])->name('workOrderProfile.store');

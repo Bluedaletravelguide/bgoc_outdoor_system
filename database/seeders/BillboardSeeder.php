@@ -106,5 +106,25 @@ class BillboardSeeder extends Seeder
                 'updated_at' => now(),
             ]);
         }
+
+        // 6. Attach 2 images to first 10 billboards
+        for ($i = 1; $i <= 50; $i++) {
+            DB::table('billboard_images')->insert([
+                [
+                    'billboard_id' => $i,
+                    'image_path'   => "images/billboards/sample_{$i}_1.jpg",
+                    'image_type'   => "jpg",
+                    'created_at'   => now(),
+                    'updated_at'   => now(),
+                ],
+                [
+                    'billboard_id' => $i,
+                    'image_path'   => "images/billboards/sample_{$i}_2.jpg",
+                    'image_type'   => "jpg",
+                    'created_at'   => now(),
+                    'updated_at'   => now(),
+                ],
+            ]);
+        }
     }
 }

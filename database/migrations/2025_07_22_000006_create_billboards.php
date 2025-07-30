@@ -54,7 +54,7 @@ return new class extends Migration
         Schema::create('billboard_images', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('billboard_id');
-            $table->string('url');
+            $table->string('image_path');
             $table->string('image_type');
             $table->dateTime('created_at', $precision = 0)->useCurrent();
             $table->dateTime('updated_at', $precision = 0)->nullable()->useCurrentOnUpdate();

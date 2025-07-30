@@ -11,9 +11,11 @@ use App\Http\Controllers\Controller;
 use App\Models\ClientCompany;
 use App\Models\User;
 use App\Models\Billboard;
+use App\Models\BillboardImage;
 use App\Models\State;
 use App\Models\District;
 use App\Models\Location;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 use Carbon\Carbon;
 use Spatie\Permission\Models\Role;
@@ -93,7 +95,6 @@ class BillboardController extends Controller
             6 => 'date_registered',
             7 => 'status',
             8 => 'id',
-            9 => 'id',
         );
 
         $limit              = $request->input('length');
@@ -470,5 +471,122 @@ class BillboardController extends Controller
 
             return response()->json(['error' => $e->getMessage()], 422);
         }
+    }
+
+    /**
+     * View billboard details
+     */
+    public function redirectNewTab(Request $request)
+    {
+
+        $filter = $request->input('filter');
+        $id = $request->input('id');
+        
+        $billboard_detail = Billboard::leftJoin('locations', 'locations.id', 'billboards.location_id')
+            ->leftJoin('districts', 'districts.id', '=', 'locations.district_id')
+            ->leftJoin('states', 'states.id', '=', 'districts.state_id')
+            ->leftJoin('billboard_images', 'billboard_images.billboard_id', 'billboards.id')
+            ->select(
+                'billboards.*',
+                'locations.name as location_name',
+                'districts.name as district_name',
+                'states.name as state_name',
+                'billboard_images.image_path as billboard_image'
+            )
+            ->where('billboards.id', $request->id)
+            ->first();
+
+        $billboard_images = BillboardImage::where('billboard_id', $request->id)->get();
+
+
+            logger('bb details: ' . $billboard_detail);
+
+            // Convert to Dubai time
+            // $dubaiTime = Carbon::parse($open_WO_DetailId->created_dt);
+
+            // Add new formatted date, month, and year fields to the object
+            // $open_WO_DetailId->created_dt = $dubaiTime->format('F j, Y \a\t g:i A');
+
+        // if ($open_WO_DetailId !== null) {
+
+        //     $woActivities = WorkOrderActivity::select(
+        //         'work_order_activity.id as comment_id',
+        //         'comments',
+        //         'comment_by',
+        //         'work_order_activity.created_at as created_at',
+        //         'name',
+        //     )
+        //     ->leftJoin('users', 'users.id', 'work_order_activity.comment_by')
+        //     ->where('work_order_id', '=', $request->id);
+
+            // if($filter){
+            //     if ($filter == 'new') {
+            //         $woActivities->orderBy('created_at', 'desc');
+            //     } elseif ($filter == 'old'){
+            //         $woActivities->orderBy('created_at', 'asc');
+            //     }
+            // }
+            // // ->get();
+
+            // $woActivities = $woActivities->get();
+
+            // $woActivities->transform(function ($woActivity) {
+            //     // Convert to Dubai time
+            //     $created_dt = Carbon::parse($woActivity->created_at);
+    
+            //     // Add new formatted date, month, and year fields to the object
+            //     $woActivity->created_dt = $created_dt->format('F j, Y \a\t g:i A');
+
+            //     // Fetch related attachments
+            //     $attachments = WorkOrderActivityAttachment::select('id', 'url')
+            //     ->where('wo_activity_id', '=', $woActivity->comment_id)
+            //     ->get();
+
+            //     // Add attachments to the activity
+            //     $woActivity->attachments = $attachments;
+    
+            //     return $woActivity;
+            // });
+
+            // $gg = $woActivities->get();
+
+            // $WoOrHistory = WorkOrderHistory::select(
+            //     'work_order_history.id',
+            //     'work_order_history.status',
+            //     'work_order_history.status_changed_by',
+            //     'work_order_history.assigned_teamleader',
+            //     'work_order_history.assign_to_technician',
+            //     'users.id as user_id',
+            //     'users.name as user_name',
+            // )
+            // ->leftJoin('users', 'users.id', '=', DB::raw('CASE 
+            //         WHEN work_order_history.status = "NEW" THEN work_order_history.status_changed_by 
+            //         WHEN work_order_history.status = "ACCEPTED" THEN work_order_history.status_changed_by 
+            //         WHEN work_order_history.status = "ASSIGNED_SP" THEN work_order_history.status_changed_by                     
+            //         WHEN work_order_history.status = "ACCEPTED_TECHNICIAN" THEN work_order_history.assign_to_technician
+            //         WHEN work_order_history.status = "STARTED" THEN work_order_history.assign_to_technician
+            //         WHEN work_order_history.status = "COMPLETED" THEN work_order_history.assign_to_technician
+            //         ELSE NULL 
+            //     END'))
+            // ->where('work_order_history.work_order_id', '=', $request->id)
+            // ->get();
+
+            // return view('workOrderProfile.index', compact('open_WO_DetailId', 'imageData', 'WoOrObImageBefore', 'WoOrObImageAfter', 'WoOrHistory'));
+            return view('billboard.detail', compact('billboard_detail', 'billboard_images'));
+            
+        // } else {
+        //     // Handle the case when no record is found
+        //     // You can return an error message or redirect the user
+        //     return response()->json(['error' => 'No record found with the provided ID'], 404);
+        // }
+    }
+
+    public function downloadPdf($id)
+    {
+        $billboard = Billboard::with(['locations.districts.states', 'images'])->findOrFail($id);
+
+        $pdf = PDF::loadView('billboard.export', compact('billboard'));
+
+        return $pdf->download('billboard-detail-' . $billboard->site_number . '.pdf');
     }
 }

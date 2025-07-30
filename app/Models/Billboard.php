@@ -18,7 +18,6 @@ class Billboard extends Model
 
     protected $fillable = [
         'location_id',
-        'image_id',
         'site_number',
         'gps_latitude',
         'gps_longitude',
@@ -46,7 +45,7 @@ class Billboard extends Model
 
     public function locations()
     {
-        return $this->hasMany(Location::class);
+        return $this->belongsTo(Location::class);
     }
 
     public function users()
