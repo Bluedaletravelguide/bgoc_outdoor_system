@@ -43,9 +43,8 @@ class ClientsController extends Controller
         }
 
         // Get clients data
-        $clients = Client::leftJoin('client_company', 'client_company.id', '=', 'clients.company_id')
-        ->leftjoin('users', 'users.id', '=', 'clients.user_id')
-        ->select('clients.*', 'client_company.name as company_name', 'users.name as users_name')
+        $clients = Client::leftJoin('client_companies', 'client_companies.id', '=', 'clients.company_id')
+        ->select('clients.*', 'client_companies.name as company_name')
         ->where('clients.status', '=', '1')
         ->get();
         
@@ -65,16 +64,12 @@ class ClientsController extends Controller
     {
         $company = $request->input('company');
 
-        // Set the time zone to Dubai
-        $today = Carbon::today('Asia/Dubai');
-
         $columns = array(
             0 => 'name',
-            1 => 'contact',
-            2 => 'users_id',
-            4 => 'users_name',
-            5 => 'company_name',
-            6 => 'id',
+            1 => 'email',
+            2 => 'phone',
+            3 => 'company_name',
+            4 => 'id',
         );
 
         $limit = $request->input('length');
@@ -90,10 +85,9 @@ class ClientsController extends Controller
         $clientcompany = ClientCompany::all();
         
         // SQL query
-        $query = Client::leftJoin('client_company', 'client_company.id', '=', 'clients.company_id')
-        ->leftjoin('users', 'users.id', '=', 'clients.user_id')
-        ->select('clients.id', 'clients.name', 'clients.contact', 'client_company.name as company_name', 'users.name as users_name', 'clients.status', 'clients.user_id as users_id')
-        ->where('client_company.status', '=', '1')
+        $query = Client::leftJoin('client_companies', 'client_companies.id', '=', 'clients.company_id')
+        ->select('clients.id', 'clients.name', 'clients.email', 'clients.phone', 'clients.designation', 'client_companies.name as company_name', 'clients.status')
+        ->where('client_companies.status', '=', '1')
         ->where('clients.status', '=', '1')
         ->orderBy($orderColumnName, $orderDirection);
         
@@ -111,7 +105,9 @@ class ClientsController extends Controller
         if (!empty($searchValue)) {
             $query->where(function ($query) use ($searchValue) {
                 $query->where('clients.name', 'LIKE', "%{$searchValue}%")
-                    ->orWhere('client_company.name', 'LIKE', "%{$searchValue}%");
+                    ->orWhere('clients.email', 'LIKE', "%{$searchValue}%")
+                    ->orWhere('clients.phone', 'LIKE', "%{$searchValue}%")
+                    ->orWhere('client_companies.name', 'LIKE', "%{$searchValue}%");
             });
         }
 
@@ -126,10 +122,10 @@ class ClientsController extends Controller
         foreach ($filteredData as $d) {
             $nestedData = array(
                 'name' => $d->name,
-                'contact' => $d->contact,
+                'email' => $d->email,
+                'phone' => $d->phone,
                 'company_name' => $d->company_name,
-                'users_id' => $d->users_id,
-                'users_name' => $d->users_name,
+                'designation' => $d->designation,
                 'status' => $d->status,
                 'id' => $d->id,
             );

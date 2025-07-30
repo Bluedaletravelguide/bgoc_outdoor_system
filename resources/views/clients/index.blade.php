@@ -57,13 +57,15 @@
                 <table class="table table-report mt-5" id="client_table">
                     <thead>
                         <tr class="bg-theme-1 text-white">
-                            <th class="whitespace-nowrap" width="25%">Name</th>
-                            <th class="whitespace-nowrap">Contact No.</th>
-                            <th class="whitespace-nowrap">Company</th>
+                            <th width="5%">No.</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Contact No.</th>
+                            <th>Company</th>
                             <!-- <th class="whitespace-nowrap">User</th>
                             <th class="whitespace-nowrap" width="20%">User Account Status</th>
                             <th class="whitespace-nowrap" width="10%">Client Status</th> -->
-                            <th class="whitespace-nowrap" width="5%">Action</th>
+                            <th width="10%">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -89,8 +91,16 @@
         @csrf
         <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
             <div class="col-span-12 sm:col-span-12">
+                <label>Designation</label>
+                <input type="text"  title="Please enter client designation" placeholder="Enter a Designation" class="input w-full border mt-2 flex-1" id="clientAddDesignation" required>
+            </div>
+            <div class="col-span-12 sm:col-span-12">
                 <label>Client Name</label>
                 <input type="text" placeholder="Enter a Client Name" class="input w-full border mt-2 flex-1" id="clientAddName" required>
+            </div>
+            <div class="col-span-12 sm:col-span-12">
+                <label>Email</label>
+                <input type="text" placeholder="Enter a Client Email" class="input w-full border mt-2 flex-1" id="clientAddEmail" required>
             </div>
             <div class="col-span-12 sm:col-span-12">
                 <label>Contact No.</label>
@@ -366,11 +376,30 @@
                         },
                     },
                 ],
-                columns: [{
-                        data: "name",
+                columns: [
+                    {
+                        data: null, // <-- important
+                        name: 'no',
+                        orderable: false,
+                        searchable: false,
+                        render: function (data, type, row, meta) {
+                            return meta.row + meta.settings._iDisplayStart + 1;
+                        }
                     },
                     {
-                        data: "contact",
+                        data: null,
+                        name: "name",
+                        render: function(data, type, row) {
+                            let title = row.designation ?? '';
+                            let name = row.name ?? '';
+                            return `${title} ${name}`.trim();
+                        }
+                    },
+                    {
+                        data: "email",
+                    },
+                    {
+                        data: "phone",
                     },
                     {
                         data: "company_name",
@@ -407,17 +436,26 @@
                     {
                         data: "id",
                         render: function(data, type, row) {
-                            let element = `
-                            <a class="flex items-center text-theme-6" href="javascript:;" data-toggle="modal" data-target="#clientDeleteModal" id="delete-` + data + `">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 w-4 h-4 mr-1">
-                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                    <line x1="10" y1="11" x2="10" y2="17"></line>
-                                    <line x1="14" y1="11" x2="14" y2="17"></line>
-                                </svg> 
-                            </a>`;
+                            return `
+                            <div class="flex items-center justify-center space-x-3">
+                                <!-- Edit Icon -->
+                                <a href="javascript:;" class="text-theme-9" data-toggle="modal" data-target="#clientEditModal" id="edit-${data}" title="Edit">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path d="M15.232 5.232l3.536 3.536M9 13h3l9-9a1.5 1.5 0 00-2.121-2.121l-9 9v3z"/>
+                                    </svg>
+                                </a>
 
-                            return element;
+                                <!-- Delete Icon -->
+                                <a href="javascript:;" class="text-theme-6" data-toggle="modal" data-target="#clientDeleteModal" id="delete-${data}" title="Delete">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4
+                                            a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                                    </svg>
+                                </a>
+                            </div>`;
                         }
                     },
                 ],

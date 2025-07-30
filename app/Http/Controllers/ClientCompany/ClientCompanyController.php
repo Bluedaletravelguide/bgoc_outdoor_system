@@ -67,6 +67,7 @@ class ClientCompanyController extends Controller
         $orderDirection = $request->input('order.0.dir');
 
         $query = ClientCompany::select('client_companies.*')
+            ->where('status', 1)
             ->orderBy($orderColumnName, $orderDirection);
 
         if ($status != "all") {
@@ -128,8 +129,6 @@ class ClientCompanyController extends Controller
         $address        = $request->address;
         $companyPhone   = $request->companyPhone;
         $pics           = $request->pics;       // person-in-charge
-
-        logger('kampeni: ' . $request);
 
         // Validate fields
         $validator = Validator::make(
@@ -236,7 +235,7 @@ class ClientCompanyController extends Controller
         $name                   = $request->name;
         $id                     = $request->id;
         $address                = $request->address;
-        $phone                  = $request->phone;
+        $phone                  = $request->companyPhone;
 
         // Validate fields
         $validator = Validator::make(
@@ -265,7 +264,7 @@ class ClientCompanyController extends Controller
                     'string',
                     'max:255',
                 ],
-                'phone' => [
+                'companyPhone' => [
                     'required',
                     'regex:/^\+?[0-9]+$/',
                     'max:255',
@@ -289,9 +288,9 @@ class ClientCompanyController extends Controller
                 'address.string' => 'The "Address" must be a string.',
                 'address.max' => 'The "Address" must not be greater than :max characters.',
 
-                'phone.required' => 'The "Phone No." field is required.',
-                'phone.regex' => 'The "Phone No." field must only contain "+" symbol and numbers.',
-                'phone.max' => 'The "Phone No." field must not be greater than :max characters.',
+                'companyPhone.required' => 'The "Phone No." field is required.',
+                'companyPhone.regex' => 'The "Phone No." field must only contain "+" symbol and numbers.',
+                'companyPhone.max' => 'The "Phone No." field must not be greater than :max characters.',
             ]
         );
 

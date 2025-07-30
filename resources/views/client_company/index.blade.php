@@ -576,7 +576,7 @@
             var prefix = document.getElementById("clientCompanyEditPrefix").value;
             var name = document.getElementById("clientCompanyEditName").value;
             var address = document.getElementById("clientCompanyEditAddress").value;
-            var phone = document.getElementById("clientCompanyEditPhone").value;
+            var companyPhone = document.getElementById("clientCompanyEditPhone").value;
 
             $.ajax({
                 type: 'POST',
