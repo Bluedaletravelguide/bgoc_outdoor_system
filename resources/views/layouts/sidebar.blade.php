@@ -17,7 +17,7 @@
         <li>
             <a href="{{ route('billboard.index') }}" class="side-menu {{ request()->routeIs('billboard.index', 'billboard.index') ? 'side-menu--active' : '' }}">
                 <div class="side-menu__icon"> <i data-feather="layers"></i> </div>
-                <div class="side-menu__title"> Billboard </div>
+                <div class="side-menu__title"> Billboard Master</div>
             </a>
         </li>
         @endif

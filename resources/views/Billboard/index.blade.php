@@ -1,7 +1,7 @@
 @extends('layouts.main')
 
 @section('title')
-<title>BGOC Outdoor System - Billboard Info</title>
+<title>BGOC Outdoor System - Billboard Master</title>
 @endsection('title')
 
 @section('sidebar')
@@ -11,17 +11,17 @@
 @section('app_content')
 <div class="intro-y flex flex-col sm:flex-row items-center mt-8">
     <h2 class="text-lg font-medium mr-auto">
-        Billboard
+        Billboard Master
     </h2>
 </div>
 
 <div class="intro-y box p-5 mt-5">
     <div class="mb-5 p-5 rounded-md" style="background-color:#ECF9FD;">
         <h2 class="text-lg font-medium">
-            Billboard
+            Billboard Master
         </h2>
         <p class="w-12 flex-none xl:w-auto xl:flex-initial ml-2">
-            <i class="font-bold">Billboard</i> - Lorem ipsum.
+            <i class="font-bold">Billboard Master</i> - Lorem ipsum.
         </p>
     </div>
     

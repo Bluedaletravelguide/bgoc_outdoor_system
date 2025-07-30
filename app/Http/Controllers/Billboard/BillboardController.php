@@ -583,9 +583,21 @@ class BillboardController extends Controller
 
     public function downloadPdf($id)
     {
-        $billboard = Billboard::with(['locations.districts.states', 'images'])->findOrFail($id);
+        // $billboard = Billboard::with(['location.district.state', 'images'])->findOrFail($id);
 
-        $pdf = PDF::loadView('billboard.export', compact('billboard'));
+        $billboard = Billboard::with([
+            'location' => function ($query) {
+                $query->with([
+                    'district' => function ($query) {
+                        $query->with('state');
+                    }
+                ]);
+            },
+            'billboard_images'
+        ])->findOrFail($id);
+
+        $pdf = PDF::loadView('billboard.export', compact('billboard'))
+        ->setPaper('A4', 'landscape'); // 👈 Set orientation here
 
         return $pdf->download('billboard-detail-' . $billboard->site_number . '.pdf');
     }

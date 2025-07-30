@@ -38,7 +38,7 @@ class Billboard extends Model
         return $this->belongsToMany(BillboardBooking::class);
     }
 
-    public function billboard_image()
+    public function billboard_images()
     {
         return $this->hasMany(BillboardImage::class);
     }

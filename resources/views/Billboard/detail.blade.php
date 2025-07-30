@@ -124,9 +124,11 @@
                 <img src="{{ asset('images/bluedale_logo_1.png') }}" class="w-[70px] h-auto object-contain mx-auto">
                 <img src="{{ asset('images/bluedale_logo_2.png') }}" class="w-[70px] h-auto object-contain mx-auto"> -->
             <!-- </div> -->
-             @foreach ($billboard_images as $img)
+            <img src="{{ asset('storage/billboards/image1.jpg') }}" alt="Image 1">
+            <img src="{{ asset('storage/billboards/map1.jpg') }}" alt="Image 2">
+             <!-- @foreach ($billboard_images as $img)
                 <img src="{{ asset($img->image_path) }}" alt="Billboard Image">
-            @endforeach
+            @endforeach -->
         </div>
     <!-- <div class="intro-y flex relative pt-16 sm:pt-6 items-center pb-6">
     </div> -->
