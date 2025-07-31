@@ -24,7 +24,7 @@
 
         @if (Auth::guard('web')->user()->can('billboard_booking.view'))
         <li>
-            <a href="{{ route('serviceRequest.index') }}" class="side-menu {{ request()->routeIs('serviceRequest.index') ? 'side-menu--active' : '' }}">
+            <a href="{{ route('billboard.booking.index') }}" class="side-menu {{ request()->routeIs('billboard.booking.index') ? 'side-menu--active' : '' }}">
                 <div class="side-menu__icon"> <i data-feather="inbox"></i> </div>
                 <div class="side-menu__title"> Billboard Booking </div>
             </a>

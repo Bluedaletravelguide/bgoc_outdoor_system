@@ -144,32 +144,44 @@
             </div>
         </div>
     </div>
-    <!-- END: Blog Layout -->
-    <!-- BEGIN: Comments -->
     <div class="intro-y mt-5 pt-5 border-t border-gray-200 dark:border-dark-5">
         <!-- <div class="text-base sm:text-lg font-medium">2 Responses</div> -->
-
+        <div class="border border-gray-200 dark:border-dark-5 rounded-md p-5 mt-5" id="fileUpload">
+            <div class="mt-5">
+                <div class="mt-3">
+                    <div class="flex items-center">
+                        <label class="font-medium">Upload Image</label>
+                    </div>
+                    <form id="fileUploadForm" action="{{ route('tempUpload') }}" method="POST" enctype="multipart/form-data" class="dropzone border-gray-200 border-dashed">
+                        @csrf
+                        <div class="fallback">
+                            <input name="files[]" id="fileInput" type="file" multiple />
+                        </div>
+                        <div class="dz-message" data-dz-message>
+                            <div class="text-lg font-medium">Drop files here or click to upload.</div>
+                            <div class="text-gray-600"> This is just a demo dropzone. Selected files are <span class="font-medium">not</span> actually uploaded. </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="news__input relative mt-5">
+            <div class="pt-5">
+                <div class="px-5 py-3 text-left dark:border-dark-5">
+                    <form id="mainForm" action="{{ route('workOrderProfile.create') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="button w-20 bg-theme-1 text-white" id="WOAddButton" required>Upload</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 @endsection('app_content')
 
 @section('modal_content')
-<!-- BEGIN: Vendor Delete Modal -->
-<div class="modal" id="WOActivityDeleteModal">
-    <div class="modal__content">
-        <div class="p-5 text-center"> <i data-feather="x-circle" class="w-16 h-16 text-theme-6 mx-auto mt-3"></i>
-            <div class="text-3xl mt-5">Are you sure?</div>
-            <div class="text-gray-600 mt-2">Confirm deleting the comment? This process cannot be undone.</div>
-        </div>
-        <div class="px-5 pb-8 text-center">
-            <button type="button" data-dismiss="modal" class="button w-24 border text-gray-700 dark:border-dark-5 dark:text-gray-300 mr-1">Cancel</button>
-            <!-- <button type="button" class="button w-24 bg-theme-6 text-white" id="WOActivityDeleteButton">Delete</button> -->
-            <button type="button" class="button w-24 bg-theme-6 text-white" id="WOActivityDeleteButton" onclick="WOActivityDeleteButton()">Delete</button>
-        </div>
-    </div>
-</div>
-<!-- END: Vendor Delete Modal -->
 @endsection('modal_content')
 
 
@@ -184,8 +196,6 @@
             width: '100%'
         });
     });
-</script>
-<script>
     
     $(document).ready(function() {
         // Global variables

@@ -169,7 +169,6 @@
                 </div>
                 @foreach($attentions as $attention)
                     @if($loop->index < 4)
-                    <!-- <a href="javascript:;" onclick="window.open('{{ route('workOrderProfile.index', ['id' => $attention -> id] )}}')" > -->
                         <div class="mt-5">
                             <div class="intro-x">
                                 <div class="box px-5 py-3 mb-3 flex items-center zoom-in">

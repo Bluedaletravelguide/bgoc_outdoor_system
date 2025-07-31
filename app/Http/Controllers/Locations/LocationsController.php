@@ -4,8 +4,7 @@ namespace App\Http\Controllers\Locations;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Locations;
-use App\Models\ProjectHasLocations;
+use App\Models\Location;
 use App\Models\ClientCompany;
 use App\Models\Contract;
 use Illuminate\Support\Facades\Auth;
@@ -31,11 +30,11 @@ class LocationsController extends Controller
 
     public function index()
     {
-        $locations = Locations::orderBy('name')->where('type', 'building')->whereNull('parent_id')->get()->groupBy(function ($item) {
+        $locations = Location::orderBy('name')->where('type', 'building')->whereNull('parent_id')->get()->groupBy(function ($item) {
             return substr($item->name, 0, 1);
         });
 
-        $firstBuildingId = Locations::select('id')->orderBy('name')->where('type', 'building')->whereNull('parent_id')->first();
+        $firstBuildingId = Location::select('id')->orderBy('name')->where('type', 'building')->whereNull('parent_id')->first();
 
         $clientCompanies = ClientCompany::select('client_company.id', 'client_company.name')
             ->leftJoin('contracts', 'contracts.client_company_id', '=', 'client_company.id')
@@ -66,7 +65,7 @@ class LocationsController extends Controller
         $orderColumnIndex = $request->input('order.0.column');
         $orderDirection = $request->input('order.0.dir');
 
-        $query = Locations::selectRaw('locations.id AS location_id, locations.name, locations.created_at, locations.updated_at, levels.id AS level_id, levels.name AS level_name, departments.id AS department_id, departments.name AS department_name')
+        $query = Location::selectRaw('locations.id AS location_id, locations.name, locations.created_at, locations.updated_at, levels.id AS level_id, levels.name AS level_name, departments.id AS department_id, departments.name AS department_name')
             ->leftJoin('locations AS levels', 'levels.parent_id', '=', 'locations.id')
             ->leftJoin('locations AS departments', 'departments.parent_id', '=', 'levels.id')
             ->where('locations.id', $building_id)
@@ -142,7 +141,7 @@ class LocationsController extends Controller
     {
         $building_id = $request->building_id;
 
-        $buildingDetails = Locations::selectRaw('locations.name AS building_name, contracts.contract_prefix, client_company.name AS client_company_name')
+        $buildingDetails = Location::selectRaw('locations.name AS building_name, contracts.contract_prefix, client_company.name AS client_company_name')
             ->leftJoin('project_has_locations', 'project_has_locations.location_id', '=', 'locations.id')
             ->leftJoin('contracts', 'contracts.id', '=', 'project_has_locations.contract_id')
             ->leftJoin('client_company', 'client_company.id', '=', 'contracts.client_company_id')

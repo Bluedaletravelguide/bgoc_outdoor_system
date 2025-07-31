@@ -13,6 +13,7 @@ use App\Http\Controllers\WorkOrderProfile\WorkOrderProfileController;
 use App\Http\Controllers\PushNotificationController;
 
 use App\Http\Controllers\Billboard\BillboardController;
+use App\Http\Controllers\Billboard\BillboardBookingController;
 use App\Http\Controllers\Location\LocationController;
 use Illuminate\Support\Facades\Storage;
 
@@ -62,6 +63,19 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/workOrderProfile/store', [WorkOrderProfileController::class, 'store'])->name('workOrderProfile.store');
     Route::post('/workOrderProfile/temp-upload', [WorkOrderProfileController::class, 'tempUpload'])->name('tempUpload');
     Route::get('/billboard/{id}/download', [BillboardController::class, 'downloadPdf'])->name('billboard.download');
+
+    // Billboard Booking
+    Route::get('/billboardBooking', [BillboardBookingController::class, 'index'])->name('billboard.booking.index');
+    Route::post('/billboardBooking/list', [BillboardBookingController::class, 'list'])->name('billboard.booking.list');
+
+
+
+
+
+
+
+
+
 
     // Billboard Booking
     Route::get('/serviceRequest', [ServiceRequestController::class, 'Index'])->name('serviceRequest.index');
