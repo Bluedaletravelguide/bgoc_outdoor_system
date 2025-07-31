@@ -97,7 +97,19 @@
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
                 Add New Billboard
-            </a> 
+            </a>
+            <a href="#" id="exportBtn" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-9 text-white" target="_blank">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                    width="24" height="24" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor"
+                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                    class="feather feather-download w-4 h-4 mr-2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Download Details
+            </a>
         </div> 
     </div>
     <!-- END: Billboard Filter -->
@@ -311,10 +323,22 @@
     $('#filterBillboardState').on('change', function () {
         let stateId = $(this).val();
 
-        // Reset district dropdown
         $('#filterBillboardDistrict').empty().append('<option value="all">All</option>');
 
-        if (stateId !== 'all') {
+        if (stateId === 'all') {
+            $.ajax({
+                url: '{{ route("location.getAllDistricts") }}',
+                type: 'GET',
+                success: function (districts) {
+                    districts.forEach(function (district) {
+                        $('#filterBillboardDistrict').append(`<option value="${district.id}">${district.name}</option>`);
+                    });
+                },
+                error: function () {
+                    alert('Failed to load all districts.');
+                }
+            });
+        } else {
             $.ajax({
                 url: '{{ route("location.getDistricts") }}',
                 type: 'POST',
@@ -333,6 +357,31 @@
             });
         }
     });
+
+    document.getElementById('exportBtn').addEventListener('click', function (e) {
+        e.preventDefault();
+
+        // Read values from your filter fields
+        let state = document.getElementById('filterBillboardState')?.value || 'all';
+        let district = document.getElementById('filterBillboardDistrict')?.value || 'all';
+        let type = document.getElementById('filterBillboardType')?.value || 'all';
+        let size = document.getElementById('filterBillboardSize')?.value || 'all';
+        let status = document.getElementById('filterBillboardStatus')?.value || 'all';
+
+        // Build query string
+        let query = new URLSearchParams({
+            state_id: state,
+            district_id: district,
+            type: type,
+            size: size,
+            status: status
+        }).toString();
+
+        // Redirect with query string
+        let exportUrl = '{{ route("billboards.export.pdf") }}' + '?' + query;
+        window.open(exportUrl, '_blank');
+    });
+
 
     // Function to reload the DataTable when any filter changes
     function setupAutoFilter() {

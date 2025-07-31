@@ -39,6 +39,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::resource('/home', HomeController::class)->only(['index']);
 
     // Location
+    Route::get('/location/all-districts', [LocationController::class, 'getAllDistricts'])->name('location.getAllDistricts');
     Route::post('/get-districts', [LocationController::class, 'getDistrictsByState'])->name('location.getDistricts');
     Route::post('/get-locations', [LocationController::class, 'getLocationsByDistrict'])->name('location.getLocations');
 
@@ -51,6 +52,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/billboard/edit', [WorkOrderController::class, 'edit'])->name('billboard.edit');
     Route::post('/billboard/updateStatus', [WorkOrderController::class, 'update'])->name('billboard.update');
     Route::get('/notification', [PushNotificationController::class, 'notificationHistory']);
+    Route::get('/billboards/export/pdf', [BillboardController::class, 'exportListPdf'])->name('billboards.export.pdf');
+
 
     // Billboard Detail
     Route::get('/billboardDetail/{id}', [BillboardController::class, 'redirectNewTab'])->name('billboard.detail');

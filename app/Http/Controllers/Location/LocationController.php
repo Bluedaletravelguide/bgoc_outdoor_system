@@ -47,4 +47,11 @@ class LocationController extends Controller
 
         return response()->json($locations);
     }
+
+    public function getAllDistricts()
+    {
+        return response()->json(
+            \App\Models\District::orderBy('name', 'ASC')->get()
+        );
+}
 }
