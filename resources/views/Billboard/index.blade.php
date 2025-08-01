@@ -402,12 +402,7 @@
     
     $(document).ready(function() {
         // Global variables
-        var filterBillboardSupervisor;
-        var filterBillboardTechnician;
         var filterBillboardStatus;
-        var originalWorkOrderIdEdit;
-        var originalWorkOrderIdStatusUpdate;
-        var originalWorkOrderId;
 
         document.getElementById("billboardDeleteButton").addEventListener("click", billboardDeleteButton);
 
@@ -541,11 +536,11 @@
                     method:"POST",
                     data: function(d) {
                         d._token    = $('meta[name="csrf-token"]').attr('content');
-                    d.status    = $('#filterBillboardStatus').val();
-                    d.state     = $('#filterBillboardState').val();
-                    d.district  = $('#filterBillboardDistrict').val();
-                    d.type      = $('#filterBillboardType').val();
-                    d.size      = $('#filterBillboardSize').val();
+                        d.status    = $('#filterBillboardStatus').val();
+                        d.state     = $('#filterBillboardState').val();
+                        d.district  = $('#filterBillboardDistrict').val();
+                        d.type      = $('#filterBillboardType').val();
+                        d.size      = $('#filterBillboardSize').val();
                     },
                     dataSrc: function(json) {
                         console.log(json);

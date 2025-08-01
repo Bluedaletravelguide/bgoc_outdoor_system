@@ -95,7 +95,7 @@ class BillboardSeeder extends Seeder
 
             DB::table('billboard_bookings')->insert([
                 'billboard_id' => $faker->randomElement($billboardIds),
-                'client_id' => $faker->randomElement($clientIds),
+                'company_id' => $faker->randomElement($companyIds),
                 'start_date' => $start->format('Y-m-d'),
                 'end_date' => $end->format('Y-m-d'),
                 'status' => $faker->randomElement(['ongoing', 'pending_install', 'pending_payment']),

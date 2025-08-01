@@ -18,7 +18,7 @@ class BillboardBooking extends Model
 
     protected $fillable = [
         'billboard_id',
-        'client_id',
+        'company_id',
         'start_date',
         'end_date',
         'status',
@@ -36,9 +36,9 @@ class BillboardBooking extends Model
         return $this->belongsTo(Billboard::class);
     }
 
-    public function client()
+    public function client_company()
     {
-        return $this->belongsTo(Client::class);
+        return $this->belongsTo(ClientCompany::class);
     }
 
     public function user()

@@ -53,12 +53,13 @@ class BillboardBookingController extends Controller
         // $type = Project::distinct()->get(['type']);
         // return view('projects.index', compact('type'));
 
+        $companies = ClientCompany::orderBy('name', 'ASC')->get();
         $states = State::orderBy('name', 'ASC')->get();
         $districts = District::orderBy('name', 'ASC')->get();
         $locations = Location::orderBy('name', 'ASC')->get();
 
         // return view('workOrder.index', compact('clientcompany', 'projects', 'supervisors', 'technicians'));
-        return view('billboard.booking.index', compact('states', 'districts', 'locations'));
+        return view('billboard.booking.index', compact('companies', 'states', 'districts', 'locations'));
     }
 
     /**
@@ -73,15 +74,15 @@ class BillboardBookingController extends Controller
 
         $userID = $this->user->id;
 
-        $status = $request->input('status');
-        $state = $request->input('state');
-        $district = $request->input('district');
-        $type     = $request->input('type');
-        $size     = $request->input('size');
+        $company    = $request->input('company');
+        $status     = $request->input('status');
+        $state      = $request->input('state');
+        $district   = $request->input('district');
+        $location   = $request->input('location');
 
         $columns = array(
             0 => 'site_number',
-            1 => 'client_name',
+            1 => 'company_name',
             2 => 'location',
             3 => 'start_date',
             4 => 'end_date',
@@ -97,53 +98,43 @@ class BillboardBookingController extends Controller
         $orderColumnName    = $columns[$orderColumnIndex];
         $orderDirection     = $request->input('order.0.dir');
 
-        $query = BillboardBooking::select('billboard_bookings.*', 'billboards.site_number as site_number', 'clients.name as client_name', 'locations.id as location_id', 'locations.name as location_name', 'districts.id as district_id', 'districts.name as district_name', 'states.id as state_id', 'states.name as state_name')
-            ->leftJoin('clients', 'clients.id', '=', 'billboard_bookings.client_id')
-            ->leftJoin('billboards', 'billboards.id', '=', 'billboard_bookings.billboard_id')
-            ->leftJoin('locations', 'billboards.location_id', '=', 'locations.id')
-            ->leftJoin('districts', 'locations.district_id', '=', 'districts.id')
-            ->leftJoin('states', 'districts.state_id', '=', 'states.id')
-            ->orderBy($orderColumnName, $orderDirection);
+        $query = BillboardBooking::select(
+            'billboard_bookings.*',
+            'billboards.site_number as site_number',
+            'client_companies.name as company_name',
+            'locations.id as location_id',
+            'locations.name as location_name',
+            'districts.id as district_id',
+            'districts.name as district_name',
+            'states.id as state_id',
+            'states.name as state_name'
+        )
+        ->leftJoin('client_companies', 'client_companies.id', '=', 'billboard_bookings.company_id')
+        ->leftJoin('billboards', 'billboards.id', '=', 'billboard_bookings.billboard_id')
+        ->leftJoin('locations', 'locations.id', '=', 'billboards.location_id')
+        ->leftJoin('districts', 'districts.id', '=', 'locations.district_id')
+        ->leftJoin('states', 'states.id', '=', 'districts.state_id')
+        ->orderBy($orderColumnName, $orderDirection);
 
-        // Superadmin permission
-        // if($isAdmin){
-        //     if($teamleader != 'all' && $teamleader != 'none'){
-        //         $query = $query->where('work_order.assigned_teamleader', $teamleader);
-        //     }elseif($teamleader == 'none'){
-        //         $query = $query->whereNull('work_order.assigned_teamleader');
-        //     }
+        if (!empty($status)) {
+            $query->where('billboard_bookings.status', $status);
+        }
 
-        //     if($technician != 'all' && $technician != 'none'){
-        //         $query = $query->where('work_order.assign_to_technician', $technician);
-        //     }elseif($technician == 'none'){
-        //         $query = $query->where('work_order.assign_to_technician', $technician);
-        //     }
-        // }
+        if (!empty($company)) {
+            $query->where('billboard_bookings.company_id', $company);
+        }
 
-        // Technician permission
-        // if($isTechnician){
-        //     $query = $query->where('work_order.assign_to_technician', $userID);
-        // }
+        if (!empty($state)) {
+            $query->where('states.id', $state);
+        }
 
-        // if ($status != "all") {
-        //     $query->where('billboards.status', $status);
-        // }
+        if (!empty($district)) {
+            $query->where('districts.id', $district);
+        }
 
-        // if ($state != "all") {
-        //     $query->where('states.id', $state);
-        // }
-
-        // if ($district != "all") {
-        //     $query->where('districts.id', $district);
-        // }
-
-        // if ($type != "all") {
-        //     $query->where('billboards.type', $type);
-        // }
-
-        // if ($size != "all") {
-        //     $query->where('billboards.size', $size);
-        // }
+        if (!empty($location)) {
+            $query->where('locations.id', $location);
+        }
 
         // Get total records count
         $totalData = $query->count();
@@ -153,7 +144,7 @@ class BillboardBookingController extends Controller
         if (!empty($searchValue)) {
             $query->where(function ($query) use ($searchValue) {
                 $query->where('billboards.site_number', 'LIKE', "%{$searchValue}%")
-                ->orWhere('clients.name', 'LIKE', "%{$searchValue}%")
+                ->orWhere('client_companies.name', 'LIKE', "%{$searchValue}%")
                 ->orWhere('locations.name', 'LIKE', "%{$searchValue}%")
                 ->orWhere('districts.name', 'LIKE', "%{$searchValue}%")
                 ->orWhere('states.name', 'LIKE', "%{$searchValue}%");
@@ -173,16 +164,14 @@ class BillboardBookingController extends Controller
 
             $nestedData = array(
                 'site_number'           => $d->site_number,
-                'client_name'           => $d->client_name,
+                'company_id'            => $d->company_id,
+                'company_name'           => $d->company_name,
                 'location_id'           => $d->location_id,
-                'state_id'              => $d->state_id,
-                'district_id'           => $d->district_id,
                 'location_name'         => $d->location_name,
-                'region'                => $d->district_name . ', ' . $d->state_name,
                 'start_date'            => $d->start_date,
                 'end_date'              => $d->end_date,
-                'remarks'              => $d->remarks,
-                'duration'              => $d->created_at,
+                'remarks'               => $d->remarks,
+                'duration'              => $created_at,
                 'created_at'            => $created_at,
                 'status'                => $d->status,
                 'id'                    => $d->id,
@@ -198,11 +187,76 @@ class BillboardBookingController extends Controller
             "data"              => $data,
         );
 
-        logger('bb:', $json_data);
-
-
         return response()->json($json_data);
     }
+
+    public function getCalendarBookings(Request $request)
+    {
+        $company = $request->input('company');
+        $state = $request->input('state');
+        $district = $request->input('district');
+        $location = $request->input('location');
+
+        logger('disini calendar');
+
+        $query = BillboardBooking::select(
+            'billboard_bookings.*',
+            'billboards.site_number',
+            'locations.name as location_name'
+        )
+        ->leftJoin('billboards', 'billboards.id', '=', 'billboard_bookings.billboard_id')
+        ->leftJoin('locations', 'locations.id', '=', 'billboards.location_id')
+        ->leftJoin('districts', 'districts.id', '=', 'locations.district_id')
+        ->leftJoin('states', 'states.id', '=', 'districts.state_id');
+
+        if ($company) {
+            $query->where('billboard_bookings.company_id', $company);
+        }
+        if ($state) {
+            $query->where('states.id', $state);
+        }
+        if ($district) {
+            $query->where('districts.id', $district);
+        }
+        if ($location) {
+            $query->where('locations.id', $location);
+        }
+
+        $bookings = $query->get();
+
+        $events = [];
+
+        foreach ($bookings as $booking) {
+            $events[] = [
+                'title' => $booking->site_number . ' - ' . $booking->location_name,
+                'start' => $booking->start_date,
+                'end'   => $booking->end_date ? Carbon::parse($booking->end_date)->addDay()->toDateString() : null,
+                'color' => match ($booking->status) {
+                    'ongoing' => '#22C55E',
+                    'pending_install' => '#6366F1',
+                    'pending_payment' => '#EF4444',
+                    default => '#eff163ff',
+                }
+            ];
+        }
+
+        return response()->json($events);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /**
      * Create service request and work order.

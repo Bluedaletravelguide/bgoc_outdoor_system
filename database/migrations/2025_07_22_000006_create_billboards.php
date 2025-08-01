@@ -68,7 +68,7 @@ return new class extends Migration
         Schema::create('billboard_bookings', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('billboard_id');
-            $table->unsignedBigInteger('client_id');
+            $table->unsignedBigInteger('company_id');
             $table->dateTime('start_date');
             $table->dateTime('end_date');
             $table->string('status');
@@ -83,6 +83,11 @@ return new class extends Migration
             $table->foreign('billboard_id')
             ->references('id')
             ->on('billboards')
+            ->onDelete('cascade');
+
+            $table->foreign('company_id')
+            ->references('id')
+            ->on('client_companies')
             ->onDelete('cascade');
 
             $table->foreign('created_by')

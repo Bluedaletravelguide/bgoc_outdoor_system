@@ -67,6 +67,8 @@ Route::group(['middleware' => ['auth']], function () {
     // Billboard Booking
     Route::get('/billboardBooking', [BillboardBookingController::class, 'index'])->name('billboard.booking.index');
     Route::post('/billboardBooking/list', [BillboardBookingController::class, 'list'])->name('billboard.booking.list');
+    Route::post('/booking/calendar', [BillboardBookingController::class, 'getCalendarBookings'])->name('billboard.booking.calendar');
+
 
 
 
