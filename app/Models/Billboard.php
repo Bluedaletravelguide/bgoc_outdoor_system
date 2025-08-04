@@ -33,12 +33,12 @@ class Billboard extends Model
         'updated_at'
     ];
 
-    public function billboard_booking()
+    public function bookings()
     {
-        return $this->belongsToMany(BillboardBooking::class);
+        return $this->hasMany(BillboardBooking::class);
     }
 
-    public function billboard_images()
+    public function images()
     {
         return $this->hasMany(BillboardImage::class);
     }
@@ -48,9 +48,14 @@ class Billboard extends Model
         return $this->belongsTo(Location::class);
     }
 
-    public function user()
+    public function createdBy()
     {
-        return $this->hasMany(User::class);
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updatedBy()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
     }
 
 }

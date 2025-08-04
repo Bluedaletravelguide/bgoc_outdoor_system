@@ -197,7 +197,10 @@ class BillboardBookingController extends Controller
         $district = $request->input('district');
         $location = $request->input('location');
 
-        logger('disini calendar');
+        // ✅ Return no bookings if no filters are selected
+        if (!$company && !$state && !$district && !$location) {
+            return response()->json([]); // Return empty events
+        }
 
         $query = BillboardBooking::select(
             'billboard_bookings.*',
@@ -240,8 +243,85 @@ class BillboardBookingController extends Controller
             ];
         }
 
-        return response()->json($events);
+        return response()->json([
+            'events' => $events,
+            'legend' => self::getBookingLegend()
+        ]);
     }
+
+    public function getBillboardAvailability(Request $request)
+    {
+        $startDate = Carbon::parse($request->input('start_date'));
+        $endDate   = Carbon::parse($request->input('end_date'));
+
+        $state     = $request->input('state');
+        $district  = $request->input('district');
+        $location  = $request->input('location');
+        $company   = $request->input('company');
+
+        $billboards = Billboard::with(['location.district.state', 'bookings'])
+            ->when($state, function ($query) use ($state) {
+                $query->whereHas('location.district.state', fn($q) => $q->where('id', $state));
+            })
+            ->when($district, function ($query) use ($district) {
+                $query->whereHas('location.district', fn($q) => $q->where('id', $district));
+            })
+            ->when($location, function ($query) use ($location) {
+                $query->where('location_id', $location);
+            })
+            ->get();
+
+        $results = [];
+
+        foreach ($billboards as $billboard) {
+            $isAvailable = true;
+            $nextAvailableDate = null;
+
+            foreach ($billboard->bookings as $booking) {
+                $bookingStart = Carbon::parse($booking->start_date);
+                $bookingEnd   = Carbon::parse($booking->end_date);
+
+                if (
+                    $bookingStart->lte($endDate) &&
+                    $bookingEnd->gte($startDate)
+                ) {
+                    // Overlap found!
+                    $isAvailable = false;
+
+                    if (!$nextAvailableDate || $bookingEnd->greaterThan($nextAvailableDate)) {
+                        $nextAvailableDate = $bookingEnd->copy()->addDay();
+                    }
+                    // once overlap is found, we can break early
+                    break;
+                }
+            }
+
+            $results[] = [
+                'site_number'    => $billboard->site_number,
+                'location_name'  => $billboard->location->name,
+                'is_available'   => $isAvailable,
+                'next_available' => $isAvailable ? null : ($nextAvailableDate ? $nextAvailableDate->toDateString() : 'Unknown'),
+            ];
+        }
+
+        return response()->json($results);
+    }
+
+    private static function getBookingLegend()
+    {
+        return [
+            ['label' => 'Ongoing', 'color' => '#22C55E'],
+            ['label' => 'Pending Install', 'color' => '#6366F1'],
+            ['label' => 'Pending Payment', 'color' => '#EF4444'],
+            ['label' => 'Other', 'color' => '#FACC15'],
+        ];
+    }
+
+
+
+
+
+
 
 
 

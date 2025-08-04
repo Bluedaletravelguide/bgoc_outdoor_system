@@ -68,6 +68,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/billboardBooking', [BillboardBookingController::class, 'index'])->name('billboard.booking.index');
     Route::post('/billboardBooking/list', [BillboardBookingController::class, 'list'])->name('billboard.booking.list');
     Route::post('/booking/calendar', [BillboardBookingController::class, 'getCalendarBookings'])->name('billboard.booking.calendar');
+    Route::post('/booking/availability', [BillboardBookingController::class, 'getBillboardAvailability'])->name('billboard.checkAvailability');
 
 
 

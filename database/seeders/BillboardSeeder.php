@@ -88,24 +88,36 @@ class BillboardSeeder extends Seeder
         // ✅ 4. Pluck billbnards IDs
         $billboardIds = Billboard::pluck('id')->toArray();
 
-        // ✅ 5. Create bookings
-        for ($i = 0; $i < 50; $i++) {
-            $start = $faker->dateTimeBetween('+1 days', '+1 month');
-            $end = (clone $start)->modify('+'.rand(3, 14).' days');
+        // 5: Create non-overlapping bookings with at least 30-day gaps
+        foreach ($billboardIds as $billboardId) {
+            $currentStart = Carbon::today()->copy()->addDays(rand(0, 5));
 
-            DB::table('billboard_bookings')->insert([
-                'billboard_id' => $faker->randomElement($billboardIds),
-                'company_id' => $faker->randomElement($companyIds),
-                'start_date' => $start->format('Y-m-d'),
-                'end_date' => $end->format('Y-m-d'),
-                'status' => $faker->randomElement(['ongoing', 'pending_install', 'pending_payment']),
-                'artwork_by' => $faker->randomElement(['Bluedale', 'clients']),
-                'dbp_approval' => $faker->randomElement(['Approved', 'Rejected', 'In Review']),
-                'remarks' => $faker->sentence(),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            // Pick one status per billboard
+            $billboardStatus = $faker->randomElement(['ongoing', 'pending_install', 'pending_payment']);
+
+            for ($j = 0; $j < rand(1, 5); $j++) {
+                $duration = rand(10, 20); // Duration of each booking
+                $end = (clone $currentStart)->addDays($duration);
+
+                DB::table('billboard_bookings')->insert([
+                    'billboard_id'   => $billboardId,
+                    'company_id'     => $faker->randomElement($companyIds),
+                    'start_date'     => $currentStart->toDateString(),
+                    'end_date'       => $end->toDateString(),
+                    'status'         => $billboardStatus, // ✅ consistent status for all bookings on this billboard
+                    'artwork_by'     => $faker->randomElement(['Bluedale', 'clients']),
+                    'dbp_approval'   => $faker->randomElement(['Approved', 'Rejected', 'In Review']),
+                    'remarks'        => $faker->sentence(),
+                    'created_at'     => now(),
+                    'updated_at'     => now(),
+                ]);
+
+                // Add a 30-day gap before next booking
+                $currentStart = (clone $end)->addDays(30);
+            }
         }
+
+
 
         // 6. Attach 2 images to first 10 billboards
         for ($i = 1; $i <= 50; $i++) {

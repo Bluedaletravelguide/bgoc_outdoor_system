@@ -9,6 +9,24 @@
 @endsection
 
 @section('app_content')
+<style>
+    .fc {
+        font-size: 20px !important;
+    }
+
+    .fc-toolbar-title {
+        font-size: 20px !important;
+        font-weight: bold !important;
+    }
+
+    .fc-daygrid-day-number {
+        font-size: 14px !important;
+    }
+
+    .fc-event-title {
+        font-size: 20px !important;
+    }
+</style>
 <div class="intro-y flex flex-col sm:flex-row items-center mt-8">
     <h2 class="text-lg font-medium mr-auto">
         Billboard Booking
@@ -85,17 +103,66 @@
         </div> 
     </div>
     <!-- Filter End -->
-    
+
+    <!-- Billboard Check Availability Filter -->
+    <div class="box p-5 mt-5 rounded-md bg-white shadow-md">
+        <h2 class="text-lg font-bold text-gray-800 mb-4">Check Billboard Availability</h2>
+
+        <form class="xl:flex flex-wrap items-end space-y-4 xl:space-y-0 xl:space-x-4 mb-4">
+            <div class="row sm:flex items-center sm:mr-4">
+                <label class="w-24 text-gray-700">Start Date</label>
+                <input type="date" id="availabilityStart" class="input border w-48" />
+            </div>
+
+            <div class="row sm:flex items-center sm:mr-4">
+                <label class="w-24 text-gray-700">End Date</label>
+                <input type="date" id="availabilityEnd" class="input border w-48" />
+            </div>
+
+            <div class="flex items-center">
+                <button
+                    type="button"
+                    id="checkAvailabilityBtn"
+                    class="button bg-theme-32 text-white px-5 py-2 rounded-md hover:bg-theme-32/90 transition">
+                    Check Availability
+                </button>
+            </div>
+        </form>
+
+        <!-- Availability Results Table -->
+        <div class="overflow-x-auto mt-4 hidden" id="availabilityResultsWrapper">
+            <table class="table table-bordered w-full">
+                <thead>
+                    <tr class="bg-theme-1 text-white text-left">
+                        <th class="px-4 py-2">Site Number</th>
+                        <th class="px-4 py-2">Location</th>
+                        <th class="px-4 py-2">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="availabilityResultsBody" class="text-gray-700">
+                    <!-- Dynamic rows go here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- Filter End -->
+  
     <!-- Billboard Booking Calendar -->
     <div class="mb-5 p-5 rounded-md border border-dashed border-theme-1">
         <h2 class="text-base font-bold mb-3 text-theme-1">Calendar View</h2>
+
+        <!-- FullCalendar Container -->
         <div id="billboard-booking-calendar" class="mb-5"></div>
+
+        <!-- ✅ Legend (place this inside the same box) -->
+        <div id="calendarLegend" class="flex flex-wrap gap-4 mt-4">
+            <!-- Legend items will be injected here -->
+        </div>
     </div>
 
+    <!-- Billboard Booking List Info Box -->
     <div class="mb-5 p-5 rounded-md" style="background-color:#ECF9FD;">
-        <h2 class="text-lg font-medium">
-            Billboard Booking List
-        </h2>
+        <h2 class="text-lg font-medium">Billboard Booking List</h2>
         <p class="w-12 flex-none xl:w-auto xl:flex-initial ml-2">
             <i class="font-bold">Billboard Booking List</i> - Lorem Ipsum.
         </p>
@@ -507,7 +574,7 @@
         let calendar = null;
 
         function initBookingCalendar() {
-            let calendarEl = document.getElementById('billboard-booking-calendar');
+            const calendarEl = document.getElementById('billboard-booking-calendar');
 
             calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
@@ -527,10 +594,27 @@
                             end: fetchInfo.endStr
                         },
                         success: function(response) {
-                            successCallback(response);
+                            // ✅ Return only the events to FullCalendar
+                            successCallback(response.events || []);
+
+                            // ✅ Render the legend
+                            const legendWrapper = $('#calendarLegend');
+                            legendWrapper.empty();
+
+                            if (response.legend && Array.isArray(response.legend)) {
+                                response.legend.forEach(item => {
+                                    legendWrapper.append(`
+                                        <div class="flex items-center space-x-4 mr-4 mb-2">
+                                            <span class="w-4 h-4 inline-block rounded-sm" style="background-color:${item.color}"></span>
+                                            <span class="text-sm text-gray-700">${item.label}</span>
+                                        </div>
+                                    `);
+                                });
+                            }
                         },
-                        error: function() {
-                            failureCallback();
+                        error: function(err) {
+                            console.error("Calendar load error:", err);
+                            failureCallback(err);
                         }
                     });
                 }
@@ -538,6 +622,7 @@
 
             calendar.render();
         }
+
 
         initBookingCalendar();
 
@@ -551,6 +636,67 @@
                 calendar.refetchEvents(); // reload calendar bookings with new filter
             }
         });
+
+        $('#checkAvailabilityBtn').on('click', function () {
+            const start = $('#availabilityStart').val();
+            const end = $('#availabilityEnd').val();
+            const state = $('#filterBillboardBookingState').val();
+            const district = $('#filterBillboardBookingDistrict').val();
+            const location = $('#filterBillboardBookingLocation').val();
+            const company = $('#filterBillboardBookingCompany').val();
+
+            if (!start || !end) {
+                alert("Please select both start and end date.");
+                return;
+            }
+
+            $.ajax({
+                url: '{{ route("billboard.checkAvailability") }}',
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    start_date: start,
+                    end_date: end,
+                    state: state,
+                    district: district,
+                    location: location,
+                    company: company
+                },
+                success: function (response) {
+                    const tbody = $('#availabilityResultsBody');
+                    const wrapper = $('#availabilityResultsWrapper');
+                    tbody.empty();
+
+                    if (response.length === 0) {
+                        tbody.append('<tr><td colspan="3" class="text-center text-gray-500">No billboards found.</td></tr>');
+                    } else {
+                        response.forEach(bb => {
+                            let status = '';
+
+                            if (bb.is_available) {
+                                status = '<span class="text-green-600 font-bold">Available</span>';
+                            } else {
+                                status = `<span class="text-red-600 font-bold">Not available</span><br><small class="text-gray-500">Next available: ${bb.next_available ?? 'Unknown'}</small>`;
+                            }
+
+                            tbody.append(`
+                                <tr>
+                                    <td>${bb.site_number}</td>
+                                    <td>${bb.location_name}</td>
+                                    <td>${status}</td>
+                                </tr>
+                            `);
+                        });
+                    }
+
+                    wrapper.removeClass('hidden');
+                },
+                error: function () {
+                    alert("Error loading billboard availability.");
+                }
+            });
+        });
+
 
 
         // Init Flatpickr only once when modal is opened
@@ -581,29 +727,6 @@
                 lastClickedLink = $(this).attr('id');
             });
         })();
-
-        $(document).ready(function() {
-            $('#ServiceRequestAddCategory').on('change', function() {
-                var sr_category_id = $(this).val();
-                if(sr_category_id) {
-                    $.ajax({
-                        url: '/get-subcategories/'+sr_category_id,
-                        type: "GET",
-                        dataType: "json",
-                        success:function(data) {
-                            $('#ServiceRequestAddSubCategory').empty();
-                            $('#ServiceRequestAddSubCategory').append('<option disabled selected hidden value>Select a sub category</option>');
-                            $.each(data, function(key, value) {
-                                $('#ServiceRequestAddSubCategory').append('<option value="'+ value.id +'">'+ value.name +'</option>');
-                            });
-                        }
-                    });
-                } else {
-                    $('#ServiceRequestAddSubCategory').empty();
-                    $('#ServiceRequestAddSubCategory').append('<option disabled selected hidden value>Select a category first</option>');
-                }
-            });
-        });
 
         // When any submit button is clicked
         (function() {
@@ -931,6 +1054,26 @@
 
         initBillboardBookingDatatable();
         setupAutoFilter();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         // Open modal to edit SR
         function serviceRequestEditModal() {
