@@ -165,13 +165,13 @@ class BillboardBookingController extends Controller
             $nestedData = array(
                 'site_number'           => $d->site_number,
                 'company_id'            => $d->company_id,
-                'company_name'           => $d->company_name,
+                'company_name'          => $d->company_name,
                 'location_id'           => $d->location_id,
                 'location_name'         => $d->location_name,
-                'start_date'            => $d->start_date,
-                'end_date'              => $d->end_date,
+                'start_date'            => $d->start_date ? Carbon::parse($d->start_date)->format('d/m/y') : null,
+                'end_date'              => $d->end_date ? Carbon::parse($d->end_date)->format('d/m/y') : null,
                 'remarks'               => $d->remarks,
-                'duration'              => $created_at,
+                'duration'              => ($d->start_date && $d->end_date) ? Carbon::parse($d->start_date)->diffInDays(Carbon::parse($d->end_date)) + 1 : null,
                 'created_at'            => $created_at,
                 'status'                => $d->status,
                 'id'                    => $d->id,
@@ -259,7 +259,15 @@ class BillboardBookingController extends Controller
         $location  = $request->input('location');
         $company   = $request->input('company');
 
-        $billboards = Billboard::with(['location.district.state', 'bookings'])
+        $billboards = Billboard::with([
+                'location.district.state',
+                'bookings' => function ($q) use ($startDate, $endDate) {
+                    $q->where(function ($query) use ($startDate, $endDate) {
+                        $query->where('start_date', '<=', $endDate)
+                            ->where('end_date', '>=', $startDate);
+                    });
+                }
+            ])
             ->when($state, function ($query) use ($state) {
                 $query->whereHas('location.district.state', fn($q) => $q->where('id', $state));
             })
@@ -291,8 +299,7 @@ class BillboardBookingController extends Controller
                     if (!$nextAvailableDate || $bookingEnd->greaterThan($nextAvailableDate)) {
                         $nextAvailableDate = $bookingEnd->copy()->addDay();
                     }
-                    // once overlap is found, we can break early
-                    break;
+                    break; // Early exit
                 }
             }
 
@@ -306,6 +313,7 @@ class BillboardBookingController extends Controller
 
         return response()->json($results);
     }
+
 
     private static function getBookingLegend()
     {

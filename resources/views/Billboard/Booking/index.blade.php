@@ -20,11 +20,11 @@
     }
 
     .fc-daygrid-day-number {
-        font-size: 14px !important;
+        font-size: 20px !important;
     }
 
     .fc-event-title {
-        font-size: 20px !important;
+        font-size: 18px !important;
     }
 </style>
 <div class="intro-y flex flex-col sm:flex-row items-center mt-8">
@@ -135,7 +135,7 @@
                 <thead>
                     <tr class="bg-theme-1 text-white text-left">
                         <th class="px-4 py-2">Site Number</th>
-                        <th class="px-4 py-2">Location</th>
+                        <th class="px-4 py-2">Area</th>
                         <th class="px-4 py-2">Status</th>
                     </tr>
                 </thead>
@@ -176,10 +176,10 @@
                     <th class="whitespace-nowrap">No.</th>
                     <th class="whitespace-nowrap">Site Number</th>
                     <th class="whitespace-nowrap">Client Name</th>
-                    <th class="whitespace-nowrap">Location</th>
+                    <th class="whitespace-nowrap">Area</th>
                     <th class="whitespace-nowrap">Start Date</th>
                     <th class="whitespace-nowrap">End Date</th> 
-                    <th class="whitespace-nowrap">Duration</th>
+                    <th class="whitespace-nowrap">Duration (Day)</th>
                     <th class="whitespace-nowrap">Status</th>
                     <th class="whitespace-nowrap">Remarks</th>
                     <th class="whitespace-nowrap">Calendar</th>
