@@ -597,7 +597,7 @@ class BillboardController extends Controller
                     }
                 ]);
             },
-            'billboard_images'
+            'images'
         ])->findOrFail($id);
 
         $pdf = PDF::loadView('billboard.export', compact('billboard'))
@@ -608,7 +608,7 @@ class BillboardController extends Controller
 
     public function exportListPdf(Request $request)
     {
-        $query = Billboard::with(['location.district.state', 'billboard_images']);
+        $query = Billboard::with(['location.district.state', 'images']);
 
         if ($request->filled('state_id') && $request->state_id !== 'all') {
             $query->whereHas('location.district.state', fn($q) => $q->where('id', $request->state_id));

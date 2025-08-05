@@ -9,6 +9,14 @@ module.exports = {
         "./resources/**/*.js",
         "./resources/**/*.vue",
     ],
+    safelist: [
+        'bg-green-600',
+        'bg-blue-600',
+        'bg-red-600',
+        'text-white',
+        'text-sm',
+        'text-center'
+    ],
     darkMode: "class",
     theme: {
         borderColor: (theme) => ({

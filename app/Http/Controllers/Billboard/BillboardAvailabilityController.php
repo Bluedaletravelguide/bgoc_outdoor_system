@@ -190,19 +190,194 @@ class BillboardAvailabilityController extends Controller
         return response()->json($json_data);
     }
 
+    // public function getMonthlyBookingAvailability(Request $request)
+    // {
+    //     $billboards = Billboard::with([
+    //         'location.district.state',
+    //         'bookings' => function ($query) {
+    //             $query->whereYear('start_date', 2025)
+    //                 ->orderBy('start_date'); // Order for easier span tracking
+    //         },
+    //         'bookings.clientCompany'
+    //     ])->get();
+
+    //     $results = [];
+
+    //     foreach ($billboards as $index => $billboard) {
+    //         $row = [
+    //             'no'          => $index + 1,
+    //             'site_number' => $billboard->site_number,
+    //             'location'    => $billboard->location->name,
+    //             'size'        => $billboard->size ?? '-',
+    //             'months'      => [] // To store merged booking cells
+    //         ];
+
+    //         // Track which months have been processed
+    //         $processedMonths = [];
+
+    //         for ($month = 1; $month <= 12; $month++) {
+    //             $monthKey = str_pad($month, 2, '0', STR_PAD_LEFT);
+
+    //             // Skip if this month already covered by a merged cell
+    //             if (in_array($monthKey, $processedMonths)) {
+    //                 continue;
+    //             }
+
+    //             $matchedBooking = null;
+
+    //             foreach ($billboard->bookings as $booking) {
+    //                 $bookingStart = \Carbon\Carbon::parse($booking->start_date);
+    //                 $bookingEnd   = \Carbon\Carbon::parse($booking->end_date);
+
+    //                 // Check if current month is within booking range
+    //                 $monthStart = \Carbon\Carbon::create(2025, $month, 1);
+    //                 $monthEnd   = $monthStart->copy()->endOfMonth();
+
+    //                 if ($bookingStart->lte($monthEnd) && $bookingEnd->gte($monthStart)) {
+    //                     $matchedBooking = $booking;
+
+    //                     // Determine span across months
+    //                     $startMonth = max($bookingStart->month, $month);
+    //                     $endMonth = min($bookingEnd->month, 12);
+    //                     $span = $endMonth - $startMonth + 1;
+
+    //                     // Mark months as processed
+    //                     for ($m = $startMonth; $m <= $endMonth; $m++) {
+    //                         $processedMonths[] = str_pad($m, 2, '0', STR_PAD_LEFT);
+    //                     }
+
+    //                     // Add merged cell content
+    //                     $row['months'][] = [
+    //                         'month' => $monthKey,
+    //                         'span'  => $span,
+    //                         'text'  => optional($booking->clientCompany)->name
+    //                                 ? $booking->clientCompany->name . ' (' . $bookingStart->format('d/m') . '–' . $bookingEnd->format('d/m') . ')'
+    //                                 : 'Booked (' . $bookingStart->format('d/m') . '–' . $bookingEnd->format('d/m') . ')',
+
+    //                     ];
+
+    //                     break; // Found a match, no need to check other bookings
+    //                 }
+    //             }
+
+    //             // No booking for this month
+    //             if (!$matchedBooking) {
+    //                 $row['months'][] = [
+    //                     'month' => $monthKey,
+    //                     'span'  => 1,
+    //                     'text'  => '-',
+    //                 ];
+    //             }
+    //         }
+
+    //         $results[] = $row;
+    //     }
+
+    //     return response()->json([
+    //         'data' => $results
+    //     ]);
+    // }
+
+    public function getMonthlyBookingAvailability(Request $request)
+    {
+        $billboards = Billboard::with([
+            'location.district.state',
+            'bookings' => function ($query) {
+                $query->whereYear('start_date', 2025)
+                    ->orderBy('start_date');
+            },
+            'bookings.clientCompany'
+        ])->get();
+
+        $results = [];
+
+        foreach ($billboards as $index => $billboard) {
+            $row = [
+                'no'          => $index + 1,
+                'site_number' => $billboard->site_number,
+                'location'    => $billboard->location->name,
+                'size'        => $billboard->size ?? '-',
+                'months'      => []
+            ];
+
+            $processedMonths = [];
+
+            for ($month = 1; $month <= 12; $month++) {
+                $monthKey = str_pad($month, 2, '0', STR_PAD_LEFT);
+
+                if (in_array($monthKey, $processedMonths)) continue;
+
+                $matchedBooking = null;
+
+                foreach ($billboard->bookings as $booking) {
+                    $bookingStart = \Carbon\Carbon::parse($booking->start_date);
+                    $bookingEnd   = \Carbon\Carbon::parse($booking->end_date);
+
+                    $monthStart = \Carbon\Carbon::create(2025, $month, 1);
+                    $monthEnd   = $monthStart->copy()->endOfMonth();
+
+                    if ($bookingStart->lte($monthEnd) && $bookingEnd->gte($monthStart)) {
+                        $matchedBooking = $booking;
+
+                        $startMonth = max($bookingStart->month, $month);
+                        $endMonth   = min($bookingEnd->month, 12);
+                        $span = $endMonth - $startMonth + 1;
+
+                        // mark processed months
+                        for ($m = $startMonth; $m <= $endMonth; $m++) {
+                            $processedMonths[] = str_pad($m, 2, '0', STR_PAD_LEFT);
+                        }
+
+                        // determine color by status
+                        $colorClass = match ($booking->status) {
+                            'ongoing'         => 'bg-green-600',
+                            'pending_install' => 'bg-blue-600',
+                            'pending_payment' => 'bg-red-600',
+                            default           => 'bg-gray-400', // fallback if status is unknown
+                        };
+
+                        // add merged cell info
+                        $row['months'][] = [
+                            'month' => $monthKey,
+                            'span'  => $span,
+                            'text'  => optional($booking->clientCompany)->name
+                                ? $booking->clientCompany->name . ' (' . $bookingStart->format('d/m') . '–' . $bookingEnd->format('d/m') . ')'
+                                : 'Booked (' . $bookingStart->format('d/m') . '–' . $bookingEnd->format('d/m') . ')',
+                            'color' => $colorClass,
+                        ];
+
+                        break; // done with this month
+                    }
+                }
+
+                if (!$matchedBooking) {
+                    $row['months'][] = [
+                        'month' => $monthKey,
+                        'span'  => 1,
+                        'text'  => '-',
+                        'color' => '', // no color if empty
+                    ];
+                }
+            }
+
+            $results[] = $row;
+
+
+            logger('apaan: ' . $matchedBooking);
+        }
+
+        return response()->json([
+            'data' => $results
+        ]);
+    }
+
+
+
+
     public function getBillboardAvailability(Request $request)
     {
         $startDateInput = $request->input('start_date');
         $endDateInput = $request->input('end_date');
-
-        if (empty($startDateInput) || empty($endDateInput)) {
-            return response()->json([
-                'draw' => intval($request->input('draw')),
-                'recordsTotal' => 0,
-                'recordsFiltered' => 0,
-                'data' => [],
-            ]);
-        }
         
         $startDate = Carbon::parse($startDateInput);
         $endDate = Carbon::parse($endDateInput);

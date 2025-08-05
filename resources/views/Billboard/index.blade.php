@@ -120,7 +120,7 @@
             <thead>
                 <tr class="bg-theme-1 text-white">
                     <th>No</th>
-                    <th>Site Number</th>
+                    <th>Site #</th>
                     <th>Type</th>
                     <th>Size</th>
                     <th>Lighting</th>

@@ -38,7 +38,7 @@ class BillboardBooking extends Model
 
     public function clientCompany()
     {
-        return $this->belongsTo(ClientCompany::class);
+        return $this->belongsTo(ClientCompany::class, 'company_id');
     }
 
     public function createdBy()

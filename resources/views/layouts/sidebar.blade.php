@@ -26,7 +26,7 @@
         <li>
             <a href="{{ route('billboard.booking.index') }}" class="side-menu {{ request()->routeIs('billboard.booking.index') ? 'side-menu--active' : '' }}">
                 <div class="side-menu__icon"> <i data-feather="inbox"></i> </div>
-                <div class="side-menu__title"> Billboard Booking </div>
+                <div class="side-menu__title"> Monthly Ongoing </div>
             </a>
         </li>
         @endif

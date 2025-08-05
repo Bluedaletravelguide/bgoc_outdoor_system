@@ -73,6 +73,8 @@ Route::group(['middleware' => ['auth']], function () {
     // Billboard Availability
     Route::get('/billboardAvailability', [BillboardAvailabilityController::class, 'index'])->name('billboard.availability.index');
     Route::post('/booking/availability', [BillboardAvailabilityController::class, 'getBillboardAvailability'])->name('billboard.checkAvailability');
+    Route::get('/billboard/monthly-availability', [BillboardAvailabilityController::class, 'getMonthlyBookingAvailability'])->name('billboard.monthly.availability');
+
 
 
 

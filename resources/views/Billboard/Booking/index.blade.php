@@ -29,16 +29,16 @@
 </style>
 <div class="intro-y flex flex-col sm:flex-row items-center mt-8">
     <h2 class="text-lg font-medium mr-auto">
-        Billboard Booking
+        Monthly Ongoing
     </h2>
 </div>
 <div class="intro-y box p-5 mt-5">
     <div class="mb-5 p-5 rounded-md" style="background-color:#ECF9FD;">
         <h2 class="text-lg font-medium">
-            Billboard Booking
+            Monthly Ongoing
         </h2>
         <p class="w-12 flex-none xl:w-auto xl:flex-initial ml-2">
-            <i class="font-bold">Billboard Booking</i> - Lorem Ipsum.
+            <i class="font-bold">Monthly Ongoing</i> - Lorem Ipsum.
         </p>
     </div>
 
@@ -110,7 +110,7 @@
             <thead>
                 <tr class="bg-theme-1 text-white">
                     <th class="whitespace-nowrap">No.</th>
-                    <th class="whitespace-nowrap">Site Number</th>
+                    <th class="whitespace-nowrap">Site #</th>
                     <th class="whitespace-nowrap">Client Name</th>
                     <th class="whitespace-nowrap">Area</th>
                     <th class="whitespace-nowrap">Start Date</th>

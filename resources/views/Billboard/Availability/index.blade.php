@@ -9,6 +9,43 @@
 @endsection
 
 @section('app_content')
+<style>
+    table td, table th {
+        white-space: nowrap;
+    }
+
+    thead th {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    /* Ensure sticky header works and aligns */
+    .monthly-booking-table-wrapper {
+        max-height: 400px;
+        overflow: auto; /* scroll both vertically & horizontally */
+    }
+
+    #monthly-booking-table {
+        border-collapse: collapse;
+        min-width: 1200px; /* adjust based on column count */
+    }
+
+    #monthly-booking-table th,
+    #monthly-booking-table td {
+        border: 1px solid #d1d5db; /* Tailwind border-gray-300 */
+        padding: 4px 8px;
+        white-space: nowrap;
+    }
+
+    #monthly-booking-table thead th {
+        position: sticky;
+        top: 0;
+        background-color: #f3f4f6; /* bg-gray-100 */
+        z-index: 1;
+    }
+</style>
+
 <div class="intro-y flex flex-col sm:flex-row items-center mt-8">
     <h2 class="text-lg font-medium mr-auto">
         Billboard Availability
@@ -91,13 +128,45 @@
     </div>
     <!-- Filter End -->
 
+    <div class="shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+        <div class="monthly-booking-table-wrapper">
+            <table id="monthly-booking-table" class="w-full text-sm text-left">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Site No</th>
+                        <th>Location</th>
+                        <th>Size</th>
+                        <th>Jan '25</th>
+                        <th>Feb '25</th>
+                        <th>Mar '25</th>
+                        <th>Apr '25</th>
+                        <th>May '25</th>
+                        <th>Jun '25</th>
+                        <th>Jul '25</th>
+                        <th>Aug '25</th>
+                        <th>Sep '25</th>
+                        <th>Oct '25</th>
+                        <th>Nov '25</th>
+                        <th>Dec '25</th>
+                    </tr>
+                </thead>
+                <tbody id="monthly-booking-body">
+                    <!-- Populated by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+
     <!-- Check Availability table -->
     <div class="overflow-x-auto scrollbar-hidden">
         <table class="table mt-5" id="billboard_availability_table">
             <thead>
                 <tr class="bg-theme-1 text-white">
                     <th class="whitespace-nowrap w-12">No.</th>
-                    <th class="whitespace-nowrap w-24">Site Number</th>
+                    <th class="whitespace-nowrap w-24">Site #</th>
                     <th class="whitespace-nowrap">Area</th>
                     <th class="whitespace-nowrap">State</th>
                     <th class="whitespace-nowrap w-24">Status</th>
@@ -445,20 +514,7 @@
         });
     });
 
-    // Function to reload the DataTable when any filter changes
-    function setupAutoFilter() {
-        const tableElement = $('#billboard_availability_table');
-        if (!$.fn.DataTable.isDataTable(tableElement)) {
-            console.warn("DataTable is not yet initialized.");
-            return;
-        }
-
-        const table = tableElement.DataTable();
-
-        $('#filterAvailabilityCompany, #filterAvailabilityState, #filterAvailabilityDistrict, #filterAvailabilityLocation, #filterAvailabilityStatus').on('change', function () {
-            table.ajax.reload();
-        });
-    }
+    
 
     $(document).ready(function() {
         $('.select2-client').select2({
@@ -489,6 +545,41 @@
         document.getElementById("ServiceRequestAddButton").addEventListener("click", ServiceRequestAddButton);
         // document.getElementById("openWorkOrderDetailButton").addEventListener("click", openWorkOrderDetail);
 
+        // Function to reload the DataTable when any filter changes
+        function setupAutoFilter() {
+            const tableElement = $('#billboard_availability_table');
+
+            // Reload DataTable
+            if ($.fn.DataTable.isDataTable(tableElement)) {
+                const table = tableElement.DataTable();
+
+                $('#filterAvailabilityCompany, #filterAvailabilityState, #filterAvailabilityDistrict, #filterAvailabilityLocation, #filterAvailabilityStatus')
+                    .on('change', function () {
+                        table.ajax.reload();
+                        loadMonthlyAvailability(); // <--- add this line
+                    });
+            }
+
+            // Also reload monthly table if only it exists
+            $('#filterAvailabilityCompany, #filterAvailabilityState, #filterAvailabilityDistrict, #filterAvailabilityLocation, #filterAvailabilityStatus')
+                .on('change', function () {
+                    loadMonthlyAvailability(); // <-- add this in case DataTable not initialized
+                });
+        }
+
+
+        function setupMonthlyAvailabilityFilter() {
+            const filterSelectors = '#filterAvailabilityState, #filterAvailabilityDistrict, #filterAvailabilityLocation, #filterAvailabilityStatus, #availabilityStart, #availabilityEnd';
+
+            $(filterSelectors).on('change', function () {
+                loadMonthlyAvailability(); // this function contains your $.ajax code
+            });
+
+            $('#checkAvailabilityBtn').on('click', function () {
+                loadMonthlyAvailability();
+            });
+        }
+
 
         // Check availability 
         $('#checkAvailabilityBtn').on('click', function () {
@@ -503,6 +594,98 @@
             // Reload datatable with new filters
             $('#billboard_availability_table').DataTable().ajax.reload();
         });
+
+        function loadMonthlyAvailability() {
+            $.ajax({
+                url: '{{ route("billboard.monthly.availability") }}',
+                method: 'GET',
+                data: {
+                    start: $('#availabilityStart').val(),
+                    end: $('#availabilityEnd').val(),
+                    state_id: $('#filterAvailabilityState').val(),
+                    district_id: $('#filterAvailabilityDistrict').val(),
+                    location_id: $('#filterAvailabilityLocation').val(),
+                    status: $('#filterAvailabilityStatus').val()
+                },
+                success: function (response) {
+                    const tbody = $('#monthly-booking-body');
+                    tbody.empty();
+
+                    if (!response.data || response.data.length === 0) {
+                        tbody.append(`<tr><td colspan="16" class="text-center p-4">No data available</td></tr>`);
+                        return;
+                    }
+
+                    response.data.forEach(row => {
+                        let html = `<tr>
+                            <td class="border border-gray-300">${row.no}</td>
+                            <td class="border border-gray-300">${row.site_number}</td>
+                            <td class="border border-gray-300">${row.location}</td>
+                            <td class="border border-gray-300">${row.size}</td>`;
+
+                        row.months.forEach(month => {
+                            let cellClass = `border border-gray-300 ${month.color} text-white font-semibold`;
+                            html += `<td colspan="${month.span}" class="${cellClass}">${month.text}</td>`;
+                        });
+
+                        html += `</tr>`;
+                        tbody.append(html);
+                    });
+                },
+                error: function (xhr) {
+                    console.error("AJAX error:", xhr.responseText);
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            setupAutoFilter(); // your existing DataTable filter
+            setupMonthlyAvailabilityFilter(); // new for monthly table
+            loadMonthlyAvailability(); // load once on page load
+        });
+
+
+
+        // $.ajax({
+        //     url: '{{ route("billboard.monthly.availability") }}',
+        //     method: 'GET',
+        //     success: function(response) {
+        //         const tbody = $('#monthly-booking-body');
+        //         tbody.empty();
+
+        //         response.data.forEach(row => {
+        //             let html = `
+        //                 <tr class="text-center">
+        //                     <td class="border">${escapeHtml(row.no)}</td>
+        //                     <td class="border">${escapeHtml(row.site_number)}</td>
+        //                     <td class="border">${escapeHtml(row.location)}</td>
+        //                     <td class="border">${escapeHtml(row.size)}</td>`;
+
+        //             row.months.forEach(month => {
+        //                 const colspan = month.span;
+        //                 const text = escapeHtml(month.text);
+        //                 const colorClass = month.color ?? '';
+        //                 html += `
+        //                     <td class="border text-white text-xs px-1 ${colorClass}" colspan="${colspan}">
+        //                         ${text}
+        //                     </td>`;
+        //             });
+
+        //             html += `</tr>`;
+        //             tbody.append(html);
+        //         });
+        //     },
+        //     error: function(xhr, status, error) {
+        //         console.error('AJAX error:', error);
+        //     }
+        // });
+
+        /**
+         * Escape HTML to avoid XSS
+         */
+        function escapeHtml(text) {
+            return $('<div>').text(text).html();
+        }
 
 
 
@@ -573,6 +756,9 @@
         }
 
         
+
+
+        
     
         // Setup billboard availability datatable
         function initBillboardAvailabilityDatatable() {
@@ -622,14 +808,14 @@
                             !$('#availabilityEnd').val() &&
                             !$('#filterAvailabilityState').val() &&
                             !$('#filterAvailabilityDistrict').val() &&
-                            !$('#filterAvailabilityLocation').val()
+                            !$('#filterAvailabilityLocation').val() &&
                             !$('#filterAvailabilityStatus').val();
 
-                        if (noFilters) {
-                            json.recordsTotal = 0;
-                            json.recordsFiltered = 0;
-                            return [];
-                        }
+                        // if (noFilters) {
+                        //     json.recordsTotal = 0;
+                        //     json.recordsFiltered = 0;
+                        //     return [];
+                        // }
 
                         return json.data;
                     }

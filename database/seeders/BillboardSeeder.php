@@ -90,21 +90,27 @@ class BillboardSeeder extends Seeder
 
         // 5: Create non-overlapping bookings with at least 30-day gaps
         foreach ($billboardIds as $billboardId) {
-            $currentStart = Carbon::today()->copy()->addDays(rand(0, 5));
+            $currentStart = Carbon::create(2025, 1, 1); // Seed for year 2025
 
-            // Pick one status per billboard
+            // Fixed status per billboard
             $billboardStatus = $faker->randomElement(['ongoing', 'pending_install', 'pending_payment']);
 
-            for ($j = 0; $j < rand(1, 5); $j++) {
-                $duration = rand(10, 20); // Duration of each booking
-                $end = (clone $currentStart)->addDays($duration);
+            for ($j = 0; $j < rand(2, 5); $j++) {
+                // Random booking duration: 1 to 12 months
+                $months = rand(1, 12);
+                $end = (clone $currentStart)->addMonthsNoOverflow($months)->subDay(); // end is inclusive
+
+                // Prevent exceeding year 2025
+                if ($end->year > 2025) {
+                    break;
+                }
 
                 DB::table('billboard_bookings')->insert([
                     'billboard_id'   => $billboardId,
                     'company_id'     => $faker->randomElement($companyIds),
                     'start_date'     => $currentStart->toDateString(),
                     'end_date'       => $end->toDateString(),
-                    'status'         => $billboardStatus, // ✅ consistent status for all bookings on this billboard
+                    'status'         => $billboardStatus,
                     'artwork_by'     => $faker->randomElement(['Bluedale', 'clients']),
                     'dbp_approval'   => $faker->randomElement(['Approved', 'Rejected', 'In Review']),
                     'remarks'        => $faker->sentence(),
@@ -112,10 +118,11 @@ class BillboardSeeder extends Seeder
                     'updated_at'     => now(),
                 ]);
 
-                // Add a 30-day gap before next booking
-                $currentStart = (clone $end)->addDays(30);
+                // Next booking starts right after previous ends
+                $currentStart = (clone $end)->addDay();
             }
         }
+
 
 
 

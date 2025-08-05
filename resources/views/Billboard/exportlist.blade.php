@@ -111,7 +111,7 @@
             <div class="image-section">
                 <div class="image-section-title">Images:</div><br><br><br><br>
                 <div class="image-grid">
-                    @foreach($billboard->billboard_images as $img)
+                    @foreach($billboard->images as $img)
                         <img src="file://{{ public_path('storage/billboards/image1.jpg') }}" alt="Image 1">
                     @endforeach
                 </div>
