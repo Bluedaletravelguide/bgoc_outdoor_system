@@ -14,6 +14,7 @@ use App\Http\Controllers\PushNotificationController;
 
 use App\Http\Controllers\Billboard\BillboardController;
 use App\Http\Controllers\Billboard\BillboardBookingController;
+use App\Http\Controllers\Billboard\BillboardAvailabilityController;
 use App\Http\Controllers\Location\LocationController;
 use Illuminate\Support\Facades\Storage;
 
@@ -68,7 +69,10 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/billboardBooking', [BillboardBookingController::class, 'index'])->name('billboard.booking.index');
     Route::post('/billboardBooking/list', [BillboardBookingController::class, 'list'])->name('billboard.booking.list');
     Route::post('/booking/calendar', [BillboardBookingController::class, 'getCalendarBookings'])->name('billboard.booking.calendar');
-    Route::post('/booking/availability', [BillboardBookingController::class, 'getBillboardAvailability'])->name('billboard.checkAvailability');
+
+    // Billboard Availability
+    Route::get('/billboardAvailability', [BillboardAvailabilityController::class, 'index'])->name('billboard.availability.index');
+    Route::post('/booking/availability', [BillboardAvailabilityController::class, 'getBillboardAvailability'])->name('billboard.checkAvailability');
 
 
 

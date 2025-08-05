@@ -1,7 +1,7 @@
 @extends('layouts.main')
 
 @section('title')
-<title>BGOC Outdoor System - Billboard Booking</title>
+<title>BGOC Outdoor System - Billboard Availability</title>
 @endsection('title')
 
 @section('sidebar')
@@ -9,54 +9,27 @@
 @endsection
 
 @section('app_content')
-<style>
-    .fc {
-        font-size: 20px !important;
-    }
-
-    .fc-toolbar-title {
-        font-size: 20px !important;
-        font-weight: bold !important;
-    }
-
-    .fc-daygrid-day-number {
-        font-size: 20px !important;
-    }
-
-    .fc-event-title {
-        font-size: 18px !important;
-    }
-</style>
 <div class="intro-y flex flex-col sm:flex-row items-center mt-8">
     <h2 class="text-lg font-medium mr-auto">
-        Billboard Booking
+        Billboard Availability
     </h2>
 </div>
 <div class="intro-y box p-5 mt-5">
     <div class="mb-5 p-5 rounded-md" style="background-color:#ECF9FD;">
         <h2 class="text-lg font-medium">
-            Billboard Booking
+            Check Billboard Availability
         </h2>
         <p class="w-12 flex-none xl:w-auto xl:flex-initial ml-2">
-            <i class="font-bold">Billboard Booking</i> - Lorem Ipsum.
+            <i class="font-bold">Billboard Availability</i> - Lorem Ipsum.
         </p>
     </div>
 
     <!-- Billboard Booking Calendar Filter -->
     <div class="flex flex-col sm:flex-row sm:items-end xl:items-start mb-2 mt-2">
-        <form class="xl:flex sm:mr-auto" id="employee_table">
-            <div class="row sm:flex items-center sm:mr-4">
-                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Client</label>
-                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardBookingCompany">
-                    <option value="">All</option>
-                    @foreach ($companies as $company)
-                        <option value="{{ $company->id }}">{{ $company->name }}</option>
-                    @endforeach
-                </select>
-            </div>
+        <form class="xl:flex sm:mr-auto">
             <div class="row sm:flex items-center sm:mr-4">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">State</label>
-                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardBookingState">
+                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="filterAvailabilityState">
                     <option value="" selected="">-- Select State --</option>
                     @foreach ($states as $state)
                         <option value="{{ $state->id }}">{{ $state->name }}</option>
@@ -65,7 +38,7 @@
             </div>
             <div class="row sm:flex items-center sm:mr-4">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">District</label>
-                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardBookingDistrict">
+                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="filterAvailabilityDistrict">
                     <option value="" selected="">-- Select State --</option>
                     @foreach ($districts as $district)
                         <option value="{{ $district->id }}">{{ $district->name }}</option>
@@ -74,7 +47,7 @@
             </div>
             <div class="sm:flex items-center sm:mr-4">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Area</label>
-                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardBookingLocation">
+                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterAvailabilityLocation">
                     <option value="" selected="">-- Select State --</option>
                     @foreach ($locations as $location)
                         <option value="{{ $location->id }}">{{ $location->name }}</option>
@@ -83,42 +56,52 @@
             </div>
             <div class="row sm:flex items-center sm:mr-4">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Status</label>
-                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardBookingStatus">
-                    <option value="" selected="">-- Select Status --</option>
-                    <option value="ongoing">Ongoing</option>
-                    <option value="pending_install">Pending Install</option>
-                    <option value="pending_payment">Pending Payment</option>
+                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="filterAvailabilityStatus">
+                    <option value="" selected="">All</option>
+                    <option value="true">Available</option>
+                    <option value="false">Not Available</option>
                 </select>
             </div>
         </form> 
-
-        <div class="text-center"> 
-            <a href="javascript:;" data-toggle="modal" data-target="#addBillboardBookingModal" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-32 text-white">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus w-4 h-4">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                Add New Billboard Job Order
-            </a> 
-        </div> 
     </div>
     <!-- Filter End -->
 
-    <!-- Service Request table -->
+    <!-- Billboard Check Availability Filter -->
+    <div class="flex flex-col sm:flex-row sm:items-end xl:items-start mb-2 mt-2">
+        <form class="xl:flex flex-wrap items-end space-y-4 xl:space-y-0 xl:space-x-4 mb-4">
+            <div class="row sm:flex items-center sm:mr-4">
+                <label class="w-24 text-gray-700">Start Date</label>
+                <input type="date" id="availabilityStart" class="input border w-48" />
+            </div>
+
+            <div class="row sm:flex items-center sm:mr-4">
+                <label class="w-24 text-gray-700">End Date</label>
+                <input type="date" id="availabilityEnd" class="input border w-48" />
+            </div>
+
+            <div class="flex items-center">
+                <button
+                    type="button"
+                    id="checkAvailabilityBtn"
+                    class="button bg-theme-32 text-white px-5 py-2 rounded-md hover:bg-theme-32/90 transition">
+                    Check Availability
+                </button>
+            </div>
+        </form>
+    </div>
+    <!-- Filter End -->
+
+    <!-- Check Availability table -->
     <div class="overflow-x-auto scrollbar-hidden">
-        <table class="table mt-5" id="billboard_booking_table">
+        <table class="table mt-5" id="billboard_availability_table">
             <thead>
                 <tr class="bg-theme-1 text-white">
-                    <th class="whitespace-nowrap">No.</th>
-                    <th class="whitespace-nowrap">Site Number</th>
-                    <th class="whitespace-nowrap">Client Name</th>
+                    <th class="whitespace-nowrap w-12">No.</th>
+                    <th class="whitespace-nowrap w-24">Site Number</th>
                     <th class="whitespace-nowrap">Area</th>
-                    <th class="whitespace-nowrap">Start Date</th>
-                    <th class="whitespace-nowrap">End Date</th> 
-                    <th class="whitespace-nowrap">Duration (Day)</th>
-                    <th class="whitespace-nowrap">Status</th>
-                    <th class="whitespace-nowrap">Remarks</th>
-                    <th class="whitespace-nowrap">Calendar</th>
+                    <th class="whitespace-nowrap">State</th>
+                    <th class="whitespace-nowrap w-24">Status</th>
+                    <th class="whitespace-nowrap w-24">Next Available</th> 
                     <th class="whitespace-nowrap flex flex-row">Action</th>
                 </tr>
             </thead>
@@ -128,19 +111,7 @@
         </table>
     </div>
     <!-- Table End -->
-    
-    <!-- Billboard Booking Calendar -->
-    <div class="mb-5 p-5 rounded-md border border-dashed border-theme-1">
-        <h2 class="text-base font-bold mb-3 text-theme-1">Calendar View</h2>
-
-        <!-- FullCalendar Container -->
-        <div id="billboard-booking-calendar" class="mb-5"></div>
-
-        <!-- ✅ Legend (place this inside the same box) -->
-        <div id="calendarLegend" class="flex flex-wrap gap-4 mt-4">
-            <!-- Legend items will be injected here -->
-        </div>
-    </div>
+    <!-- TODO: add logics here to view list of srevice requests for destroy|update|edit included within a modal -->
 </div>
 @endsection('app_content')
 
@@ -364,25 +335,18 @@
 
 @section('script')
 
-<!-- FullCalendar v5.11.3 - Includes global `FullCalendar` object -->
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
-
 <!-- searchable dropdown -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script>
-    // const allDistricts = @json($districts);
-</script>
 
 <script>
     
     // <!-- BEGIN: Billboard Booking List Filter -->
-    $('#filterBillboardBookingState').on('change', function () {
+    $('#filterAvailabilityState').on('change', function () {
         let stateId = $(this).val();
 
-        const $districtSelect = $('#filterBillboardBookingDistrict');
-        const $locationSelect = $('#filterBillboardBookingLocation');
+        const $districtSelect = $('#filterAvailabilityDistrict');
+        const $locationSelect = $('#filterAvailabilityLocation');
 
         $districtSelect.empty().append('<option value="">-- Select District --</option>');
         $locationSelect.empty().append('<option value="">-- Select Location --</option>');
@@ -398,7 +362,7 @@
                     });
 
                     // ✅ Reload table after loading all districts
-                    $('#billboard_booking_table').DataTable().ajax.reload();
+                    $('#billboard_availability_table').DataTable().ajax.reload();
                 },
                 error: function () {
                     alert('Failed to load all districts.');
@@ -419,7 +383,7 @@
                     });
 
                     // ✅ Reload table after loading filtered districts
-                    $('#billboard_booking_table').DataTable().ajax.reload();
+                    $('#billboard_availability_table').DataTable().ajax.reload();
                 },
                 error: function () {
                     alert('Failed to load districts.');
@@ -429,11 +393,11 @@
     });
 
     // When "District" is changed in add form
-    $('#filterBillboardBookingDistrict').on('change', function () {
+    $('#filterAvailabilityDistrict').on('change', function () {
         let districtId = $(this).val();
 
         // Reset Location dropdown
-        $('#filterBillboardBookingLocation').empty().append('<option value="">-- Select Location --</option>');
+        $('#filterAvailabilityLocation').empty().append('<option value="">-- Select Location --</option>');
 
         if (districtId !== '') {
             $.ajax({
@@ -445,11 +409,11 @@
                 },
                 success: function (locations) {
                     locations.forEach(function (location) {
-                        $('#filterBillboardBookingLocation').append(`<option value="${location.id}">${location.name}</option>`);
+                        $('#filterAvailabilityLocation').append(`<option value="${location.id}">${location.name}</option>`);
                     });
 
                     // ✅ Reload table after loading filtered districts
-                    $('#billboard_booking_table').DataTable().ajax.reload();
+                    $('#billboard_availability_table').DataTable().ajax.reload();
                 },
                 error: function () {
                     alert('Failed to load locations.');
@@ -459,21 +423,31 @@
     });
     // <!-- END: Billboard Booking List Filter -->
 
-    function reloadBookingData() {
-        // Reload calendar
-        if (calendar) {
-            calendar.refetchEvents();
-        }
+    document.addEventListener('DOMContentLoaded', function () {
+        const startInput = document.getElementById('availabilityStart');
+        const endInput = document.getElementById('availabilityEnd');
 
-        // Reload DataTable
-        if ($.fn.DataTable.isDataTable('#billboard_booking_table')) {
-            $('#billboard_booking_table').DataTable().ajax.reload();
-        }
-    }
+        // When start date changes
+        startInput.addEventListener('change', function () {
+            const startDate = startInput.value;
+
+            if (startDate) {
+                // Set the min for end date
+                endInput.min = startDate;
+
+                // Optional: clear end date if it is before start date
+                if (endInput.value && endInput.value < startDate) {
+                    endInput.value = '';
+                }
+            } else {
+                endInput.min = ''; // Reset if start date cleared
+            }
+        });
+    });
 
     // Function to reload the DataTable when any filter changes
     function setupAutoFilter() {
-        const tableElement = $('#billboard_booking_table');
+        const tableElement = $('#billboard_availability_table');
         if (!$.fn.DataTable.isDataTable(tableElement)) {
             console.warn("DataTable is not yet initialized.");
             return;
@@ -481,7 +455,7 @@
 
         const table = tableElement.DataTable();
 
-        $('#filterBillboardBookingCompany, #filterBillboardBookingState, #filterBillboardBookingDistrict, #filterBillboardBookingLocation, #filterBillboardBookingStatus').on('change', function () {
+        $('#filterAvailabilityCompany, #filterAvailabilityState, #filterAvailabilityDistrict, #filterAvailabilityLocation, #filterAvailabilityStatus').on('change', function () {
             table.ajax.reload();
         });
     }
@@ -497,11 +471,10 @@
     $(document).ready(function() {
 
         // Global variables
-        var filterBillboardBookingCompany;
-        var filterBillboardBookingState;
-        var filterBillboardBookingDistrict;
-        var filterBillboardBookingLocation;
-        var filterBillboardBookingStatus;
+        var filterAvailabilityState;
+        var filterAvailabilityDistrict;
+        var filterAvailabilityLocation;
+        var filterAvailabilityStatus;
 
 
         var filterServiceRequestStatus;
@@ -516,74 +489,22 @@
         document.getElementById("ServiceRequestAddButton").addEventListener("click", ServiceRequestAddButton);
         // document.getElementById("openWorkOrderDetailButton").addEventListener("click", openWorkOrderDetail);
 
-        
 
-        // Billboard Booking Calendar
-        let calendar = null;
+        // Check availability 
+        $('#checkAvailabilityBtn').on('click', function () {
+            const start = $('#availabilityStart').val();
+            const end = $('#availabilityEnd').val();
 
-        function initBookingCalendar() {
-            const calendarEl = document.getElementById('billboard-booking-calendar');
-
-            calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                height: 600,
-                events: function(fetchInfo, successCallback, failureCallback) {
-                    $.ajax({
-                        url: '{{ route("billboard.booking.calendar") }}',
-                        type: 'POST',
-                        data: {
-                            _token: '{{ csrf_token() }}',
-                            company: $('#filterBillboardBookingCompany').val(),
-                            state: $('#filterBillboardBookingState').val(),
-                            district: $('#filterBillboardBookingDistrict').val(),
-                            location: $('#filterBillboardBookingLocation').val(),
-                            status: $('#filterBillboardBookingStatus').val(),
-                            start: fetchInfo.startStr,
-                            end: fetchInfo.endStr
-                        },
-                        success: function(response) {
-                            // ✅ Return only the events to FullCalendar
-                            successCallback(response.events || []);
-
-                            // ✅ Render the legend
-                            const legendWrapper = $('#calendarLegend');
-                            legendWrapper.empty();
-
-                            if (response.legend && Array.isArray(response.legend)) {
-                                response.legend.forEach(item => {
-                                    legendWrapper.append(`
-                                        <div class="flex items-center space-x-4 mr-4 mb-2">
-                                            <span class="w-4 h-4 inline-block rounded-sm" style="background-color:${item.color}"></span>
-                                            <span class="text-sm text-gray-700">${item.label}</span>
-                                        </div>
-                                    `);
-                                });
-                            }
-                        },
-                        error: function(err) {
-                            console.error("Calendar load error:", err);
-                            failureCallback(err);
-                        }
-                    });
-                }
-            });
-
-            calendar.render();
-        }
-
-
-        initBookingCalendar();
-
-        // $('#filterBookingCalendarState').on('change', handleBookingFilterChange);
-        // $('#filterBookingCalendarDistrict').on('change', handleDistrictChange);
-        // $('#filterBookingCalendarLocation').on('change', reloadBookingData);
-
-
-        $('#filterBillboardBookingCompany, #filterBillboardBookingState, #filterBillboardBookingDistrict, #filterBillboardBookingLocation, #filterBillboardBookingStatus').on('change', function () {
-            if (calendar) {
-                calendar.refetchEvents(); // reload calendar bookings with new filter
+            if (!start || !end) {
+                alert("Please select both start and end date.");
+                return;
             }
+
+            // Reload datatable with new filters
+            $('#billboard_availability_table').DataTable().ajax.reload();
         });
+
+
 
         // Init Flatpickr only once when modal is opened
         $('[data-target="#addBillboardBookingModal"]').on('click', function () {
@@ -616,7 +537,7 @@
 
         // When any submit button is clicked
         (function() {
-            var billboard_booking_table = $('#billboard_booking_table')[0].altEditor;
+            var billboard_availability_table = $('#billboard_availability_table')[0].altEditor;
 
             document.getElementById('ServiceRequestAddButton').addEventListener('click', function(e) {
                 // Prevent the default form submission behavior
@@ -651,55 +572,17 @@
             cash(element).modal('hide');
         }
 
-        // Edit SR 
-        function editServiceRequest() {
-            var description = document.getElementById("serviceRequestEditDescription").value;
-            var client_remark = document.getElementById("serviceRequestEditClientRemark").value;
-
-            $.ajax({
-                type: 'POST',
-                url: "{{ route('serviceRequest.edit') }}",
-                data: {
-                    _token: $('meta[name="csrf-token"]').attr('content'),
-                    desc: description,
-                    client_remark: client_remark,
-                    id: originalServiceRequestId,
-                },
-                success: function(response) {
-                    // Close modal after successfully edited
-                    var element = "#serviceRequestEditModal";
-                    closeAltEditorModal(element);
-
-                    // Show successful toast
-                    window.showSubmitToast("Successfully updated.", "#91C714");
-
-                    // Clean fields
-                    document.getElementById("serviceRequestEditDescription").value = "";
-                    document.getElementById("serviceRequestEditClientRemark").value = "";
-
-                    // Reload table
-                    $('#billboard_booking_table').DataTable().ajax.reload();
-                },
-                error: function(xhr, status, error) {
-                    // Display the validation error message
-                    var response = JSON.parse(xhr.responseText);
-                    var error = "Error: " + response.error;
-
-                    // Show fail toast
-                    window.showSubmitToast(error, "#D32929");
-                }
-            });
-        }
+        
     
-        // Setup the in-house users datatable
-        function initBillboardBookingDatatable() {
+        // Setup billboard availability datatable
+        function initBillboardAvailabilityDatatable() {
             const dt = new Date();
             const formattedDate = `${dt.getFullYear()}${(dt.getMonth() + 1).toString().padStart(2, '0')}${dt.getDate().toString().padStart(2, '0')}`;
             const formattedTime = `${dt.getHours()}:${dt.getMinutes()}:${dt.getSeconds()}`;
-            const $fileName = `Billboard_Booking_List_${formattedDate}_${formattedTime}`;
+            const $fileName = `Billboard_Availability_List_${formattedDate}_${formattedTime}`;
 
-            const table = $('#billboard_booking_table').DataTable({
-                altEditor: true,
+            const table = $('#billboard_availability_table').DataTable({
+                // altEditor: true,
                 destroy: true,
                 debug: true,
                 processing: true,
@@ -717,22 +600,42 @@
                 ],
                 iDisplayLength: 25,
                 ajax: {
-                    url: "{{ route('billboard.booking.list') }}",
+                    url: "{{ route('billboard.checkAvailability') }}",
                     dataType: "json",
                     type: "POST",
                     data: function(d) {
                         d._token    = $('meta[name="csrf-token"]').attr('content');
-                        d.company  = $('#filterBillboardBookingCompany').val();
-                        d.status    = $('#filterBillboardBookingStatus').val();
-                        d.state     = $('#filterBillboardBookingState').val();
-                        d.district  = $('#filterBillboardBookingDistrict').val();
-                        d.location  = $('#filterBillboardBookingLocation').val();
+                        d.start_date  = $('#availabilityStart').val();
+                        d.end_date  = $('#availabilityEnd').val();
+                        d.status    = $('#filterAvailabilityStatus').val();
+                        d.state     = $('#filterAvailabilityState').val();
+                        d.district  = $('#filterAvailabilityDistrict').val();
+                        d.location  = $('#filterAvailabilityLocation').val();
                     },
                     dataSrc: function(json) {
                         json.recordsTotal = json.recordsTotal;
                         json.recordsFiltered = json.recordsFiltered;
+
+                        // If no filters, return empty array to show "No data"
+                        const noFilters =
+                            !$('#availabilityStart').val() &&
+                            !$('#availabilityEnd').val() &&
+                            !$('#filterAvailabilityState').val() &&
+                            !$('#filterAvailabilityDistrict').val() &&
+                            !$('#filterAvailabilityLocation').val()
+                            !$('#filterAvailabilityStatus').val();
+
+                        if (noFilters) {
+                            json.recordsTotal = 0;
+                            json.recordsFiltered = 0;
+                            return [];
+                        }
+
                         return json.data;
                     }
+                },
+                 language: {
+                    emptyTable: "No records found. Please apply at least one filter."
                 },
                 dom: "lBfrtip",
                 buttons: [{
@@ -788,105 +691,49 @@
                         data: "site_number",
                     },
                     {
-                        data: "company_name",
-                    },
-                    {
                         data: "location_name",
                     },
                     {
-                        data: "start_date",
+                        data: null,
+                        name: 'district_state',
+                        render: function (data, type, row) {
+                            const district = row.district_name || '';
+                            const state = row.state_name || '';
+                            return `${district}, ${state}`; // Or use template style if preferred
+                        }
                     },
                     {
-                        data: "end_date",
-                    },
-                    {
-                        data: "duration",
-                    },
-                    {
-                        data: "status",
+                        data: "is_available",
                         type: "readonly",
                         render: function(data, type, row) {
                             let element = ``
-                            if (data == 'pending_payment'){
-                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-6 text-white">` + data + `</a>`;
-                            } else if (data == 'ongoing') {
-                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-18 text-black">` + data + `</a>`;
-                            } else if (data == 'pending_install'){
-                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-1 text-white">` + data + `</a>`;
+                            if (data == false){
+                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-6 text-white">Not Available</a>`;
+                            } else if (data == true) {
+                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-18 text-black">Available</a>`;
                             }
                             
                             return element;
                         }
                     },
                     {
-                        data: "remarks",
+                        data: "next_available",
                     },
                     {
                         data: "WO_detail",
                         render: function(data, type, row) {
-                            var a = "{{ route('billboard.booking.index', ['id'=>':data'] )}}".replace(':data', data);
-                            let element = 
-                            `<div class="flex flex-row">
-                                <a href="javascript:;" id="profile-` + data + `"
-                                    class="button w-24 inline-block mr-2 mb-2 bg-theme-9 text-white" data-toggle="button" onclick="window.open('${a}')" >
-                                    View Detail
-                                </a>
-                            </div>`;
-
-                            return element;
+                            if (!data) return ''; // prevent undefined from causing crash
+                            const url = "{{ route('billboard.booking.index', ['id'=>':data']) }}".replace(':data', data);
+                            return `
+                                <div class="flex flex-row">
+                                    <a href="javascript:;" id="profile-${data}"
+                                        class="button w-24 inline-block mr-2 mb-2 bg-theme-9 text-white"
+                                        onclick="window.open('${url}')">
+                                        View Detail
+                                    </a>
+                                </div>`;
                         }
                     },
-                    {
-                        data: "id",
-                        render: function(data, type, row) {
-                            let element = `
-                            <div class="flex items-center space-x-2">
-                                <!-- Edit Button -->
-                                <a href="javascript:;" id="profile-` + data + `"
-                                    class="button w-24 inline-block mr-2 mb-2 bg-theme-1 text-white" data-toggle="button"" >
-                                    Edit
-                                </a>
-
-                                <!-- Delete Button -->
-                                <a class="flex items-center text-theme-6" href="javascript:;" data-toggle="modal" data-target="#clientUsersDeleteModal" id="delete-client-` + data + `">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 w-4 h-4 mr-1">
-                                        <polyline points="3 6 5 6 21 6"></polyline>
-                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                        <line x1="10" y1="11" x2="10" y2="17"></line>
-                                        <line x1="14" y1="11" x2="14" y2="17"></line>
-                                    </svg> 
-                                </a>
-                            </div>`;
-
-                            return element;
-                        }
-                    },
-                    // {
-                    //     data: "action",
-                    //     render: function(data, type, row) {
-                    //         let element = ``;
-                            
-                    //         // Check if the status is 'NEW'
-                    //         if (row.status === 'NEW') {
-                    //             // Show "Reject" button if the user is superadmin or teamleader
-                    //             element = `@if (Auth::guard('web')->user()->hasRole(['superadmin', 'team_leader']))
-                    //                         <a href="javascript:;" data-toggle="modal" data-target="#serviceRequestRejectModal" 
-                    //                         id="reject-` + data + `"
-                    //                         class="button w-24 inline-block mr-2 mb-2 bg-theme-6 text-white">
-                    //                         Reject
-                    //                         </a>
-                    //                         @elseif (Auth::guard('web')->user()->hasRole('client_user'))
-                    //                         <a href="javascript:;" data-toggle="modal" data-target="#serviceRequestDeleteModal" 
-                    //                         id="delete-` + data + `"
-                    //                         class="button w-24 inline-block mr-2 mb-2 bg-theme-6 text-white">
-                    //                         Delete
-                    //                         </a>
-                    //                         @endif`;
-                    //         }
-
-                    //         return element;
-                    //     }
-                    // },
                 ],
             });
 
@@ -897,7 +744,7 @@
             }
 
             // Update styling for the filter input
-            var filterDiv = document.getElementById("billboard_booking_table_filter");
+            var filterDiv = document.getElementById("billboard_availability_table_filter");
             if (filterDiv) {
                 filterDiv.style.float = "right";
                 filterDiv.classList.remove('dataTables_filter');
@@ -909,8 +756,8 @@
             }
 
             // Update styling for the info and paginate elements
-            var infoDiv = document.getElementById("billboard_booking_table_info");
-            var paginateDiv = document.getElementById("billboard_booking_table_paginate");
+            var infoDiv = document.getElementById("billboard_availability_table_info");
+            var paginateDiv = document.getElementById("billboard_availability_table_paginate");
 
             if (infoDiv) {
                 infoDiv.style.float = "left";
@@ -922,8 +769,8 @@
                 paginateDiv.classList.add("mt-5");
             }
 
-            // Update styling for the "billboard_booking_table_length" div and its select element
-            var existingDiv = document.getElementById("billboard_booking_table_length");
+            // Update styling for the "billboard_availability_table_length" div and its select element
+            var existingDiv = document.getElementById("billboard_availability_table_length");
             if (existingDiv) {
                 existingDiv.classList.remove('dataTables_length');
                 existingDiv.classList.add('mt-2', 'mb-1');
@@ -938,7 +785,7 @@
             serviceRequestEditModal();
         };
 
-        initBillboardBookingDatatable();
+        initBillboardAvailabilityDatatable();
         setupAutoFilter();
 
 
@@ -961,12 +808,60 @@
 
 
 
+        
+        
+        
+        
+        
+        
+        
+        // Edit SR 
+        function editServiceRequest() {
+            var description = document.getElementById("serviceRequestEditDescription").value;
+            var client_remark = document.getElementById("serviceRequestEditClientRemark").value;
+
+            $.ajax({
+                type: 'POST',
+                url: "{{ route('serviceRequest.edit') }}",
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    desc: description,
+                    client_remark: client_remark,
+                    id: originalServiceRequestId,
+                },
+                success: function(response) {
+                    // Close modal after successfully edited
+                    var element = "#serviceRequestEditModal";
+                    closeAltEditorModal(element);
+
+                    // Show successful toast
+                    window.showSubmitToast("Successfully updated.", "#91C714");
+
+                    // Clean fields
+                    document.getElementById("serviceRequestEditDescription").value = "";
+                    document.getElementById("serviceRequestEditClientRemark").value = "";
+
+                    // Reload table
+                    $('#billboard_availability_table').DataTable().ajax.reload();
+                },
+                error: function(xhr, status, error) {
+                    // Display the validation error message
+                    var response = JSON.parse(xhr.responseText);
+                    var error = "Error: " + response.error;
+
+                    // Show fail toast
+                    window.showSubmitToast(error, "#D32929");
+                }
+            });
+        }
+        
+        
         // Open modal to edit SR
         function serviceRequestEditModal() {
             // Remove previous click event listeners
-            $(document).off('click', "[id^='billboard_booking_table'] tbody tr td:not(:last-child)");
+            $(document).off('click', "[id^='billboard_availability_table'] tbody tr td:not(:last-child)");
 
-            $(document).on('click', "[id^='billboard_booking_table'] tbody tr td:not(:last-child)", function() {
+            $(document).on('click', "[id^='billboard_availability_table'] tbody tr td:not(:last-child)", function() {
 
                 // Grab row client company id
                 originalServiceRequestId = $(event.target).closest('tr').find('td:nth-last-child(2) a').attr('id').split('-')[1];

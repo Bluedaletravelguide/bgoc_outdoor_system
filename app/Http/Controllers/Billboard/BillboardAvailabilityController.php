@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\PushNotificationController;
 use Illuminate\Support\Facades\Log;
 
-class BillboardBookingController extends Controller
+class BillboardAvailabilityController extends Controller
 {
     public $user;
     /**
@@ -59,7 +59,7 @@ class BillboardBookingController extends Controller
         $locations = Location::orderBy('name', 'ASC')->get();
 
         // return view('workOrder.index', compact('clientcompany', 'projects', 'supervisors', 'technicians'));
-        return view('billboard.booking.index', compact('companies', 'states', 'districts', 'locations'));
+        return view('billboard.availability.index', compact('companies', 'states', 'districts', 'locations'));
     }
 
     /**
@@ -190,75 +190,109 @@ class BillboardBookingController extends Controller
         return response()->json($json_data);
     }
 
-    public function getCalendarBookings(Request $request)
+    public function getBillboardAvailability(Request $request)
     {
-        $company = $request->input('company');
-        $state = $request->input('state');
-        $district = $request->input('district');
-        $location = $request->input('location');
+        $startDateInput = $request->input('start_date');
+        $endDateInput = $request->input('end_date');
 
-        // ✅ Return no bookings if no filters are selected
-        if (!$company && !$state && !$district && !$location) {
-            return response()->json([]); // Return empty events
+        if (empty($startDateInput) || empty($endDateInput)) {
+            return response()->json([
+                'draw' => intval($request->input('draw')),
+                'recordsTotal' => 0,
+                'recordsFiltered' => 0,
+                'data' => [],
+            ]);
         }
+        
+        $startDate = Carbon::parse($startDateInput);
+        $endDate = Carbon::parse($endDateInput);
 
-        $query = BillboardBooking::select(
-            'billboard_bookings.*',
-            'billboards.site_number',
-            'locations.name as location_name'
-        )
-        ->leftJoin('billboards', 'billboards.id', '=', 'billboard_bookings.billboard_id')
-        ->leftJoin('locations', 'locations.id', '=', 'billboards.location_id')
-        ->leftJoin('districts', 'districts.id', '=', 'locations.district_id')
-        ->leftJoin('states', 'states.id', '=', 'districts.state_id');
+        $state     = $request->input('state');
+        $district  = $request->input('district');
+        $location  = $request->input('location');
+        $status  = $request->input('status');
 
-        if ($company) {
-            $query->where('billboard_bookings.company_id', $company);
-        }
-        if ($state) {
-            $query->where('states.id', $state);
-        }
-        if ($district) {
-            $query->where('districts.id', $district);
-        }
-        if ($location) {
-            $query->where('locations.id', $location);
-        }
-
-        $bookings = $query->get();
-
-        $events = [];
-
-        foreach ($bookings as $booking) {
-            $events[] = [
-                'title' => $booking->site_number . ' - ' . $booking->location_name,
-                'start' => $booking->start_date,
-                'end'   => $booking->end_date ? Carbon::parse($booking->end_date)->addDay()->toDateString() : null,
-                'color' => match ($booking->status) {
-                    'ongoing' => '#22C55E',
-                    'pending_install' => '#6366F1',
-                    'pending_payment' => '#EF4444',
-                    default => '#eff163ff',
+        $billboards = Billboard::with([
+                'location.district.state',
+                'bookings' => function ($q) use ($startDate, $endDate) {
+                    $q->where(function ($query) use ($startDate, $endDate) {
+                        $query->where('start_date', '<=', $endDate)
+                            ->where('end_date', '>=', $startDate);
+                    });
                 }
+            ])
+            ->when($state, function ($query) use ($state) {
+                $query->whereHas('location.district.state', fn($q) => $q->where('id', $state));
+            })
+            ->when($district, function ($query) use ($district) {
+                $query->whereHas('location.district', fn($q) => $q->where('id', $district));
+            })
+            ->when($location, function ($query) use ($location) {
+                $query->where('location_id', $location);
+            })
+            ->get();
+
+        $results = [];
+
+        foreach ($billboards as $billboard) {
+            $isAvailable = true;
+            $nextAvailableDate = null;
+
+            foreach ($billboard->bookings as $booking) {
+                $bookingStart = Carbon::parse($booking->start_date);
+                $bookingEnd   = Carbon::parse($booking->end_date);
+
+                if (
+                    $bookingStart->lte($endDate) &&
+                    $bookingEnd->gte($startDate)
+                ) {
+                    // Overlap found!
+                    $isAvailable = false;
+
+                    if (!$nextAvailableDate || $bookingEnd->greaterThan($nextAvailableDate)) {
+                        $nextAvailableDate = $bookingEnd->copy()->addDay();
+                    }
+                    break; // Early exit
+                }
+            }
+
+            // ✅ Apply status filter
+            if ($status !== null) {
+                $boolStatus = filter_var($status, FILTER_VALIDATE_BOOLEAN); // converts 'true'/'false' string to boolean
+                if ($isAvailable !== $boolStatus) {
+                    continue; // skip if doesn't match filter
+                }
+            }
+
+            $results[] = [
+                'site_number'    => $billboard->site_number,
+                'location_name'  => $billboard->location->name,
+                'district_name'  => $billboard->location->district->name ?? '',
+                'state_name'     => $billboard->location->district->state->name ?? '',
+                'is_available'   => $isAvailable,
+                'next_available_raw' => $isAvailable ? null : $nextAvailableDate, // Keep raw Carbon for sorting
+                'next_available' => $isAvailable ? null : ($nextAvailableDate ? Carbon::parse($nextAvailableDate)->format('d/m/Y') : 'Unknown'),
+                
             ];
         }
 
+        $results = collect($results)
+        ->sortBy(function ($item) {
+            return [
+                $item['is_available'] ? 0 : 1, // Available first
+                $item['next_available_raw'] ?? now()->addYears(10) // Treat nulls as far future
+            ];
+        })
+        ->values()
+        ->all();
+
         return response()->json([
-            'events' => $events,
-            'legend' => self::getBookingLegend()
+            'draw' => intval($request->input('draw')), // DataTables draw count
+            'recordsTotal' => count($results),
+            'recordsFiltered' => count($results),
+            'data' => $results,
         ]);
     }
-
-    private static function getBookingLegend()
-    {
-        return [
-            ['label' => 'Ongoing', 'color' => '#22C55E'],
-            ['label' => 'Pending Install', 'color' => '#6366F1'],
-            ['label' => 'Pending Payment', 'color' => '#EF4444'],
-            ['label' => 'Other', 'color' => '#FACC15'],
-        ];
-    }
-
 
 
 
