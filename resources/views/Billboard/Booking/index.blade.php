@@ -27,6 +27,9 @@
         font-size: 18px !important;
     }
 </style>
+<!-- Flatpickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
 <div class="intro-y flex flex-col sm:flex-row items-center mt-8">
     <h2 class="text-lg font-medium mr-auto">
         Monthly Ongoing
@@ -77,7 +80,7 @@
                 <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardBookingLocation">
                     <option value="" selected="">-- Select State --</option>
                     @foreach ($locations as $location)
-                        <option value="{{ $location->id }}">{{ $location->name }}</option>
+                        <option value="{{ $location->id }}" data-site="{{ $location->site_number }}">{{ $location->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -93,18 +96,18 @@
         </form> 
 
         <div class="text-center"> 
-            <a href="javascript:;" data-toggle="modal" data-target="#addBillboardBookingModal" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-32 text-white">
+            <a href="javascript:;" data-toggle="modal" data-target="#addBookingModal" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-32 text-white">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus w-4 h-4">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
-                Add New Billboard Job Order
+                Add New Job Order
             </a> 
         </div> 
     </div>
     <!-- Filter End -->
 
-    <!-- Service Request table -->
+    <!-- Monthly Ongoing table -->
     <div class="overflow-x-auto scrollbar-hidden">
         <table class="table mt-5" id="billboard_booking_table">
             <thead>
@@ -115,7 +118,7 @@
                     <th class="whitespace-nowrap">Area</th>
                     <th class="whitespace-nowrap">Start Date</th>
                     <th class="whitespace-nowrap">End Date</th> 
-                    <th class="whitespace-nowrap">Duration (Day)</th>
+                    <th class="whitespace-nowrap">Duration (Month)</th>
                     <th class="whitespace-nowrap">Status</th>
                     <th class="whitespace-nowrap">Remarks</th>
                     <th class="whitespace-nowrap">Calendar</th>
@@ -147,40 +150,47 @@
 @section('modal_content')
 <!-- Create Modal -->
     <div class="row flex flex-col sm:flex-row sm:items-end xl:items-start mb-2">
-        <div class="modal" id="addBillboardBookingModal">
+        <div class="modal" id="addBookingModal">
             <div class="modal__content">
                 <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
                     <h2 class="font-medium text-base mr-auto">Add New Job Order</h2>
                 </div>
-                <form>
+                <form id="inputBookingForm">
                     <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                         <div class="col-span-12 sm:col-span-12">
                             <label>Site Number</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="SEL-0001" disabled>
+                            <input type="text" class="input w-full border mt-2 flex-1" id="inputBookingSiteNo" value="" disabled>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
                             <label>Client</label>
-                            <select id="ServiceRequestAddClient" class="input w-full border mt-2 select2-client" required>
-                                <option disabled selected hidden value="">Select a client</option>
-                                <option value="1">ABC Corporation</option>
-                                <option value="2">BlueTech Solutions</option>
-                                <option value="3">GreenField Ltd</option>
-                                <option value="4">Visionary Co</option>
-                                <option value="5">Skyline Advertising</option>
+                            <select id="inputBookingCompany" class="input w-full border mt-2 select2-client" required>
+                                <option value="">-- Select Client --</option>
+                                @foreach ($companies as $company)
+                                    <option value="{{ $company->id }}">{{ $company->name }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Location</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="" required>
+                            <label>State</label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBookingState">
+                                <option value="">-- Select State --</option>
+                                @foreach ($states as $state)
+                                    <option value="{{ $state->id }}">{{ $state->name }}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
                             <label>District</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="" required>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBookingDistrict">
+                                <option value="">-- Select District --</option>
+                            </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>State</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="" required>
-                        </div>
+                            <label>Area</label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBookingLocation">
+                                <option value="">-- Select Area --</option>
+                            </select>
+                        </div>                     
                         <div class="col-span-12 sm:col-span-6">
                             <label for="start_date" class="form-label">Start Date</label>
                             <input type="text" id="start_date" class="input border mt-2" placeholder="Select start date">
@@ -190,29 +200,40 @@
                             <input type="text" id="end_date" class="input border mt-2" placeholder="Select end date">
                         </div>
                         <div class="col-span-12 sm:col-span-12">
+                            <label>Status</label>
+                            <select id="inputBookingStatus" class="input w-full border mt-2 select" required>
+                                <option disabled selected hidden value="">-- Select Status --</option>
+                                <option value="pending_payment">Pending Payment</option>
+                                <option value="pending_install">Pending Install</option>
+                                <option value="ongoing">Ongoing</option>            
+                            </select>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
                             <label>Artwork by</label>
-                            <select id="ServiceRequestAddClient" class="input w-full border mt-2 select" required>
-                                <option disabled selected hidden value="">Select an option</option>
-                                <option value="1">Client</option>
-                                <option value="2">Bluedale</option>
+                            <select id="inputBookingArtworkBy" class="input w-full border mt-2 select" required>
+                                <option disabled selected hidden value="">-- Select Artwork by --</option>
+                                <option value="Client">Client</option>
+                                <option value="Bluedale">Bluedale</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
                             <label>DBP Approval</label>
-                            <select id="ServiceRequestAddClient" class="input w-full border mt-2 select" required>
-                                <option disabled selected hidden value="">Select an option</option>
-                                <option value="1">Yes</option>
-                                <option value="2">No</option>
+                            <select id="inputBookingDBPApproval" class="input w-full border mt-2 select" required>
+                                <option disabled selected hidden value="">-- Select DBP Approval --</option>
+                                <option value="NA">Not Available</option>
+                                <option value="In Review">In Review</option>
+                                <option value="Approved">Approved</option>
+                                <option value="Rejected">Rejected</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
                             <label>Remarks</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="" required>
+                            <input type="text" class="input w-full border mt-2 flex-1" id="inputBookingRemarks" value="" required>
                         </div>
                     </div>
 
                     <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
-                        <button type="submit" class="button w-20 bg-theme-1 text-white" id="ServiceRequestAddButton">Submit</button>
+                        <button type="submit" class="button w-20 bg-theme-1 text-white" id="inputBookingSubmit">Submit</button>
                     </div>
                 </form>
             </div>
@@ -220,141 +241,48 @@
     </div>
 <!-- Create Modal End -->
 
-<!-- View Job Order Modal -->
-    <div class="row flex flex-col sm:flex-row sm:items-end xl:items-start mb-2">
-        <div class="modal" id="viewBillboardJobOrderModal">
-            <div class="modal__content">
-                <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
-                    <h2 class="font-medium text-base mr-auto">Job Order Detail</h2>
-                </div>
-                <form>
-                    <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Site Number</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="SEL-0001" disabled>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Client</label>
-                            <select id="ServiceRequestAddClient" class="input w-full border mt-2 select2-client" disabled>
-                                <option disabled selected hidden value="">Select a client</option>
-                                <option value="1">ABC Corporation</option>
-                                <option value="2">BlueTech Solutions</option>
-                                <option value="3">GreenField Ltd</option>
-                                <option value="4">Visionary Co</option>
-                                <option value="5">Skyline Advertising</option>
-                            </select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Location</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="" disabled>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>District</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="" disabled>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>State</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="" disabled>
-                        </div>
-                        <div class="col-span-12 sm:col-span-6">
-                            <label for="start_date" class="form-label">Start Date</label>
-                            <input type="text" id="start_date" class="input border mt-2" placeholder="Select start date" disabled>
-                        </div>
-                        <div class="col-span-12 sm:col-span-6">
-                            <label for="end_date" class="form-label">End Date</label>
-                            <input type="text" id="end_date" class="input border mt-2" placeholder="Select end date" disabled>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Artwork by</label>
-                            <select id="ServiceRequestAddClient" class="input w-full border mt-2 select" disabled>
-                                <option disabled selected hidden value="">Select an option</option>
-                                <option value="1">Client</option>
-                                <option value="2">Bluedale</option>
-                            </select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>DBP Approval</label>
-                            <select id="ServiceRequestAddClient" class="input w-full border mt-2 select" disabled>
-                                <option disabled selected hidden value="">Select an option</option>
-                                <option value="1">Yes</option>
-                                <option value="2">No</option>
-                            </select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Remarks</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="" disabled>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div> 
-    </div>
-<!-- View Modal End -->
 
-<!-- BEGIN: Service Request Reject Modal -->
-<div class="modal" id="serviceRequestRejectModal">
+<!-- BEGIN: Billboard Booking Delete Modal -->
+<div class="modal" id="billboardBookingDeleteModal">
     <div class="modal__content">
         <div class="p-5 text-center"> <i data-feather="x-circle" class="w-16 h-16 text-theme-6 mx-auto mt-3"></i>
             <div class="text-3xl mt-5">Are you sure?</div>
-            <div class="text-gray-600 mt-2">Confirm rejecting this service request? This process cannot be undone.</div>
+            <div class="text-gray-600 mt-2">Confirm delete this Monthly Ongoing? This process cannot be undone.</div>
         </div>
-        <form>
-            <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
-                <div class="col-span-12 sm:col-span-12">
-                    <label>Reject Reason</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Reject Reason" id="serviceRequestRejectReason" required>
-                </div>
-            </div>
-
-            <!-- <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
-                <button type="submit" class="button w-20 bg-theme-1 text-white" id="serviceRequestEditButton">Update</button>
-            </div> -->
-        </form>
 
         <div class="px-5 pb-8 text-center">
             <button type="button" data-dismiss="modal" class="button w-24 border text-gray-700 dark:border-dark-5 dark:text-gray-300 mr-1">Cancel</button>
-            <button type="button" class="button w-24 bg-theme-6 text-white" id="serviceRequestRejectButton" onclick="serviceRequestRejectButton()">Reject</button>
+            <button type="button" class="button w-24 bg-theme-6 text-white" id="billboardBookingDeleteButton" onclick="billboardBookingDeleteButton()">Delete</button>
         </div>
     </div>
 </div>
 <!-- END: Service Request Reject Modal -->
 
-<!-- BEGIN: Service Request Delete Modal -->
-<div class="modal" id="serviceRequestDeleteModal">
-    <div class="modal__content">
-        <div class="p-5 text-center"> <i data-feather="x-circle" class="w-16 h-16 text-theme-6 mx-auto mt-3"></i>
-            <div class="text-3xl mt-5">Are you sure?</div>
-            <div class="text-gray-600 mt-2">Confirm delete this service request? This process cannot be undone.</div>
-        </div>
-
-        <div class="px-5 pb-8 text-center">
-            <button type="button" data-dismiss="modal" class="button w-24 border text-gray-700 dark:border-dark-5 dark:text-gray-300 mr-1">Cancel</button>
-            <button type="button" class="button w-24 bg-theme-6 text-white" id="serviceRequestDeleteButton" onclick="serviceRequestDeleteButton()">Delete</button>
-        </div>
-    </div>
-</div>
-<!-- END: Service Request Reject Modal -->
-
-<!-- BEGIN: SR Edit Modal -->
-<div class="modal" id="serviceRequestEditModal">
+<!-- Edit Modal -->
+<div class="modal" id="editBookingModal">
     <div class="modal__content">
         <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
-            <h2 class="font-medium text-base mr-auto">Edit Service Request</h2>
+            <h2 class="font-medium text-base mr-auto">Edit Status</h2>
         </div>
         <form>
             <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Description</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Description" id="serviceRequestEditDescription" required>
+                    <label>Status</label>
+                    <select id="editBookingStatus" class="input w-full border mt-2 select" required>
+                        <option disabled selected hidden value="">-- Select Status --</option>
+                        <option value="pending_payment">Pending Payment</option>
+                        <option value="pending_install">Pending Install</option>
+                        <option value="ongoing">Ongoing</option>            
+                    </select>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Client Remark</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Client Remark" id="serviceRequestEditClientRemark" required>
+                    <label>Remarks</label>
+                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Description" id="editBookingRemarks" required>
                 </div>
             </div>
 
             <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
-                <button type="submit" class="button w-20 bg-theme-1 text-white" id="serviceRequestEditButton">Update</button>
+                <button type="submit" class="button w-20 bg-theme-1 text-white" id="editBookingButton">Update</button>
             </div>
         </form>
     </div>
@@ -371,9 +299,10 @@
 <!-- searchable dropdown -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script>
-    // const allDistricts = @json($districts);
-</script>
+
+
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script>
     
@@ -459,6 +388,69 @@
     });
     // <!-- END: Billboard Booking List Filter -->
 
+    let startPicker, endPicker;
+
+    // init datepicker
+    function initDatePickers() {
+
+        const startInput = document.querySelector('#start_date');
+        const endInput = document.querySelector('#end_date');
+
+        if (!startInput || !endInput) {
+            console.warn("Date inputs not found in DOM.");
+            return;
+        }
+
+        if (startPicker && typeof startPicker.destroy === 'function') {
+            startPicker.destroy();
+        }
+
+        if (endPicker && typeof endPicker.destroy === 'function') {
+            endPicker.destroy();
+        };
+
+        startPicker = flatpickr("#start_date", {
+            dateFormat: "Y-m-d",
+            minDate: "today",
+            onChange: function (selectedDates, dateStr) {
+                if (endPicker) {
+                    // Set min date for endPicker
+                    endPicker.set('minDate', dateStr);
+
+                    // Auto-clear end date if before new start
+                    const endDate = endPicker.selectedDates[0];
+                    if (endDate && endDate < selectedDates[0]) {
+                        endPicker.clear();
+                    }
+                }
+            }
+        });
+
+        endPicker = flatpickr("#end_date", {
+            dateFormat: "Y-m-d",
+            minDate: "today"
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const modal = document.getElementById('addBookingModal');
+
+        if (modal) {
+            const observer = new MutationObserver(() => {
+                const isVisible = !modal.classList.contains('hidden');
+                if (isVisible) {
+                    initDatePickers();
+                }
+            });
+
+            observer.observe(modal, {
+                attributes: true,
+                attributeFilter: ['class'],
+            });
+        }
+    });
+
+
     function reloadBookingData() {
         // Reload calendar
         if (calendar) {
@@ -485,14 +477,6 @@
             table.ajax.reload();
         });
     }
-
-    $(document).ready(function() {
-        $('.select2-client').select2({
-            placeholder: "Select a client",
-            allowClear: true,
-            width: '100%'
-        });
-    });
     	
     $(document).ready(function() {
 
@@ -507,14 +491,80 @@
         var filterServiceRequestStatus;
         var originalServiceRequestId;
         var lastClickedLink;
-        let startPicker = null;
-        let endPicker = null;
+        
 
         // Listen to below buttons
-        document.getElementById("serviceRequestRejectButton").addEventListener("click", serviceRequestRejectButton);
-        document.getElementById("serviceRequestDeleteButton").addEventListener("click", serviceRequestDeleteButton);
-        document.getElementById("ServiceRequestAddButton").addEventListener("click", ServiceRequestAddButton);
+        document.getElementById("billboardBookingDeleteButton").addEventListener("click", billboardBookingDeleteButton);
+        document.getElementById("inputBookingSubmit").addEventListener("click", inputBookingSubmit);
         // document.getElementById("openWorkOrderDetailButton").addEventListener("click", openWorkOrderDetail);
+
+        // When "State" is changed in add form
+        $('#inputBookingState').on('change', function () {
+            let stateId = $(this).val();
+
+            // Reset District and Location dropdowns
+            $('#inputBookingDistrict').empty().append('<option value="">-- Select District --</option>');
+            $('#inputBookingLocation').empty().append('<option value="">-- Select Location --</option>');
+
+            if (stateId !== '') {
+                $.ajax({
+                    url: '{{ route("location.getDistricts") }}',
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        state_id: stateId
+                    },
+                    success: function (districts) {
+                        districts.forEach(function (district) {
+                            $('#inputBookingDistrict').append(`<option value="${district.id}">${district.name}</option>`);
+                        });
+                    },
+                    error: function () {
+                        alert('Failed to load districts.');
+                    }
+                });
+            }
+        });
+
+        // When "District" is changed in add form
+        $('#inputBookingDistrict').on('change', function () {
+            let districtId = $(this).val();
+
+            // Reset Location dropdown
+            $('#inputBookingLocation').empty().append('<option value="">-- Select Location --</option>');
+
+            if (districtId !== '') {
+                $.ajax({
+                    url: '{{ route("location.getLocations") }}',
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        district_id: districtId
+                    },
+                    success: function (locations) {
+                        locations.forEach(function (location) {
+                            $('#inputBookingLocation').append(`<option value="${location.id}">${location.name}</option>`);
+                        });
+                    },
+                    error: function () {
+                        alert('Failed to load locations.');
+                    }
+                });
+            }
+        });
+
+        
+        $('#inputBookingForm').on('submit', function (e) {
+            e.preventDefault(); // Prevent default form submission
+            inputBookingSubmit(); // Call your AJAX function
+        });
+
+        $('.select2-client').select2({
+            placeholder: "Select a client",
+            allowClear: true,
+            width: '100%'
+        });
+
 
         
 
@@ -574,38 +624,21 @@
 
         initBookingCalendar();
 
-        // $('#filterBookingCalendarState').on('change', handleBookingFilterChange);
-        // $('#filterBookingCalendarDistrict').on('change', handleDistrictChange);
-        // $('#filterBookingCalendarLocation').on('change', reloadBookingData);
-
-
         $('#filterBillboardBookingCompany, #filterBillboardBookingState, #filterBillboardBookingDistrict, #filterBillboardBookingLocation, #filterBillboardBookingStatus').on('change', function () {
             if (calendar) {
                 calendar.refetchEvents(); // reload calendar bookings with new filter
             }
         });
 
-        // Init Flatpickr only once when modal is opened
-        $('[data-target="#addBillboardBookingModal"]').on('click', function () {
-            setTimeout(() => {
-                if (!startPicker) {
-                    startPicker = flatpickr("#start_date", {
-                        dateFormat: "Y-m-d",
-                        onChange: function (selectedDates, dateStr) {
-                            if (endPicker) {
-                                endPicker.set('minDate', dateStr);
-                            }
-                        }
-                    });
-                }
 
-                if (!endPicker) {
-                    endPicker = flatpickr("#end_date", {
-                        dateFormat: "Y-m-d"
-                    });
-                }
-            }, 200); // slight delay after modal opens
+        
+
+        $('[data-toggle="modal"][data-target="#addBookingModal"]').on('click', function () {
+            setTimeout(() => {
+                initDatePickers(); // Ensure date pickers are freshly initialized
+            }, 200);
         });
+
 
         // Store the ID of the last clicked modal when it's triggered
         (function() {
@@ -618,64 +651,126 @@
         (function() {
             var billboard_booking_table = $('#billboard_booking_table')[0].altEditor;
 
-            document.getElementById('ServiceRequestAddButton').addEventListener('click', function(e) {
+            document.getElementById('inputBookingSubmit').addEventListener('click', function(e) {
                 // Prevent the default form submission behavior
                 e.preventDefault();
             });
 
-            document.getElementById('serviceRequestRejectButton').addEventListener('click', function(e) {
+            document.getElementById('billboardBookingDeleteButton').addEventListener('click', function(e) {
                 // Prevent the default form submission behavior
                 e.preventDefault();
             });
 
-            document.getElementById('serviceRequestDeleteButton').addEventListener('click', function(e) {
-                // Prevent the default form submission behavior
-                e.preventDefault();
-            });
-
-            document.getElementById('serviceRequestEditButton').addEventListener('click', function(e) {
+            document.getElementById('editBookingButton').addEventListener('click', function(e) {
                 // Prevent the default form submission behavior
                 e.preventDefault();
 
                 // Edit SR
-                editServiceRequest();
+                editBooking();
             });
         })();
 
-        // Open modal
-        function openAltEditorModal(element) {
-            cash(element).modal('show');
-        }
-        // Close modal
-        function closeAltEditorModal(element) {
-            cash(element).modal('hide');
-        }
+        // Add New Billboard
+        function inputBookingSubmit() {
+            const start_date = startPicker?.input?.value || '';
+            const end_date = endPicker?.input?.value || '';
 
-        // Edit SR 
-        function editServiceRequest() {
-            var description = document.getElementById("serviceRequestEditDescription").value;
-            var client_remark = document.getElementById("serviceRequestEditClientRemark").value;
+            if (!start_date || !end_date) {
+                alert("Please select both Start and End dates.");
+                return;
+            }
+
+            document.getElementById("inputBookingSubmit").disabled = true;
+            document.getElementById('inputBookingSubmit').style.display = 'none';
 
             $.ajax({
                 type: 'POST',
-                url: "{{ route('serviceRequest.edit') }}",
+                url: "{{ route('billboard.booking.create') }}",
+                data: {
+                    _token          : $('meta[name="csrf-token"]').attr('content'),
+                    company         : document.getElementById("inputBookingCompany").value,
+                    state           : document.getElementById("inputBookingState").value,
+                    district        : document.getElementById("inputBookingDistrict").value,
+                    location        : document.getElementById("inputBookingLocation").value,
+                    start_date      : start_date,
+                    end_date        : end_date,
+                    status          : document.getElementById("inputBookingStatus").value,
+                    artwork_by      : document.getElementById("inputBookingArtworkBy").value,
+                    dbp_approval    : document.getElementById("inputBookingDBPApproval").value,
+                    remarks         : document.getElementById("inputBookingRemarks").value,
+                },
+                success: function(response) {
+                    // Close modal
+                    const element = "#addBookingModal";
+                    closeAltEditorModal(element);
+
+                    // Success toast
+                    window.showSubmitToast("Successfully added.", "#91C714");
+
+                    // Clear inputs
+                    $('#inputBookingCompany').val('').trigger('change');
+                    $('#inputBookingSiteNo').val('');
+                    document.getElementById("inputBookingState").value = "";
+                    document.getElementById("inputBookingDistrict").value = "";
+                    document.getElementById("inputBookingLocation").value = "";
+                    document.getElementById("inputBookingStatus").value = "";
+                    document.getElementById("inputBookingArtworkBy").value = "";
+                    document.getElementById("inputBookingDBPApproval").value = "";
+                    document.getElementById("inputBookingRemarks").value = "";
+                    if (startPicker) startPicker.clear();
+                    if (endPicker) endPicker.clear();
+
+                    // Reload table
+                    $('#billboard_booking_table').DataTable().ajax.reload();
+
+                    // Reset button
+                    document.getElementById("inputBookingSubmit").disabled = false;
+                    document.getElementById('inputBookingSubmit').style.display = 'inline-block';
+                },
+                error: function(xhr) {
+                    const response = JSON.parse(xhr.responseText);
+                    const error = "Error: " + response.error;
+
+                    // Show fail toast
+                    window.showSubmitToast(error, "#D32929");
+
+                    document.getElementById("inputBookingSubmit").disabled = false;
+                    document.getElementById('inputBookingSubmit').style.display = 'inline-block';
+                }
+            });
+        }
+
+        $('#inputBookingLocation').on('change', function () {
+            const selectedOption = $(this).find('option:selected');
+            const siteNumber = selectedOption.data('site_number') || '';
+            $('#inputBookingSiteNo').val(siteNumber);
+        });
+
+        // Edit Billboard Booking
+        function editBooking() {
+            var status = document.getElementById("editBookingStatus").value;
+            var remarks = document.getElementById("editBookingRemarks").value;
+
+            $.ajax({
+                type: 'POST',
+                url: "{{ route('billboard.booking.edit') }}",
                 data: {
                     _token: $('meta[name="csrf-token"]').attr('content'),
-                    desc: description,
-                    client_remark: client_remark,
-                    id: originalServiceRequestId,
+                    status: status,
+                    remarks: remarks,
+                    booking_id: booking_id,
                 },
                 success: function(response) {
                     // Close modal after successfully edited
-                    var element = "#serviceRequestEditModal";
+                    var element = "#editBookingModal";
                     closeAltEditorModal(element);
 
                     // Show successful toast
                     window.showSubmitToast("Successfully updated.", "#91C714");
 
                     // Clean fields
-                    document.getElementById("serviceRequestEditDescription").value = "";
-                    document.getElementById("serviceRequestEditClientRemark").value = "";
+                    document.getElementById("editBookingStatus").value = "";
+                    document.getElementById("editBookingRemarks").value = "";
 
                     // Reload table
                     $('#billboard_booking_table').DataTable().ajax.reload();
@@ -690,6 +785,60 @@
                 }
             });
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // Open modal
+        function openAltEditorModal(element) {
+            cash(element).modal('show');
+        }
+        // Close modal
+        function closeAltEditorModal(element) {
+            cash(element).modal('hide');
+        }
+
+        
     
         // Setup the in-house users datatable
         function initBillboardBookingDatatable() {
@@ -848,7 +997,7 @@
                                 </a>
 
                                 <!-- Delete Button -->
-                                <a class="flex items-center text-theme-6" href="javascript:;" data-toggle="modal" data-target="#clientUsersDeleteModal" id="delete-client-` + data + `">
+                                <a class="flex items-center text-theme-6" href="javascript:;" data-toggle="modal" data-target="#billboardBookingDeleteModal" id="delete-` + data + `">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 w-4 h-4 mr-1">
                                         <polyline points="3 6 5 6 21 6"></polyline>
                                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -861,32 +1010,6 @@
                             return element;
                         }
                     },
-                    // {
-                    //     data: "action",
-                    //     render: function(data, type, row) {
-                    //         let element = ``;
-                            
-                    //         // Check if the status is 'NEW'
-                    //         if (row.status === 'NEW') {
-                    //             // Show "Reject" button if the user is superadmin or teamleader
-                    //             element = `@if (Auth::guard('web')->user()->hasRole(['superadmin', 'team_leader']))
-                    //                         <a href="javascript:;" data-toggle="modal" data-target="#serviceRequestRejectModal" 
-                    //                         id="reject-` + data + `"
-                    //                         class="button w-24 inline-block mr-2 mb-2 bg-theme-6 text-white">
-                    //                         Reject
-                    //                         </a>
-                    //                         @elseif (Auth::guard('web')->user()->hasRole('client_user'))
-                    //                         <a href="javascript:;" data-toggle="modal" data-target="#serviceRequestDeleteModal" 
-                    //                         id="delete-` + data + `"
-                    //                         class="button w-24 inline-block mr-2 mb-2 bg-theme-6 text-white">
-                    //                         Delete
-                    //                         </a>
-                    //                         @endif`;
-                    //         }
-
-                    //         return element;
-                    //     }
-                    // },
                 ],
             });
 
@@ -935,7 +1058,7 @@
             }
 
             // Open modal to edit SR
-            serviceRequestEditModal();
+            editBookingModal();
         };
 
         initBillboardBookingDatatable();
@@ -961,23 +1084,59 @@
 
 
 
-        // Open modal to edit SR
-        function serviceRequestEditModal() {
+        // Open modal to edit Billboard Booking
+        function editBookingModal() {
             // Remove previous click event listeners
             $(document).off('click', "[id^='billboard_booking_table'] tbody tr td:not(:last-child)");
 
             $(document).on('click', "[id^='billboard_booking_table'] tbody tr td:not(:last-child)", function() {
 
                 // Grab row client company id
-                originalServiceRequestId = $(event.target).closest('tr').find('td:nth-last-child(2) a').attr('id').split('-')[1];
+                booking_id = $(event.target).closest('tr').find('td:nth-last-child(1) a').attr('id').split('-')[1];
 
                 // Place values to edit form fields in the modal
-                document.getElementById("serviceRequestEditDescription").value = $(event.target).closest('tr').find('td:nth-child(' + '3' + ')').text();
-                document.getElementById("serviceRequestEditClientRemark").value = $(event.target).closest('tr').find('td:nth-child(' + '4' + ')').text();
+                document.getElementById("editBookingStatus").value = $(event.target).closest('tr').find('td:nth-child(' + '8' + ')').text();
+                document.getElementById("editBookingRemarks").value = $(event.target).closest('tr').find('td:nth-child(' + '9' + ')').text();
 
                 // Open modal
-                var element = "#serviceRequestEditModal";
+                var element = "#editBookingModal";
                 openAltEditorModal(element);
+            });
+        }
+
+        // Delete billboard ID
+        function billboardBookingDeleteButton() {
+            var id = lastClickedLink.split("-")[1];
+
+            $.ajax({
+                type: 'POST',
+                url: "{{ route('billboard.booking.delete') }}",
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    id: id,
+                },
+                success: function (response) {
+                    // Close modal after successfully deleted
+                    var element = "#billboardBookingDeleteModal";
+                    closeAltEditorModal(element);
+
+                    // Show successful toast
+                    window.showSubmitToast("Successfully deleted.", "#91C714");
+
+                    // Reload table
+                    $('#billboard_booking_table').DataTable().ajax.reload();
+
+                    // Reload the entire page
+                    // location.reload();
+                },
+                error: function (xhr, status, error) {
+                    // Display the validation error message
+                    var response = JSON.parse(xhr.responseText);
+                    var error = "Error: " + response.error;
+
+                    // Show fail toast
+                    window.showSubmitToast(error, "#D32929");
+                }
             });
         }
 

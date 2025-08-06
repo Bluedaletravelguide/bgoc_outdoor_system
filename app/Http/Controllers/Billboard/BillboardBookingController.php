@@ -43,22 +43,20 @@ class BillboardBookingController extends Controller
     }
 
     /**
-     * Show the projects page.
+     * Show the booking page.
      */
     public function index()
     {
         if (is_null($this->user) || !$this->user->can('billboard.view')) {
             abort(403, 'Sorry !! You are Unauthorized to view any project. Contact system admin for access !');
         }
-        // $type = Project::distinct()->get(['type']);
-        // return view('projects.index', compact('type'));
 
         $companies = ClientCompany::orderBy('name', 'ASC')->get();
         $states = State::orderBy('name', 'ASC')->get();
         $districts = District::orderBy('name', 'ASC')->get();
-        $locations = Location::orderBy('name', 'ASC')->get();
+        $locations = Location::rightJoin('billboards', 'billboards.location_id' , 'locations.id')
+        ->orderBy('name', 'ASC')->get();
 
-        // return view('workOrder.index', compact('clientcompany', 'projects', 'supervisors', 'technicians'));
         return view('billboard.booking.index', compact('companies', 'states', 'districts', 'locations'));
     }
 
@@ -171,7 +169,7 @@ class BillboardBookingController extends Controller
                 'start_date'            => $d->start_date ? Carbon::parse($d->start_date)->format('d/m/y') : null,
                 'end_date'              => $d->end_date ? Carbon::parse($d->end_date)->format('d/m/y') : null,
                 'remarks'               => $d->remarks,
-                'duration'              => ($d->start_date && $d->end_date) ? Carbon::parse($d->start_date)->diffInDays(Carbon::parse($d->end_date)) + 1 : null,
+                'duration'              => ($d->start_date && $d->end_date) ? Carbon::parse($d->start_date)->diffInMonths(Carbon::parse($d->end_date)) + 1 : null,
                 'created_at'            => $created_at,
                 'status'                => $d->status,
                 'id'                    => $d->id,
@@ -188,6 +186,265 @@ class BillboardBookingController extends Controller
         );
 
         return response()->json($json_data);
+    }
+
+    /**
+     * Create Monthly Ongoing Billboard Booking
+     */
+    public function create(Request $request)
+    {   
+        $user = Auth::user();
+        
+        // Get user roles
+        $role = $user->roles->pluck('name')[0];
+        $userID = $this->user->id;
+
+        $location           = $request->location;
+        $company            = $request->company;
+        $start_date         = $request->start_date;
+        $end_date           = $request->end_date;
+        $status             = $request->status;
+        $artwork_by         = $request->artwork_by;
+        $dbp_approval       = $request->dbp_approval;
+        $remarks            = $request->remarks;
+
+        try {
+
+            DB::beginTransaction();
+            
+            $billboard_id = Billboard::where('location_id', $location)->value('id');
+
+            if (!$billboard_id) {
+                return response()->json(['error' => 'Billboard not found for the selected location.'], 404);
+            }
+
+            // Check for overlapping bookings
+            $overlap = BillboardBooking::where('billboard_id', $billboard_id)
+                ->where(function ($query) use ($start_date, $end_date) {
+                    $query->whereBetween('start_date', [$start_date, $end_date])
+                        ->orWhereBetween('end_date', [$start_date, $end_date])
+                        ->orWhere(function ($query2) use ($start_date, $end_date) {
+                            $query2->where('start_date', '<=', $start_date)
+                                    ->where('end_date', '>=', $end_date);
+                        });
+                })
+                ->exists();
+
+            if ($overlap) {
+                return response()->json(['error' => 'This billboard is already booked for the selected date range.'], 409);
+            }
+
+            //Create a new service request
+            $booking = BillboardBooking::create([
+                'billboard_id'      => $billboard_id,
+                'company_id'        => $company,
+                'start_date'        => $start_date,
+                'end_date'          => $end_date,
+                'status'            => $status,
+                'artwork_by'        => $artwork_by,
+                'dbp_approval'      => $dbp_approval,
+                'remarks'           => $remarks,
+            ]);
+
+            $booking->save();
+
+            DB::commit();
+
+            return response()->json([
+                'success'   => 'success',
+            ], 200);
+
+        }catch (\Exception $e) {
+            // If any queries fail, undo all changes
+            DB::rollback();
+
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * Edit Monthly Ongoing Billboard Booking
+     */
+    public function edit(Request $request)
+    {
+
+        $booking_id   = $request->booking_id;
+        $status       = $request->status;
+        $remarks      = $request->remarks;
+        
+        //Validation rules
+        // $validator = Validator::make(
+        //     $request->all(),
+        //     [
+        //         'original_workOrder_id' => [
+        //             'required',
+        //             'string',
+        //             'max:700',
+        //             Rule::exists('work_order','id')->whereNot('status', 'VERIFICATION_PASSED'),
+        //             Rule::exists('work_order','id')->whereNot('priority', $priority),
+        //         ],
+        //         'priority' => [
+        //             'required',
+        //             'string',
+        //             'in: 1,2,3,4',
+        //             // Rule::exists('work_order')->where(fn($query)=>
+        //             //     $query->where('id', $original_workOrder_id) 
+        //             //         ->where('priority', '!=', $priority) 
+                        
+        //             // ),
+        //             // Rule::exists('work_order')->where('id', $original_workOrder_id),
+        //             //'exists:work_order,priority,id,' . $original_workOrder_id . '0',
+        //         ],
+        //     ],
+
+        //     [
+        //         'original_workOrder_id.exists' => 'Work order is not allowed to be edited in VERIFICATION_PASSED phse',
+
+        //         'priority.required' => 'The "Priority" field is required.',
+        //         'priority.in'       => 'The value of "Priority" field is incorrect.',
+        //         //'priority.exists'   => 'The "Priority" field is no change',
+        //     ],
+        // );
+
+        // Handle failed validations
+        // if ($validator->fails()) {
+        //     return response()->json(['error' => $validator->errors()->first()], 422);
+        // }
+        try {
+            // Ensure all queries successfully executed
+            DB::beginTransaction();
+
+            // Retrieve the WorkOrder and related ServiceRequest
+            $id = BillboardBooking::findOrFail($booking_id);
+
+            logger('idnya apaan: ' . $id);
+
+            // Update work order
+            BillboardBooking::where('id', $id->id)
+                ->update([
+                    'status'        => $status,
+                    'remarks'       => $remarks,
+                    'updated_at'    => Carbon::now(),
+                ]);
+
+            // Ensure all queries successfully executed, commit the db changes
+            DB::commit();
+
+            return response()->json([
+                "success"   => "success",
+            ], 200);
+        } 
+        catch (\Exception $e) {
+            // If any queries fail, undo all changes
+            DB::rollback();
+
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * Delete billboard booking
+     */
+    public function delete(Request $request)
+    {   
+        $user = Auth::user();
+        
+        // // Get user roles
+        $role = $user->roles->pluck('name')[0];
+        $userID = $this->user->id;
+
+        $id = $request->id;
+
+        try {
+            // Ensure all queries successfully executed
+            DB::beginTransaction();
+
+            // delete billboard booking
+            BillboardBooking::where('id', $id)->delete();
+
+            // Ensure all queries successfully executed, commit the db changes
+            DB::commit();
+
+            return response()->json([
+                "success"   => "success",
+            ], 200);
+        } catch (\Exception $e) {
+            // If any queries fail, undo all changes
+            DB::rollback();
+
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+    }
+
+    public function downloadPdf($id)
+    {
+        // $billboard = Billboard::with(['location.district.state', 'images'])->findOrFail($id);
+
+        $billboard = Billboard::with([
+            'location' => function ($query) {
+                $query->with([
+                    'district' => function ($query) {
+                        $query->with('state');
+                    }
+                ]);
+            },
+            'billboard_images'
+        ])->findOrFail($id);
+
+        $pdf = PDF::loadView('billboard.export', compact('billboard'))
+        ->setPaper('A4', 'landscape'); // 👈 Set orientation here
+
+        return $pdf->download('billboard-detail-' . $billboard->site_number . '.pdf');
+    }
+
+    public function exportListPdf(Request $request)
+    {
+        $query = Billboard::with(['location.district.state', 'billboard_images']);
+
+        if ($request->filled('state_id') && $request->state_id !== 'all') {
+            $query->whereHas('location.district.state', fn($q) => $q->where('id', $request->state_id));
+        }
+
+        if ($request->filled('district_id') && $request->district_id !== 'all') {
+            $query->whereHas('location.district', fn($q) => $q->where('id', $request->district_id));
+        }
+
+        if ($request->filled('type') && $request->type !== 'all') {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('size') && $request->size !== 'all') {
+            $query->where('size', $request->size);
+        }
+
+        $billboards = $query->get();
+
+        // Get filename based on state or district
+        $filename = 'billboards-master';
+        $date = Carbon::now()->format('Y-m-d');
+
+        if ($request->filled('district_id') && $request->district_id !== 'all') {
+            $district = District::find($request->district_id);
+            if ($district) {
+                $filename = 'billboards-' . Str::slug($district->name) . '-' . $date;
+            }
+        } elseif ($request->filled('state_id') && $request->state_id !== 'all') {
+            $state = State::find($request->state_id);
+            if ($state) {
+                $filename = 'billboards-' . Str::slug($state->name) . '-' . $date;
+            }
+        } else {
+            $filename .= '-' . $date;
+        }
+
+        $pdf = PDF::loadView('billboard.exportlist', compact('billboards'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->download($filename . '.pdf');
     }
 
     public function getCalendarBookings(Request $request)
@@ -280,218 +537,11 @@ class BillboardBookingController extends Controller
 
 
 
-    /**
-     * Create service request and work order.
-     */
-    public function create(Request $request)
-    {   
-        $user = Auth::user();
-        
-        // Get user roles
-        $role = $user->roles->pluck('name')[0];
-        $userID = $this->user->id;
 
-        logger('masuk sini3');
 
-        $type               = $request->type;
-        $size               = $request->size;
-        $lighting           = $request->lighting;
-        $state              = $request->state;
-        $district           = $request->district;
-        $location           = $request->location;
-        $gpslongitude       = $request->gpslongitude;
-        $gpslatitude        = $request->gpslatitude;
-        $trafficvolume      = $request->trafficvolume;
+    
 
-        // Get the current UTC time
-        $current_UTC = Carbon::now('UTC');
-
-        DB::beginTransaction();
-
-        try {
-            // Step 1: Fetch state code from state model (assuming you have it)
-            $stateCode = State::select('prefix')->where('id', $state)->first();
-
-            // Step 2: Count existing records for the same type and state to get the next number
-            $runningNumber = Billboard::leftJoin('locations', 'billboards.location_id', '=', 'locations.id')
-            ->leftJoin('districts', 'locations.district_id', '=', 'districts.id')
-            ->leftJoin('states', 'districts.state_id', '=', 'states.id')
-            ->where('states.id', $state)
-            ->count() + 1;
-
-            $billboardType = Billboard::select('type', 'prefix')->distinct()->where('prefix' , $type)->first();
-
-            // Format as 4-digit number with leading zeros
-            $formattedNumber = str_pad($runningNumber, 4, '0', STR_PAD_LEFT);
-
-            // Step 3: Set status character
-            $statusChar = 'A'; // or use: $status == 1 ? 'A' : 'I'
-
-            // Step 4: Generate site_number
-            $siteNumber = "{$type}-{$stateCode->prefix}-{$formattedNumber}-{$statusChar}";
-
-            //Create a new service request
-            $billboard = Billboard::create([
-                'site_number'      => $siteNumber,
-                'status'            => 1,
-                'type'              => $billboardType->type,
-                'prefix'              => $billboardType->prefix,
-                'size'              => $size,
-                'lighting'          => $lighting,
-                'state'             => $state,
-                'district'          => $district,
-                'location_id'          => $location,
-                'gps_longitude'      => $gpslongitude,
-                'gps_latitude'       => $gpslatitude,
-                'traffic_volume'     => $trafficvolume,
-                'created_by'        => $userID,
-            ]);
-
-            // Generate the service request no & work order no based on prefixes and count
-            // $getPrefixNo = $billboard->billboardPrefixNo();
-
-            // Generate the service request number based on prefixes and count
-            // $billboard->service_request_no = $getPrefixNo[0];
-            $billboard->save();
-
-            // Validate the input
-            // $validator = Validator::make($request->all(), [
-            //     'priority' => 'required|in:1,2,3,4', // Priority must be one of the three values
-            //     ]);
-        
-            //     if ($validator->fails()) {
-            //     return response()->json(['error' => $validator->errors()->first()], 422);
-            //     }
-        
-
-        
-
-            // $pushNotificationController = new PushNotificationController();
-            // $pushNotificationController->sendEmailNewSR($serviceRequest, $workOrder);
-
-            // Ensure all queries successfully executed, commit the db changes
-            DB::commit();
-
-            return response()->json([
-                'success'   => 'success',
-            ], 200);
-
-        }catch (\Exception $e) {
-            // If any queries fail, undo all changes
-            DB::rollback();
-
-            return response()->json(['error' => $e->getMessage()], 422);
-        }
-    }
-
-    /**
-     * Edit work order.
-     */
-    public function edit(Request $request)
-    {
-
-        //Check the permission to edit the work order 
-        if (!$this->user->can('work_order.edit')) {
-            return response()->json(['error' => 'Sorry !! You are Unauthorized to edit work order. Contact system admin for access !'], 403);
-        }
-
-        // Get the current UTC time
-        $current_UTC = Carbon::now('UTC');
-
-        $original_workOrder_id   = $request->original_workOrder_id;
-        $priority                = $request->priority;
-        
-        //Validation rules
-        $validator = Validator::make(
-            $request->all(),
-            [
-                'original_workOrder_id' => [
-                    'required',
-                    'string',
-                    'max:700',
-                    Rule::exists('work_order','id')->whereNot('status', 'VERIFICATION_PASSED'),
-                    Rule::exists('work_order','id')->whereNot('priority', $priority),
-                ],
-                'priority' => [
-                    'required',
-                    'string',
-                    'in: 1,2,3,4',
-                    // Rule::exists('work_order')->where(fn($query)=>
-                    //     $query->where('id', $original_workOrder_id) 
-                    //         ->where('priority', '!=', $priority) 
-                        
-                    // ),
-                    // Rule::exists('work_order')->where('id', $original_workOrder_id),
-                    //'exists:work_order,priority,id,' . $original_workOrder_id . '0',
-                ],
-            ],
-
-            [
-                'original_workOrder_id.exists' => 'Work order is not allowed to be edited in VERIFICATION_PASSED phse',
-
-                'priority.required' => 'The "Priority" field is required.',
-                'priority.in'       => 'The value of "Priority" field is incorrect.',
-                //'priority.exists'   => 'The "Priority" field is no change',
-            ],
-        );
-
-        // Handle failed validations
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()->first()], 422);
-        }
-        try {
-            // Ensure all queries successfully executed
-            DB::beginTransaction();
-
-            // Retrieve the WorkOrder and related ServiceRequest
-            $workOrder = WorkOrder::findOrFail($original_workOrder_id);
-            $serviceRequest = ServiceRequest::findOrFail($workOrder->service_request_id);
-
-            // Get the created_at timestamp from ServiceRequest
-            $createdAt = Carbon::parse($serviceRequest->created_at);
-            
-
-                // Set due_date based on priority
-                switch ($priority) {
-                    case '1':
-                        $dueDate = $createdAt->addDays(15)->toDateTimeString(); // Add 5 days for Low priority
-                        break;
-                    case '2':
-                        $dueDate = $createdAt->addDays(30)->toDateTimeString(); // Add 3 days for Medium priority
-                        break;
-                    case '3':
-                        $dueDate = $createdAt->addDays(60)->toDateTimeString(); // Add 2 days for High priority
-                        break;
-                    case '4':
-                        $dueDate = $createdAt->addDays(70)->toDateTimeString(); // Add 2 days for High priority
-                        break;    
-                    default:
-                        $dueDate = $createdAt->toDateString(); // Default to created_at if priority is not recognized
-                        break;        
-            }
-
-            // Update work order
-            WorkOrder::where('id', $original_workOrder_id)
-                ->update([
-                    'priority'      => $priority,
-                    'due_date'      => $dueDate,
-                    'updated_at'    => $current_UTC,
-                ]);
-
-            // Ensure all queries successfully executed, commit the db changes
-            DB::commit();
-
-            return response()->json([
-                "success"   => "success",
-            ], 200);
-        } 
-        catch (\Exception $e) {
-            // If any queries fail, undo all changes
-            DB::rollback();
-
-            return response()->json(['error' => $e->getMessage()], 422);
-        }
-    }
+    
 
     /**
      * Update status of work order
@@ -516,41 +566,7 @@ class BillboardBookingController extends Controller
         return $result;
     }
 
-    /**
-     * Delete billboard
-     */
-    public function delete(Request $request)
-    {   
-        $user = Auth::user();
-        
-        // // Get user roles
-        $role = $user->roles->pluck('name')[0];
-        $userID = $this->user->id;
-
-        $id = $request->id;
-
-        logger('delete: ' . $id);
-
-        try {
-            // Ensure all queries successfully executed
-            DB::beginTransaction();
-
-            // Update client company
-            Billboard::where('id', $id)->delete();
-
-            // Ensure all queries successfully executed, commit the db changes
-            DB::commit();
-
-            return response()->json([
-                "success"   => "success",
-            ], 200);
-        } catch (\Exception $e) {
-            // If any queries fail, undo all changes
-            DB::rollback();
-
-            return response()->json(['error' => $e->getMessage()], 422);
-        }
-    }
+    
 
     /**
      * View billboard details
@@ -660,74 +676,7 @@ class BillboardBookingController extends Controller
         // }
     }
 
-    public function downloadPdf($id)
-    {
-        // $billboard = Billboard::with(['location.district.state', 'images'])->findOrFail($id);
+    
 
-        $billboard = Billboard::with([
-            'location' => function ($query) {
-                $query->with([
-                    'district' => function ($query) {
-                        $query->with('state');
-                    }
-                ]);
-            },
-            'billboard_images'
-        ])->findOrFail($id);
-
-        $pdf = PDF::loadView('billboard.export', compact('billboard'))
-        ->setPaper('A4', 'landscape'); // 👈 Set orientation here
-
-        return $pdf->download('billboard-detail-' . $billboard->site_number . '.pdf');
-    }
-
-    public function exportListPdf(Request $request)
-    {
-        $query = Billboard::with(['location.district.state', 'billboard_images']);
-
-        if ($request->filled('state_id') && $request->state_id !== 'all') {
-            $query->whereHas('location.district.state', fn($q) => $q->where('id', $request->state_id));
-        }
-
-        if ($request->filled('district_id') && $request->district_id !== 'all') {
-            $query->whereHas('location.district', fn($q) => $q->where('id', $request->district_id));
-        }
-
-        if ($request->filled('type') && $request->type !== 'all') {
-            $query->where('type', $request->type);
-        }
-
-        if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('size') && $request->size !== 'all') {
-            $query->where('size', $request->size);
-        }
-
-        $billboards = $query->get();
-
-        // Get filename based on state or district
-        $filename = 'billboards-master';
-        $date = Carbon::now()->format('Y-m-d');
-
-        if ($request->filled('district_id') && $request->district_id !== 'all') {
-            $district = District::find($request->district_id);
-            if ($district) {
-                $filename = 'billboards-' . Str::slug($district->name) . '-' . $date;
-            }
-        } elseif ($request->filled('state_id') && $request->state_id !== 'all') {
-            $state = State::find($request->state_id);
-            if ($state) {
-                $filename = 'billboards-' . Str::slug($state->name) . '-' . $date;
-            }
-        } else {
-            $filename .= '-' . $date;
-        }
-
-        $pdf = PDF::loadView('billboard.exportlist', compact('billboards'))
-            ->setPaper('a4', 'landscape');
-
-        return $pdf->download($filename . '.pdf');
-    }
+    
 }

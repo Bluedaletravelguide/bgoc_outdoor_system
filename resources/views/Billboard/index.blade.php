@@ -900,46 +900,46 @@
         };
 
         function billboardEditModal() {
-    $(document).off('click', "[id^='edit-']");
+            $(document).off('click', "[id^='edit-']");
 
-    $(document).on('click', "[id^='edit-']", function (event) {
-        event.preventDefault();
+            $(document).on('click', "[id^='edit-']", function (event) {
+                event.preventDefault();
 
-        // Get the billboard ID (if needed for further AJAX)
-        let billboardID = $(this).attr('id').split('-')[1];
+                // Get the billboard ID (if needed for further AJAX)
+                let billboardID = $(this).attr('id').split('-')[1];
 
-        // Get the parent row
-        let row = $(this).closest('tr');
+                // Get the parent row
+                let row = $(this).closest('tr');
 
-        // Extract values from data attributes
-        let prefix     = row.attr('data-prefix') || "";
-        let size       = row.attr('data-size') || "";
-        let lighting   = row.attr('data-lighting') || "";
-        let stateID    = row.attr('data-state_id') || "";
-        let districtID = row.attr('data-district_id') || "";
-        let locationID = row.attr('data-location_id') || "";
+                // Extract values from data attributes
+                let prefix     = row.attr('data-prefix') || "";
+                let size       = row.attr('data-size') || "";
+                let lighting   = row.attr('data-lighting') || "";
+                let stateID    = row.attr('data-state_id') || "";
+                let districtID = row.attr('data-district_id') || "";
+                let locationID = row.attr('data-location_id') || "";
 
-        // Fill static dropdowns
-        $('#editBillboardType').val(prefix);
-        $('#editBillboardSize').val(size);
-        $('#editBillboardLighting').val(lighting);
+                // Fill static dropdowns
+                $('#editBillboardType').val(prefix);
+                $('#editBillboardSize').val(size);
+                $('#editBillboardLighting').val(lighting);
 
-        // Set state and trigger change to load districts
-        $('#editBillboardState').val(stateID).trigger('change');
+                // Set state and trigger change to load districts
+                $('#editBillboardState').val(stateID).trigger('change');
 
-        // Chain select population after change events
-        setTimeout(() => {
-            $('#editBillboardDistrict').val(districtID).trigger('change');
+                // Chain select population after change events
+                setTimeout(() => {
+                    $('#editBillboardDistrict').val(districtID).trigger('change');
 
-            setTimeout(() => {
-                $('#editBillboardLocation').val(locationID);
-            }, 300);
-        }, 300);
+                    setTimeout(() => {
+                        $('#editBillboardLocation').val(locationID);
+                    }, 300);
+                }, 300);
 
-        // Show the modal
-        openAltEditorModal("#billboardEditModal");
-    });
-}
+                // Show the modal
+                openAltEditorModal("#billboardEditModal");
+            });
+        }
 
 
 

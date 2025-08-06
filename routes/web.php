@@ -69,6 +69,9 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/billboardBooking', [BillboardBookingController::class, 'index'])->name('billboard.booking.index');
     Route::post('/billboardBooking/list', [BillboardBookingController::class, 'list'])->name('billboard.booking.list');
     Route::post('/booking/calendar', [BillboardBookingController::class, 'getCalendarBookings'])->name('billboard.booking.calendar');
+    Route::post('/booking/create', [BillboardBookingController::class, 'create'])->name('billboard.booking.create');
+    Route::post('/booking/edit', [BillboardBookingController::class, 'edit'])->name('billboard.booking.edit');
+    Route::post('/booking/delete', [BillboardBookingController::class, 'delete'])->name('billboard.booking.delete');
 
     // Billboard Availability
     Route::get('/billboardAvailability', [BillboardAvailabilityController::class, 'index'])->name('billboard.availability.index');

@@ -128,6 +128,7 @@
     </div>
     <!-- Filter End -->
 
+    <!-- billboard availability calendar table -->
     <div class="shadow-sm rounded-lg border border-gray-200 overflow-hidden">
         <div class="monthly-booking-table-wrapper">
             <table id="monthly-booking-table" class="w-full text-sm text-left">
@@ -180,7 +181,6 @@
         </table>
     </div>
     <!-- Table End -->
-    <!-- TODO: add logics here to view list of srevice requests for destroy|update|edit included within a modal -->
 </div>
 @endsection('app_content')
 
@@ -516,13 +516,7 @@
 
     
 
-    $(document).ready(function() {
-        $('.select2-client').select2({
-            placeholder: "Select a client",
-            allowClear: true,
-            width: '100%'
-        });
-    });
+
     	
     $(document).ready(function() {
 
@@ -544,6 +538,12 @@
         document.getElementById("serviceRequestDeleteButton").addEventListener("click", serviceRequestDeleteButton);
         document.getElementById("ServiceRequestAddButton").addEventListener("click", ServiceRequestAddButton);
         // document.getElementById("openWorkOrderDetailButton").addEventListener("click", openWorkOrderDetail);
+
+        $('.select2-client').select2({
+            placeholder: "Select a client",
+            allowClear: true,
+            width: '100%'
+        });
 
         // Function to reload the DataTable when any filter changes
         function setupAutoFilter() {
@@ -593,18 +593,20 @@
 
             // Reload datatable with new filters
             $('#billboard_availability_table').DataTable().ajax.reload();
+            loadMonthlyAvailability();
         });
 
         function loadMonthlyAvailability() {
+            
             $.ajax({
                 url: '{{ route("billboard.monthly.availability") }}',
                 method: 'GET',
                 data: {
-                    start: $('#availabilityStart').val(),
-                    end: $('#availabilityEnd').val(),
-                    state_id: $('#filterAvailabilityState').val(),
-                    district_id: $('#filterAvailabilityDistrict').val(),
-                    location_id: $('#filterAvailabilityLocation').val(),
+                    start_date: $('#availabilityStart').val(),
+                    end_date: $('#availabilityEnd').val(),
+                    state: $('#filterAvailabilityState').val(),
+                    district: $('#filterAvailabilityDistrict').val(),
+                    location: $('#filterAvailabilityLocation').val(),
                     status: $('#filterAvailabilityStatus').val()
                 },
                 success: function (response) {
@@ -616,9 +618,9 @@
                         return;
                     }
 
-                    response.data.forEach(row => {
+                    response.data.forEach((row, index) => {
                         let html = `<tr>
-                            <td class="border border-gray-300">${row.no}</td>
+                            <td class="border border-gray-300">${index + 1}</td>
                             <td class="border border-gray-300">${row.site_number}</td>
                             <td class="border border-gray-300">${row.location}</td>
                             <td class="border border-gray-300">${row.size}</td>`;
@@ -776,7 +778,7 @@
                 serverSide: true,
                 ordering: true,
                 order: [
-                    [0, 'desc']
+                    [0, 'asc']
                 ],
                 pagingType: 'full_numbers',
                 pageLength: 25,
