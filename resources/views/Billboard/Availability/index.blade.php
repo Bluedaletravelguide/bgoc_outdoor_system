@@ -91,6 +91,15 @@
                     @endforeach
                 </select>
             </div>
+            <div class="sm:flex items-center sm:mr-4">
+                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Type</label>
+                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterAvailabilityType">
+                    <option value="" selected="">-- Select Type --</option>
+                    @foreach ($types as $type)
+                        <option value="{{ $type->prefix }}">{{ $type->type }}</option>
+                    @endforeach
+                </select>
+            </div>
             <div class="row sm:flex items-center sm:mr-4">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Status</label>
                 <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="filterAvailabilityStatus">
@@ -103,26 +112,33 @@
     </div>
     <!-- Filter End -->
 
-    <!-- Billboard Check Availability Filter -->
+    
+     <!-- Billboard Availability Year Filter -->
     <div class="flex flex-col sm:flex-row sm:items-end xl:items-start mb-2 mt-2">
         <form class="xl:flex flex-wrap items-end space-y-4 xl:space-y-0 xl:space-x-4 mb-4">
             <div class="row sm:flex items-center sm:mr-4">
                 <label class="w-24 text-gray-700">Start Date</label>
-                <input type="date" id="availabilityStart" class="input border w-48" />
+                <input type="date" id="filterAvailabilityStart" class="input border w-48" />
             </div>
 
             <div class="row sm:flex items-center sm:mr-4">
                 <label class="w-24 text-gray-700">End Date</label>
-                <input type="date" id="availabilityEnd" class="input border w-48" />
+                <input type="date" id="filterAvailabilityEnd" class="input border w-48" />
             </div>
+        </form>
+    </div>
+    <!-- Filter End -->
 
-            <div class="flex items-center">
-                <button
-                    type="button"
-                    id="checkAvailabilityBtn"
-                    class="button bg-theme-32 text-white px-5 py-2 rounded-md hover:bg-theme-32/90 transition">
-                    Check Availability
-                </button>
+    <!-- Availability Year Filter -->
+    <div class="flex flex-col sm:flex-row sm:items-end xl:items-start mb-2 mt-2">
+        <form class="xl:flex flex-wrap items-end space-y-4 xl:space-y-0 xl:space-x-4 mb-4">
+            <div class="row sm:flex items-center sm:mr-4">
+                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Year</label>
+                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="filterAvailabilityYear">
+                    @for ($y = 2023; $y <= now()->year + 2; $y++)
+                        <option value="{{ $y }}" {{ $y == now()->year ? 'selected' : '' }}>{{ $y }}</option>
+                    @endfor
+                </select>
             </div>
         </form>
     </div>
@@ -132,25 +148,15 @@
     <div class="shadow-sm rounded-lg border border-gray-200 overflow-hidden">
         <div class="monthly-booking-table-wrapper">
             <table id="monthly-booking-table" class="w-full text-sm text-left">
-                <thead>
-                    <tr>
-                        <th>No</th>
-                        <th>Site No</th>
-                        <th>Location</th>
-                        <th>Size</th>
-                        <th>Jan '25</th>
-                        <th>Feb '25</th>
-                        <th>Mar '25</th>
-                        <th>Apr '25</th>
-                        <th>May '25</th>
-                        <th>Jun '25</th>
-                        <th>Jul '25</th>
-                        <th>Aug '25</th>
-                        <th>Sep '25</th>
-                        <th>Oct '25</th>
-                        <th>Nov '25</th>
-                        <th>Dec '25</th>
-                    </tr>
+                @php
+                    $year = request('year', now()->year);
+                    $months = [
+                        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+                    ];
+                @endphp
+                <thead id="monthly-booking-head">
+                    <!-- Populated by JS -->
                 </thead>
                 <tbody id="monthly-booking-body">
                     <!-- Populated by JS -->
@@ -493,8 +499,8 @@
     // <!-- END: Billboard Booking List Filter -->
 
     document.addEventListener('DOMContentLoaded', function () {
-        const startInput = document.getElementById('availabilityStart');
-        const endInput = document.getElementById('availabilityEnd');
+        const startInput = document.getElementById('filterAvailabilityStart');
+        const endInput = document.getElementById('filterAvailabilityEnd');
 
         // When start date changes
         startInput.addEventListener('change', function () {
@@ -524,6 +530,7 @@
         var filterAvailabilityState;
         var filterAvailabilityDistrict;
         var filterAvailabilityLocation;
+        var filterAvailabilityType;
         var filterAvailabilityStatus;
 
 
@@ -553,48 +560,55 @@
             if ($.fn.DataTable.isDataTable(tableElement)) {
                 const table = tableElement.DataTable();
 
-                $('#filterAvailabilityCompany, #filterAvailabilityState, #filterAvailabilityDistrict, #filterAvailabilityLocation, #filterAvailabilityStatus')
+                $('#filterAvailabilityCompany, #filterAvailabilityState, #filterAvailabilityDistrict, #filterAvailabilityLocation, #filterAvailabilityType, #filterAvailabilityStatus, #filterAvailabilityStart, #filterAvailabilityEnd, #filterAvailabilityYear')
                     .on('change', function () {
+                        const selectedYear = $('#filterAvailabilityYear').val();
+
                         table.ajax.reload();
-                        loadMonthlyAvailability(); // <--- add this line
+                        buildMonthlyBookingTableHead(selectedYear);
+                        loadMonthlyAvailability();
                     });
             }
 
             // Also reload monthly table if only it exists
-            $('#filterAvailabilityCompany, #filterAvailabilityState, #filterAvailabilityDistrict, #filterAvailabilityLocation, #filterAvailabilityStatus')
+            $('#filterAvailabilityCompany, #filterAvailabilityState, #filterAvailabilityDistrict, #filterAvailabilityLocation, #filterAvailabilityType, #filterAvailabilityStatus, #filterAvailabilityStart, #filterAvailabilityEnd, #filterAvailabilityYear')
                 .on('change', function () {
+                    const selectedYear = $('#filterAvailabilityYear').val();
+                    buildMonthlyBookingTableHead(selectedYear);
                     loadMonthlyAvailability(); // <-- add this in case DataTable not initialized
                 });
         }
 
 
         function setupMonthlyAvailabilityFilter() {
-            const filterSelectors = '#filterAvailabilityState, #filterAvailabilityDistrict, #filterAvailabilityLocation, #filterAvailabilityStatus, #availabilityStart, #availabilityEnd';
+            const filterSelectors = '#filterAvailabilityState, #filterAvailabilityDistrict, #filterAvailabilityLocation, #filterAvailabilityStatus, #filterAvailabilityStart, #filterAvailabilityEnd, #filterAvailabilityYear';
 
             $(filterSelectors).on('change', function () {
+                const selectedYear = $('#filterAvailabilityYear').val();
+                buildMonthlyBookingTableHead(selectedYear);
                 loadMonthlyAvailability(); // this function contains your $.ajax code
-            });
-
-            $('#checkAvailabilityBtn').on('click', function () {
-                loadMonthlyAvailability();
             });
         }
 
+        function buildMonthlyBookingTableHead(selectedYear) {
+            const shortYear = String(selectedYear).slice(-2);
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-        // Check availability 
-        $('#checkAvailabilityBtn').on('click', function () {
-            const start = $('#availabilityStart').val();
-            const end = $('#availabilityEnd').val();
+            let headerHtml = '<tr>';
+            headerHtml += '<th>No</th>';
+            headerHtml += '<th>Site No</th>';
+            headerHtml += '<th>Location</th>';
+            headerHtml += '<th>Size</th>';
 
-            if (!start || !end) {
-                alert("Please select both start and end date.");
-                return;
-            }
+            months.forEach(month => {
+                headerHtml += `<th>${month} '${shortYear}</th>`;
+            });
 
-            // Reload datatable with new filters
-            $('#billboard_availability_table').DataTable().ajax.reload();
-            loadMonthlyAvailability();
-        });
+            headerHtml += '</tr>';
+            $('#monthly-booking-head').html(headerHtml);
+        }
+
 
         function loadMonthlyAvailability() {
             
@@ -602,8 +616,10 @@
                 url: '{{ route("billboard.monthly.availability") }}',
                 method: 'GET',
                 data: {
-                    start_date: $('#availabilityStart').val(),
-                    end_date: $('#availabilityEnd').val(),
+                    start_date: $('#filterAvailabilityStart').val(),
+                    end_date: $('#filterAvailabilityEnd').val(),
+                    year: $('#filterAvailabilityYear').val(),
+                    type: $('#filterAvailabilityType').val(),
                     state: $('#filterAvailabilityState').val(),
                     district: $('#filterAvailabilityDistrict').val(),
                     location: $('#filterAvailabilityLocation').val(),
@@ -641,8 +657,10 @@
         }
 
         $(document).ready(function () {
+            const selectedYear = $('#filterAvailabilityYear').val();
             setupAutoFilter(); // your existing DataTable filter
             setupMonthlyAvailabilityFilter(); // new for monthly table
+            buildMonthlyBookingTableHead(selectedYear);
             loadMonthlyAvailability(); // load once on page load
         });
 
@@ -792,13 +810,14 @@
                     dataType: "json",
                     type: "POST",
                     data: function(d) {
-                        d._token    = $('meta[name="csrf-token"]').attr('content');
-                        d.start_date  = $('#availabilityStart').val();
-                        d.end_date  = $('#availabilityEnd').val();
-                        d.status    = $('#filterAvailabilityStatus').val();
-                        d.state     = $('#filterAvailabilityState').val();
-                        d.district  = $('#filterAvailabilityDistrict').val();
-                        d.location  = $('#filterAvailabilityLocation').val();
+                        d._token        = $('meta[name="csrf-token"]').attr('content');
+                        d.start_date    = $('#filterAvailabilityStart').val();
+                        d.end_date      = $('#filterAvailabilityEnd').val();
+                        d.type          = $('#filterAvailabilityType').val(),
+                        d.status        = $('#filterAvailabilityStatus').val();
+                        d.state         = $('#filterAvailabilityState').val();
+                        d.district      = $('#filterAvailabilityDistrict').val();
+                        d.location      = $('#filterAvailabilityLocation').val();
                     },
                     dataSrc: function(json) {
                         json.recordsTotal = json.recordsTotal;
@@ -806,18 +825,13 @@
 
                         // If no filters, return empty array to show "No data"
                         const noFilters =
-                            !$('#availabilityStart').val() &&
-                            !$('#availabilityEnd').val() &&
+                            !$('#filterAvailabilityStart').val() &&
+                            !$('#filterAvailabilityEnd').val() &&
+                            !$('#filterAvailabilityType').val() &&
                             !$('#filterAvailabilityState').val() &&
                             !$('#filterAvailabilityDistrict').val() &&
                             !$('#filterAvailabilityLocation').val() &&
                             !$('#filterAvailabilityStatus').val();
-
-                        // if (noFilters) {
-                        //     json.recordsTotal = 0;
-                        //     json.recordsFiltered = 0;
-                        //     return [];
-                        // }
 
                         return json.data;
                     }

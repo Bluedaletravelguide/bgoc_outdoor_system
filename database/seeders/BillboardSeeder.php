@@ -26,6 +26,12 @@ class BillboardSeeder extends Seeder
         $clientIds = Client::pluck('id')->toArray();
         $locationIds = Location::pluck('id')->toArray();
 
+        $locationStates = DB::table('locations')
+            ->join('districts', 'locations.district_id', '=', 'districts.id')
+            ->join('states', 'districts.state_id', '=', 'states.id')
+            ->pluck('states.prefix', 'locations.id')
+            ->toArray();
+
         // Create 10 client companies
         for ($i = 1; $i <= 10; $i++) {
             DB::table('client_companies')->insert([
@@ -69,19 +75,31 @@ class BillboardSeeder extends Seeder
             $type = $faker->randomElement(array_keys($prefixMap));
             $prefix = $prefixMap[$type];
 
+            // Pick a random location_id
+            $locationId = $faker->randomElement(array_keys($locationStates));
+
+            // Get state prefix (e.g., SEL) from our map
+            $statePrefix = $locationStates[$locationId] ?? 'XXX'; // fallback if missing
+
+            // Running number with 4 digits
+            $runningNumber = str_pad($i, 4, '0', STR_PAD_LEFT);
+
+            // Final site number: BB-SEL-0001-A
+            $siteNumber = "{$prefix}-{$statePrefix}-{$runningNumber}-A";
+
             DB::table('billboards')->insert([
-                'location_id' => $faker->randomElement($locationIds),
-                'site_number' => strtoupper($faker->bothify('????-####')),
-                'gps_latitude' => $faker->latitude(1.2, 6.7),     // Malaysia approx. lat range
-                'gps_longitude' => $faker->longitude(99.6, 119.3), // Malaysia approx. lng range
-                'traffic_volume' => $faker->numerify('#######'),
-                'size'=> $faker->randomElement(['15x10', '12x15', '10x10', '12x12', '8x8']),
-                'lighting' => $faker->randomElement(['TNB', 'SOLAR', 'None']),
-                'type'            => $type,
-                'prefix'            => $prefix, // Add this
-                'status'=> 1,
-                'created_at' => Carbon::now()->subDays(rand(0, 10))->toDateTimeString(), // Random timestamp between today and 10 days ago
-                'updated_at' => Carbon::now()->subDays(rand(0, 10))->toDateTimeString(), // Random timestamp between today and 10 days ago
+                'location_id'           => $locationId,
+                'site_number'           => $siteNumber,
+                'gps_latitude'          => $faker->latitude(1.2, 6.7),     // Malaysia approx. lat range
+                'gps_longitude'         => $faker->longitude(99.6, 119.3), // Malaysia approx. lng range
+                'traffic_volume'        => $faker->numerify('#######'),
+                'size'                  => $faker->randomElement(['15x10', '12x15', '10x10', '12x12', '8x8']),
+                'lighting'              => $faker->randomElement(['TNB', 'SOLAR', 'None']),
+                'type'                  => $type,
+                'prefix'                => $prefix,
+                'status'                => 1,
+                'created_at'            => Carbon::now()->subDays(rand(0, 10))->toDateTimeString(), // Random timestamp between today and 10 days ago
+                'updated_at'            => Carbon::now()->subDays(rand(0, 10))->toDateTimeString(), // Random timestamp between today and 10 days ago
             ]);
         }
 
