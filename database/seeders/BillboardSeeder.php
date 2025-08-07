@@ -163,5 +163,26 @@ class BillboardSeeder extends Seeder
                 ],
             ]);
         }
+
+        // 7. Create monthly_ongoing_jobs from billboard_bookings
+        $bookingJobs = DB::table('billboard_bookings')->get();
+
+        foreach ($bookingJobs as $booking) {
+            $start = Carbon::parse($booking->start_date)->startOfMonth();
+            $end = Carbon::parse($booking->end_date)->startOfMonth();
+
+            while ($start <= $end) {
+                DB::table('monthly_ongoing_jobs')->insert([
+                    'booking_id'     => $booking->id,
+                    'month'      => $start->month,
+                    'year'       => $start->year,
+                    'status'     => fake()->randomElement(['pending', 'in_progress', 'completed']),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                $start->addMonth();
+            }
+        }
     }
 }

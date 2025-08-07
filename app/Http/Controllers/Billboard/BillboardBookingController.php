@@ -12,6 +12,7 @@ use App\Models\ClientCompany;
 use App\Models\User;
 use App\Models\Billboard;
 use App\Models\BillboardBooking;
+use App\Models\MonthlyOngoingJob;
 use App\Models\BillboardImage;
 use App\Models\State;
 use App\Models\District;
@@ -515,6 +516,107 @@ class BillboardBookingController extends Controller
             ['label' => 'Other', 'color' => '#FACC15'],
         ];
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public function getMonthlyOngoingJobs(Request $request)
+    {
+        $year = $request->input('year', now()->year);
+
+        // Correct eager loading
+        $query = BillboardBooking::with(['clientCompany', 'billboard.location']);
+
+        // Filter by state (via billboard → location → district → state)
+        if ($request->filled('state_id')) {
+            $query->whereHas('billboard.location.district.state', function ($q) use ($request) {
+                $q->where('id', $request->state_id);
+            });
+        }
+
+        if ($request->filled('client_id')) {
+            $query->where('client_id', $request->client_id);
+        }
+
+        $jobs = $query->get();
+
+        $data = [];
+
+        foreach ($jobs as $job) {
+            $start = Carbon::parse($job->start_date);
+            $end = Carbon::parse($job->end_date);
+            $duration = $start->diffInDays($end) + 1;
+
+            $months = array_fill(1, 12, '');
+
+            $monthStatuses = MonthlyOngoingJob::where('booking_id', $job->id)
+                ->where('year', $year)
+                ->pluck('status', 'month');
+
+            foreach ($monthStatuses as $month => $status) {
+                $months[$month] = $status;
+            }
+
+            $data[] = [
+                'id' => $job->id,
+                'client' => $job->clientCompany->name ?? '',
+                'location' => $job->billboard->location->name ?? '',
+                'start_date' => $job->start_date ? Carbon::parse($job->start_date)->format('d/m/y') : null,
+                'end_date' => $job->end_date ? Carbon::parse($job->end_date)->format('d/m/y') : null,
+                'duration' => ($job->start_date && $job->end_date) ? Carbon::parse($job->start_date)->diffInMonths(Carbon::parse($job->end_date)) + 1 : null,
+                'months' => array_values($months),
+            ];
+        }
+
+        return response()->json(['data' => $data]);
+    }
+
+    public function updateJobMonthlyStatus(Request $request)
+    {
+        logger('updateJobMonthlyStatus!!' . $request);
+
+
+        
+        $request->validate([
+            'id' => 'required|exists:billboard_bookings,id',
+            'status' => 'nullable|string',
+        ]);
+
+        $year = $request->input('year', now()->year);
+        $booking_id = $request->id;
+        $month = $request->month;
+        $status = $request->status;
+
+        if (empty($status)) {
+            MonthlyOngoingJob::where('booking_id', $booking_id)
+                ->where('month', $month)
+                ->where('year', 2025)
+                ->delete();
+
+            return response()->json(['message' => 'Status cleared']);
+        }
+
+        MonthlyOngoingJob::updateOrCreate(
+            [
+                'booking_id' => $booking_id,
+                'month' => $month,
+                'year' => 2025,
+                'status' => $status,
+            ],
+        );
+
+        return response()->json(['message' => 'Status updated']);
+    }
+
 
 
 

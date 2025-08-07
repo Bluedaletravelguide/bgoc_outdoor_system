@@ -10,22 +10,47 @@
 
 @section('app_content')
 <style>
-    .fc {
-        font-size: 20px !important;
+    table td, table th {
+        white-space: nowrap;
     }
 
-    .fc-toolbar-title {
-        font-size: 20px !important;
-        font-weight: bold !important;
+    thead th {
+        position: sticky;
+        top: 0;
+        z-index: 10;
     }
 
-    .fc-daygrid-day-number {
-        font-size: 20px !important;
+    /* Ensure sticky header works and aligns */
+    .monthly-ongoing-table-wrapper {
+        max-height: 400px;
+        overflow: auto; /* scroll both vertically & horizontally */
     }
 
-    .fc-event-title {
-        font-size: 18px !important;
+    #monthly-ongoing-table {
+        border-collapse: collapse;
+        min-width: 1200px; /* adjust based on column count */
     }
+
+    #monthly-ongoing-table th,
+    #monthly-ongoing-table td {
+        border: 1px solid #d1d5db; /* Tailwind border-gray-300 */
+        padding: 4px 8px;
+        white-space: nowrap;
+    }
+
+    #monthly-ongoing-table thead th {
+        position: sticky;
+        top: 0;
+        background-color: #f3f4f6; /* bg-gray-100 */
+        z-index: 1;
+    }
+    .status-completed { background-color: #d4edda; }    /* green */
+    .status-dismantle,
+    .status-renewal,
+    .status-material,
+    .status-installation { background-color: #f8d7da; }  /* red */
+    .status-artwork { background-color: #fff3cd; }       /* yellow */
+    .status-payment { background-color: #ffe5b4; }       /* orange */
 </style>
 <!-- Flatpickr CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -106,6 +131,42 @@
         </div> 
     </div>
     <!-- Filter End -->
+
+    <!-- Availability Year Filter -->
+    <div class="flex flex-col sm:flex-row sm:items-end xl:items-start mb-2 mt-2">
+        <form class="xl:flex flex-wrap items-end space-y-4 xl:space-y-0 xl:space-x-4 mb-4">
+            <div class="row sm:flex items-center sm:mr-4">
+                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Year</label>
+                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardBookingYear">
+                    @for ($y = 2023; $y <= now()->year + 2; $y++)
+                        <option value="{{ $y }}" {{ $y == now()->year ? 'selected' : '' }}>{{ $y }}</option>
+                    @endfor
+                </select>
+            </div>
+        </form>
+    </div>
+    <!-- Filter End -->
+
+    <!-- billboard monthly ongoing calendar table -->
+    <div class="shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+        <div class="monthly-ongoing-table-wrapper">
+            <table id="monthly-ongoing-table" class="w-full text-sm text-left table-fixed">
+                @php
+                    $year = request('year', now()->year);
+                    $months = [
+                        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+                    ];
+                @endphp
+                <thead id="monthly-ongoing-head">
+                    <!-- Populated by JS -->
+                </thead>
+                <tbody id="monthly-ongoing-body">
+                    <!-- Populated by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
 
     <!-- Monthly Ongoing table -->
     <div class="overflow-x-auto scrollbar-hidden">
@@ -464,19 +525,19 @@
     }
 
     // Function to reload the DataTable when any filter changes
-    function setupAutoFilter() {
-        const tableElement = $('#billboard_booking_table');
-        if (!$.fn.DataTable.isDataTable(tableElement)) {
-            console.warn("DataTable is not yet initialized.");
-            return;
-        }
+    // function setupAutoFilter() {
+    //     const tableElement = $('#billboard_booking_table');
+    //     if (!$.fn.DataTable.isDataTable(tableElement)) {
+    //         console.warn("DataTable is not yet initialized.");
+    //         return;
+    //     }
 
-        const table = tableElement.DataTable();
+    //     const table = tableElement.DataTable();
 
-        $('#filterBillboardBookingCompany, #filterBillboardBookingState, #filterBillboardBookingDistrict, #filterBillboardBookingLocation, #filterBillboardBookingStatus').on('change', function () {
-            table.ajax.reload();
-        });
-    }
+    //     $('#filterBillboardBookingCompany, #filterBillboardBookingState, #filterBillboardBookingDistrict, #filterBillboardBookingLocation, #filterBillboardBookingStatus').on('change', function () {
+    //         table.ajax.reload();
+    //     });
+    // }
     	
     $(document).ready(function() {
 
@@ -564,6 +625,295 @@
             allowClear: true,
             width: '100%'
         });
+
+
+
+
+
+
+        function setupAutoFilter() {
+            const filterSelectors = '#filterBillboardBookingCompany, #filterAvailabilityDistrict, #filterAvailabilityLocation, #filterAvailabilityStatus, #filterAvailabilityStart, #filterAvailabilityEnd, #filterBillboardBookingYear';
+
+            $(filterSelectors).on('change', function () {
+                const selectedYear = $('#filterBillboardBookingYear').val();
+                buildMonthlyJobTableHead(selectedYear);
+                loadMonthlyAvailability(); // this function contains your $.ajax code
+                loadMonthlyJobs();
+            });
+        }
+
+        $(document).ready(function () {
+            const selectedYear = $('#filterBillboardBookingYear').val();
+            setupAutoFilter(); // your existing DataTable filter
+            // setupMonthlyAvailabilityFilter(); // new for monthly table
+            buildMonthlyJobTableHead(selectedYear);
+            loadMonthlyJobs(); // load once on page load
+        });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        function buildMonthlyJobTableHead(selectedYear) {
+            const shortYear = String(selectedYear).slice(-2);
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+            let headerHtml = '<tr>';
+            headerHtml += '<th>No</th>';
+            headerHtml += '<th>Client</th>';
+            headerHtml += '<th>Location</th>';
+            headerHtml += '<th>Start</th>';
+            headerHtml += '<th>End</th>';
+            headerHtml += '<th>Duration</th>';
+
+            months.forEach(month => {
+                headerHtml += `<th class="w-[120px] text-center">${month} '${shortYear}</th>`;
+            });
+
+            headerHtml += '</tr>';
+            $('#monthly-ongoing-head').html(headerHtml);
+        }
+
+        function loadMonthlyJobs() {
+            $.ajax({
+                url: '{{ route("billboard.monthly.ongoing") }}',
+                method: 'GET',
+                data: {
+                    year: 2025,
+                    state_id: $('#filterState').val(),
+                    client_id: $('#filterClient').val()
+                },
+                success: function (response) {
+                    const tbody = $('#monthly-ongoing-body');
+                    tbody.empty();
+
+                    if (!response.data || response.data.length === 0) {
+                        tbody.append(`<tr><td colspan="17" class="text-center p-4">No ongoing jobs found.</td></tr>`);
+                        return;
+                    }
+
+                    response.data.forEach((job, index) => {
+                        let html = `<tr>
+                            <td class="border border-gray-300">${index + 1}</td>
+                            <td class="border border-gray-300">${job.client}</td>
+                            <td class="border border-gray-300">${job.location}</td>
+                            <td class="border border-gray-300">${job.start_date}</td>
+                            <td class="border border-gray-300">${job.end_date}</td>
+                            <td class="border border-gray-300">${job.duration}</td>`;
+
+                        // Jan-Dec editable cells
+                        job.months.forEach((status, index) => {
+                            let colorClass = '';
+
+                            switch (status) {
+                                case 'completed':
+                                    colorClass = 'status-completed';
+                                    break;
+                                case 'dismantle':
+                                case 'renewal':
+                                case 'material':
+                                case 'installation':
+                                    colorClass = 'status-dismantle'; // all red
+                                    break;
+                                case 'artwork':
+                                    colorClass = 'status-artwork';
+                                    break;
+                                case 'payment':
+                                    colorClass = 'status-payment';
+                                    break;
+                            }
+
+                            html += `<td class="border border-gray-300 px-2 py-1 w-[120px] text-center ${colorClass}">
+                                <select class="status-dropdown w-full text-xs" data-job-id="${job.id}" data-month="${index + 1}">
+                                    <option value="">--</option>
+                                    <option value="artwork" ${status === 'artwork' ? 'selected' : ''}>Artwork</option>
+                                    <option value="material" ${status === 'material' ? 'selected' : ''}>Material</option>
+                                    <option value="installation" ${status === 'installation' ? 'selected' : ''}>Installation</option>
+                                    <option value="payment" ${status === 'payment' ? 'selected' : ''}>Payment</option>
+                                    <option value="dismantle" ${status === 'dismantle' ? 'selected' : ''}>Dismantle</option>
+                                    <option value="renewal" ${status === 'renewal' ? 'selected' : ''}>Renewal</option>
+                                    <option value="completed" ${status === 'completed' ? 'selected' : ''}>Completed</option>
+                                </select>
+                            </td>`;
+                        });
+
+                        html += `</tr>`;
+                        tbody.append(html);
+                    });
+                },
+                error: function (xhr) {
+                    console.error("Error loading jobs:", xhr.responseText);
+                }
+            });
+        }
+
+        $(document).on('change', '.status-dropdown', function () {
+            const id = $(this).data('job-id');
+            const month = $(this).data('month'); // 1 = Jan, 12 = Dec
+            const newStatus = $(this).val();
+
+            $.ajax({
+                url: '{{ route("jobs.update.monthly.status") }}',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    id: id,
+                    month: month,
+                    status: newStatus
+                },
+                success: function () {
+                    console.log(`Status updated for job ${id}, month ${month}`);
+                    loadMonthlyJobs();
+                },
+                error: function (xhr) {
+                    alert('Failed to update status');
+                    console.error(xhr.responseText);
+                }
+            });
+        });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        function loadMonthlyAvailability() {
+            
+            $.ajax({
+                url: '{{ route("billboard.monthly.availability") }}',
+                method: 'GET',
+                data: {
+                    start_date: $('#filterAvailabilityStart').val(),
+                    end_date: $('#filterAvailabilityEnd').val(),
+                    year: $('#filterAvailabilityYear').val(),
+                    type: $('#filterAvailabilityType').val(),
+                    state: $('#filterAvailabilityState').val(),
+                    district: $('#filterAvailabilityDistrict').val(),
+                    location: $('#filterAvailabilityLocation').val(),
+                    status: $('#filterAvailabilityStatus').val()
+                },
+                success: function (response) {
+                    const tbody = $('#monthly-booking-body');
+                    tbody.empty();
+
+                    if (!response.data || response.data.length === 0) {
+                        tbody.append(`<tr><td colspan="16" class="text-center p-4">No data available</td></tr>`);
+                        return;
+                    }
+
+                    response.data.forEach((row, index) => {
+                        let html = `<tr>
+                            <td class="border border-gray-300">${index + 1}</td>
+                            <td class="border border-gray-300">${row.site_number}</td>
+                            <td class="border border-gray-300">${row.location}</td>
+                            <td class="border border-gray-300">${row.size}</td>`;
+
+                        row.months.forEach(month => {
+                            let cellClass = `border border-gray-300 ${month.color} text-white font-semibold`;
+                            html += `<td colspan="${month.span}" class="${cellClass}">${month.text}</td>`;
+                        });
+
+                        html += `</tr>`;
+                        tbody.append(html);
+                    });
+                },
+                error: function (xhr) {
+                    console.error("AJAX error:", xhr.responseText);
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            // const selectedYear = $('#filterAvailabilityYear').val();
+            setupAutoFilter(); // your existing DataTable filter
+            // setupMonthlyAvailabilityFilter(); // new for monthly table
+            // buildMonthlyJobTableHead(selectedYear);
+            loadMonthlyAvailability(); // load once on page load
+            loadMonthlyJobs();
+        });
+
+        /**
+         * Escape HTML to avoid XSS
+         */
+        function escapeHtml(text) {
+            return $('<div>').text(text).html();
+        }
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         

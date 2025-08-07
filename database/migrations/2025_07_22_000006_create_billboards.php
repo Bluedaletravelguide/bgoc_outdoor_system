@@ -100,6 +100,22 @@ return new class extends Migration
             ->on('users')
             ->onDelete('cascade');
         });
+
+        Schema::create('monthly_ongoing_jobs', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('booking_id');
+            $table->unsignedTinyInteger('month'); // 1 = Jan, 12 = Dec
+            $table->year('year');
+            $table->string('status'); // e.g., pending, in_progress, completed
+            $table->dateTime('created_at', $precision = 0)->useCurrent();
+            $table->dateTime('updated_at', $precision = 0)->nullable()->useCurrentOnUpdate();
+
+            $table->foreign('booking_id')
+            ->references('id')
+            ->on('billboard_bookings')
+            ->onDelete('cascade');
+        });
+
     }
 
     /**
@@ -107,13 +123,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sr_category');
-        Schema::dropIfExists('sr_sub_category');
-        Schema::dropIfExists('service_request');
-        Schema::dropIfExists('service_request_photos');
-
-        Schema::dropIfExists('billboards');
-        Schema::dropIfExists('billboard_images');
+        Schema::dropIfExists('monthly_ongoing_jobs');
         Schema::dropIfExists('billboard_bookings');
+        Schema::dropIfExists('billboard_images');
+        Schema::dropIfExists('billboards');
     }
 };

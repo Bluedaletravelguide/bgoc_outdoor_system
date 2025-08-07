@@ -113,7 +113,7 @@
     <!-- Filter End -->
 
     
-     <!-- Billboard Availability Year Filter -->
+     <!-- Billboard Availability Date Filter -->
     <div class="flex flex-col sm:flex-row sm:items-end xl:items-start mb-2 mt-2">
         <form class="xl:flex flex-wrap items-end space-y-4 xl:space-y-0 xl:space-x-4 mb-4">
             <div class="row sm:flex items-center sm:mr-4">
@@ -665,40 +665,6 @@
         });
 
 
-
-        // $.ajax({
-        //     url: '{{ route("billboard.monthly.availability") }}',
-        //     method: 'GET',
-        //     success: function(response) {
-        //         const tbody = $('#monthly-booking-body');
-        //         tbody.empty();
-
-        //         response.data.forEach(row => {
-        //             let html = `
-        //                 <tr class="text-center">
-        //                     <td class="border">${escapeHtml(row.no)}</td>
-        //                     <td class="border">${escapeHtml(row.site_number)}</td>
-        //                     <td class="border">${escapeHtml(row.location)}</td>
-        //                     <td class="border">${escapeHtml(row.size)}</td>`;
-
-        //             row.months.forEach(month => {
-        //                 const colspan = month.span;
-        //                 const text = escapeHtml(month.text);
-        //                 const colorClass = month.color ?? '';
-        //                 html += `
-        //                     <td class="border text-white text-xs px-1 ${colorClass}" colspan="${colspan}">
-        //                         ${text}
-        //                     </td>`;
-        //             });
-
-        //             html += `</tr>`;
-        //             tbody.append(html);
-        //         });
-        //     },
-        //     error: function(xhr, status, error) {
-        //         console.error('AJAX error:', error);
-        //     }
-        // });
 
         /**
          * Escape HTML to avoid XSS
