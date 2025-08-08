@@ -673,6 +673,7 @@
             headerHtml += '<th>No</th>';
             headerHtml += '<th>Client</th>';
             headerHtml += '<th>Location</th>';
+            headerHtml += '<th>Type</th>';
             headerHtml += '<th>Start</th>';
             headerHtml += '<th>End</th>';
             headerHtml += '<th>Duration</th>';
@@ -708,6 +709,7 @@
                             <td class="border border-gray-300">${index + 1}</td>
                             <td class="border border-gray-300">${job.client}</td>
                             <td class="border border-gray-300">${job.location}</td>
+                            <td class="border border-gray-300">${job.type}</td>
                             <td class="border border-gray-300">${job.start_date}</td>
                             <td class="border border-gray-300">${job.end_date}</td>
                             <td class="border border-gray-300">${job.duration}</td>`;
@@ -736,7 +738,7 @@
 
                             html += `<td class="border border-gray-300 px-2 py-1 w-[120px] text-center ${colorClass}">
                                 <select class="status-dropdown w-full text-xs" data-job-id="${job.id}" data-month="${index + 1}">
-                                    <option value="">--</option>
+                                    <option value=""></option>
                                     <option value="artwork" ${status === 'artwork' ? 'selected' : ''}>Artwork</option>
                                     <option value="material" ${status === 'material' ? 'selected' : ''}>Material</option>
                                     <option value="installation" ${status === 'installation' ? 'selected' : ''}>Installation</option>

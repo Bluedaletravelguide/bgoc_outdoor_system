@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             LocationSeeder::class,
             BillboardSeeder::class,
             UserSeeder::class,
+            ContractorSeeder::class,
         ]);
     }
 }

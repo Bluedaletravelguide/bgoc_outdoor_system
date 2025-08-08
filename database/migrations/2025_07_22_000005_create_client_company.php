@@ -40,6 +40,16 @@ return new class extends Migration
                 ->on('client_companies')
                 ->onDelete('cascade');
         });
+
+        Schema::create('contractors', function (Blueprint $table) {
+            $table->id();
+            $table->string('company_name');
+            $table->string('name');
+            $table->string('phone');
+            $table->dateTime('created_at', $precision = 0)->useCurrent();
+            $table->dateTime('updated_at', $precision = 0)->nullable()->useCurrentOnUpdate();
+        });
+
     }
 
     /**
@@ -47,7 +57,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('client_companies');
         Schema::dropIfExists('clients');
+        Schema::dropIfExists('contractors');
+        Schema::dropIfExists('client_companies');
     }
 };

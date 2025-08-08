@@ -570,6 +570,7 @@ class BillboardBookingController extends Controller
                 'id' => $job->id,
                 'client' => $job->clientCompany->name ?? '',
                 'location' => $job->billboard->location->name ?? '',
+                'type' => $job->billboard->type ?? '',
                 'start_date' => $job->start_date ? Carbon::parse($job->start_date)->format('d/m/y') : null,
                 'end_date' => $job->end_date ? Carbon::parse($job->end_date)->format('d/m/y') : null,
                 'duration' => ($job->start_date && $job->end_date) ? Carbon::parse($job->start_date)->diffInMonths(Carbon::parse($job->end_date)) + 1 : null,
@@ -582,9 +583,6 @@ class BillboardBookingController extends Controller
 
     public function updateJobMonthlyStatus(Request $request)
     {
-        logger('updateJobMonthlyStatus!!' . $request);
-
-
         
         $request->validate([
             'id' => 'required|exists:billboard_bookings,id',

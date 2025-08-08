@@ -116,6 +116,50 @@ return new class extends Migration
             ->onDelete('cascade');
         });
 
+        Schema::create('stock_inventory', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('contractor_pic');
+            $table->unsignedBigInteger('billboard_in_id');
+            $table->unsignedBigInteger('billboard_out_id');
+            $table->unsignedBigInteger('company_in_id');
+            $table->unsignedBigInteger('company_out_id');
+            $table->dateTime('date_in');
+            $table->dateTime('date_out');
+            $table->string('remarks_in');
+            $table->string('remarks_out');
+            $table->string('balance_contractor');
+            $table->string('balance_bgoc');
+            $table->string('quantity_in');
+            $table->string('quantity_out');
+            $table->dateTime('created_at', $precision = 0)->useCurrent();
+            $table->dateTime('updated_at', $precision = 0)->nullable()->useCurrentOnUpdate();
+
+            $table->foreign('contractor_pic')
+                ->references('id')
+                ->on('contractors')
+                ->onDelete('cascade');
+
+            $table->foreign('billboard_in_id')
+                ->references('id')
+                ->on('billboards')
+                ->onDelete('cascade');
+
+            $table->foreign('billboard_out_id')
+                ->references('id')
+                ->on('billboards')
+                ->onDelete('cascade');
+
+            $table->foreign('company_in_id')
+                ->references('id')
+                ->on('client_companies')
+                ->onDelete('cascade');
+
+            $table->foreign('company_out_id')
+                ->references('id')
+                ->on('client_companies')
+                ->onDelete('cascade');
+        });
+
     }
 
     /**
@@ -123,6 +167,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('stock_inventory');
         Schema::dropIfExists('monthly_ongoing_jobs');
         Schema::dropIfExists('billboard_bookings');
         Schema::dropIfExists('billboard_images');
