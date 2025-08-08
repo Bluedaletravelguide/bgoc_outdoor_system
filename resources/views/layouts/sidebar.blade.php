@@ -113,22 +113,34 @@
         <!-- management -->
         @if (Auth::guard('web')->user()->can('billboard.view'))
         <li>
-            <a href="javascript:;" class="side-menu {{ request()->routeIs('employees.index') || request()->routeIs('roles.index') || request()->routeIs('serviceRequest.category') ? 'side-menu--active' : '' }}">
+            <a href="javascript:;" class="side-menu {{ request()->routeIs('contractors.index') || request()->routeIs('roles.index') || request()->routeIs('serviceRequest.category') ? 'side-menu--active' : '' }}">
                 <div class="side-menu__icon"> <i data-feather="monitor"></i> </div>
                 <div class="side-menu__title">
                     Management 
                     <div class="side-menu__sub-icon"> <i data-feather="chevron-down"></i> </div>
                 </div>
             </a>
-            <ul class="{{ request()->routeIs('employees.index') || request()->routeIs('roles.index') || request()->routeIs('serviceRequest.category') ? 'side-menu__sub-open' : '' }}">
+            <ul class="{{ request()->routeIs('contractors.index') || request()->routeIs('stockInventory.index') ? 'side-menu__sub-open' : '' }}">
             @if (Auth::guard('web')->user()->can('billboard.view'))
+                <li>
+                    <a href="{{ route('contractors.index') }}" class="side-menu {{ request()->routeIs('contractors.index') ? 'side-menu--active' : '' }}">
+                        <div class="side-menu__icon"> <i data-feather="user"></i> </div>
+                        <div class="side-menu__title"> Contractors </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('stockInventory.index') }}" class="side-menu {{ request()->routeIs('stockInventory.index') ? 'side-menu--active' : '' }}">
+                        <div class="side-menu__icon"> <i data-feather="user"></i> </div>
+                        <div class="side-menu__title"> Stock Inventory </div>
+                    </a>
+                </li>
                 <li>
                     <a href="{{ route('employees.index') }}" class="side-menu {{ request()->routeIs('employees.index') ? 'side-menu--active' : '' }}">
                         <div class="side-menu__icon"> <i data-feather="user"></i> </div>
                         <div class="side-menu__title"> Users </div>
                     </a>
                 </li>
-                @endif
+            @endif
                 <!-- @if (Auth::guard('web')->user()->can('role.view'))
                 <li>
                     <a href="{{ route('roles.index') }}" class="side-menu {{ request()->routeIs('roles.index') ? 'side-menu--active' : '' }}">

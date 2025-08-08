@@ -33,4 +33,26 @@ class StockInventory extends Model
         'created_at',
         'updated_at'
     ];
+
+    // Relations for client companies
+    public function clientIn()
+    {
+        return $this->belongsTo(ClientCompany::class, 'company_in_id');
+    }
+
+    public function clientOut()
+    {
+        return $this->belongsTo(ClientCompany::class, 'company_out_id');
+    }
+
+    // Relations for billboards
+    public function billboardIn()
+    {
+        return $this->belongsTo(Billboard::class, 'billboard_in_id');
+    }
+
+    public function billboardOut()
+    {
+        return $this->belongsTo(Billboard::class, 'billboard_out_id');
+    }
 }

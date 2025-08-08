@@ -16,6 +16,8 @@ use App\Http\Controllers\Billboard\BillboardController;
 use App\Http\Controllers\Billboard\BillboardBookingController;
 use App\Http\Controllers\Billboard\BillboardAvailabilityController;
 use App\Http\Controllers\Location\LocationController;
+use App\Http\Controllers\Contractors\ContractorController;
+use App\Http\Controllers\StockInventory\StockInventoryController;
 use Illuminate\Support\Facades\Storage;
 
 /*
@@ -80,6 +82,50 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/booking/availability', [BillboardAvailabilityController::class, 'getBillboardAvailability'])->name('billboard.checkAvailability');
     Route::get('/billboard/monthly-availability', [BillboardAvailabilityController::class, 'getMonthlyBookingAvailability'])->name('billboard.monthly.availability');
 
+    // Clients
+    Route::get('/clients', [ClientsController::class, 'index'])->name('clients.index');
+    Route::post('/clients/list', [ClientsController::class, 'list'])->name('clients.list');
+    Route::post('/clients/create', [ClientsController::class, 'create'])->name('clients.create');
+    Route::post('/clients/edit', [ClientsController::class, 'edit'])->name('clients.edit');
+    Route::post('/clients/delete', [ClientsController::class, 'delete'])->name('clients.delete');
+
+    // Client Company
+    Route::get('/client-company', [ClientCompanyController::class, 'index'])->name('client-company.index');
+    Route::post('/client-company/list', [ClientCompanyController::class, 'list'])->name('client-company.list');
+    Route::post('/client-company/create', [ClientCompanyController::class, 'create'])->name('client-company.create');
+    Route::post('/client-company/edit', [ClientCompanyController::class, 'edit'])->name('client-company.edit');
+    Route::post('/client-company/delete', [ClientCompanyController::class, 'delete'])->name('client-company.delete');
+
+    // Contractors
+    Route::get('/contractors', [ContractorController::class, 'index'])->name('contractors.index');
+    Route::post('/contractors/list', [ContractorController::class, 'list'])->name('contractors.list');
+    Route::post('/contractors/create', [ContractorController::class, 'create'])->name('contractors.create');
+    Route::post('/contractors/edit', [ContractorController::class, 'edit'])->name('contractors.edit');
+    Route::post('/contractors/delete', [ContractorController::class, 'delete'])->name('contractors.delete');
+
+    // Stock Inventory
+    Route::get('/inventory', [StockInventoryController::class, 'index'])->name('stockInventory.index');
+    Route::post('/inventory/list', [StockInventoryController::class, 'list'])->name('stockInventory.list');
+    Route::post('/inventory/create', [StockInventoryController::class, 'create'])->name('stockInventory.create');
+    Route::post('/inventory/edit', [StockInventoryController::class, 'edit'])->name('stockInventory.edit');
+    Route::post('/inventory/delete', [StockInventoryController::class, 'delete'])->name('stockInventory.delete');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -103,36 +149,6 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/serviceRequest/delete', [ServiceRequestController::class, 'delete'])->name('serviceRequest.delete');
     Route::post('/serviceRequest/reject', [ServiceRequestController::class, 'reject'])->name('serviceRequest.reject');
 
-    // Clients
-    Route::get('/clients', [ClientsController::class, 'index'])->name('clients.index');
-    Route::post('/clients/list', [ClientsController::class, 'list'])->name('clients.list');
-    Route::post('/clients/create', [ClientsController::class, 'create'])->name('clients.create');
-    Route::post('/clients/edit', [ClientsController::class, 'edit'])->name('clients.edit');
-    Route::post('/clients/delete', [ClientsController::class, 'delete'])->name('clients.delete');
-
-    // Client Company
-    Route::get('/client-company', [ClientCompanyController::class, 'index'])->name('client-company.index');
-    Route::post('/client-company/list', [ClientCompanyController::class, 'list'])->name('client-company.list');
-    Route::post('/client-company/create', [ClientCompanyController::class, 'create'])->name('client-company.create');
-    Route::post('/client-company/edit', [ClientCompanyController::class, 'edit'])->name('client-company.edit');
-    Route::post('/client-company/delete', [ClientCompanyController::class, 'delete'])->name('client-company.delete');
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     // Users Employee
     Route::get('/users', [UsersController::class, 'index'])->name('users');
     Route::post('/users/list/employee', [UsersController::class, 'listEmployee'])->name('users.list.employee');
@@ -154,10 +170,6 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/employees/list', [EmployeesController::class, 'list'])->name('employees.list');
     Route::post('/employees/edit', [EmployeesController::class, 'edit'])->name('employees.edit');
     Route::delete('/employees/delete/{id}', [EmployeesController::class, 'Destroy'])->name('employees.destroy');
-
-    
-
-    
 
     // Roles
     Route::get('/roles', [RolesController::class, 'Index'])->name('roles.index');
