@@ -160,6 +160,40 @@ return new class extends Migration
                 ->onDelete('cascade');
         });
 
+        Schema::create('stock_inventory_history', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('stock_inventory_id');
+            $table->unsignedBigInteger('contractor_pic')->nullable();
+            $table->unsignedBigInteger('billboard_in_id')->nullable();
+            $table->unsignedBigInteger('billboard_out_id')->nullable();
+            $table->unsignedBigInteger('company_in_id')->nullable();
+            $table->unsignedBigInteger('company_out_id')->nullable();
+            $table->date('date_in')->nullable();
+            $table->date('date_out')->nullable();
+            $table->text('remarks_in')->nullable();
+            $table->text('remarks_out')->nullable();
+            $table->integer('balance_contractor')->nullable();
+            $table->integer('balance_bgoc')->nullable();
+            $table->integer('quantity_in')->nullable();
+            $table->integer('quantity_out')->nullable();
+            $table->timestamp('changed_at')->useCurrent();
+            $table->unsignedBigInteger('changed_by')->nullable();
+            $table->enum('change_type', ['create', 'update', 'delete']);
+
+            // Relationships
+            $table->foreign('stock_inventory_id')
+                ->references('id')
+                ->on('stock_inventory')
+                ->onDelete('cascade');
+
+            $table->foreign('changed_by')
+                ->references('id')
+                ->on('users')
+                ->onDelete('set null');
+        });
+
+
+
     }
 
     /**
@@ -167,6 +201,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('stock_inventory_history');
         Schema::dropIfExists('stock_inventory');
         Schema::dropIfExists('monthly_ongoing_jobs');
         Schema::dropIfExists('billboard_bookings');

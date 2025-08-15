@@ -28,12 +28,12 @@
 
     #monthly-ongoing-table {
         border-collapse: collapse;
-        min-width: 1200px; /* adjust based on column count */
+        width: max-content; /* fit to content */
     }
 
     #monthly-ongoing-table th,
     #monthly-ongoing-table td {
-        border: 1px solid #d1d5db; /* Tailwind border-gray-300 */
+        border: 1px solid #d1d5db;
         padding: 4px 8px;
         white-space: nowrap;
     }
@@ -720,6 +720,7 @@
 
                             switch (status) {
                                 case 'completed':
+                                case 'ongoing':
                                     colorClass = 'status-completed';
                                     break;
                                 case 'dismantle':
@@ -745,6 +746,7 @@
                                     <option value="payment" ${status === 'payment' ? 'selected' : ''}>Payment</option>
                                     <option value="dismantle" ${status === 'dismantle' ? 'selected' : ''}>Dismantle</option>
                                     <option value="renewal" ${status === 'renewal' ? 'selected' : ''}>Renewal</option>
+                                    <option value="ongoing" ${status === 'ongoing' ? 'selected' : ''}>Ongoing</option>
                                     <option value="completed" ${status === 'completed' ? 'selected' : ''}>Completed</option>
                                 </select>
                             </td>`;

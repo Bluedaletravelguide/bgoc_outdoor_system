@@ -56,7 +56,10 @@ class StockInventoryController extends Controller
         // Get client company data
         $clientcompany = ClientCompany::all();
 
-        return view('stockInventory.index', compact('clients', 'users', 'clientcompany'));
+        // Get contractor data
+        $contractors = Contractor::all();
+
+        return view('stockInventory.index', compact('clients', 'users', 'clientcompany',  'contractors'));
     }
 
     /**
@@ -80,8 +83,6 @@ class StockInventoryController extends Controller
             11 => 'id',
         ];
 
-        logger('kesini dong');
-
         $limit = $request->input('length');
         $start = $request->input('start');
         $orderColumnIndex = $request->input('order.0.column');
@@ -94,6 +95,8 @@ class StockInventoryController extends Controller
                 'client_in.name as client_in_name',
                 'client_out.name as client_out_name',
                 'billboard_in.site_number as billboard_in_site',
+                'billboard_in.type as billboard_in_type',
+                'billboard_in.size as billboard_in_size',
                 'billboard_out.site_number as billboard_out_site',
                 'contractors.company_name as contractor_company',
                 'contractors.name as contractor_name',
@@ -135,19 +138,23 @@ class StockInventoryController extends Controller
 
         foreach ($filteredData as $d) {
             $nestedData = [
-                'client_in_name'    => $d->client_in_name,
-                'billboard_in_site' => $d->billboard_in_site,
-                'remarks_in'        => $d->remarks_in,
-                'quantity_in'       => $d->quantity_in,
-                'date_in'           => $d->date_in,
-                'client_out_name'   => $d->client_out_name,
-                'billboard_out_site'=> $d->billboard_out_site,
-                'remarks_out'       => $d->remarks_out,
-                'quantity_out'      => $d->quantity_out,
-                'date_out'          => $d->date_out,
-                'contractor'        => $d->contractor_company . ' (' . $d->contractor_name . ')',
-                'contractor_phone'  => $d->contractor_phone,
-                'id'                => $d->id,
+                'client_in_name'        => $d->client_in_name,
+                'billboard_in_site'     => $d->billboard_in_site,
+                'billboard_in_type'     => $d->billboard_in_type,
+                'billboard_in_size'     => $d->billboard_in_size,
+                'balance_contractor'    => $d->balance_contractor,
+                'balance_bgoc'          => $d->balance_bgoc,
+                'remarks_in'            => $d->remarks_in,
+                'quantity_in'           => $d->quantity_in,
+                'date_in'               => $d->date_in,
+                'client_out_name'       => $d->client_out_name,
+                'billboard_out_site'    => $d->billboard_out_site,
+                'remarks_out'           => $d->remarks_out,
+                'quantity_out'          => $d->quantity_out,
+                'date_out'              => $d->date_out,
+                'contractor'            => $d->contractor_company . ' (' . $d->contractor_name . ')',
+                'contractor_phone'      => $d->contractor_phone,
+                'id'                    => $d->id,
             ];
             $data[] = $nestedData;
         }
@@ -169,59 +176,77 @@ class StockInventoryController extends Controller
      */
     public function create(Request $request)
     {
-        $company     = $request->company;
-        $name           = $request->name;
-        $phone        = $request->phone;
+        $vendor         = $request->vendor;
+        $client_in      = $request->client_in;
+        $billboard_in   = $request->billboard_in;
+        $quantity_in    = $request->quantity_in;
+        $remarks_in     = $request->remarks_in;
+        $date_in        = $request->date_in;
+        $client_out     = $request->client_out;
+        $billboard_out  = $request->billboard_out;
+        $quantity_out   = $request->quantity_out;
+        $remarks_out    = $request->remarks_out;
+        $date_out       = $request->date_out;
+
+        logger('disini mas');
 
         // Validate fields
-        $validator = Validator::make(
-            $request->all(),
-            [
-                'company' => [
-                    'required',
-                    'string',
-                    'max:255',
-                ],
-                'name' => [
-                    'required',
-                    'string',
-                    'max:255',
-                ],
-                'phone' => [
-                    'required',
-                    'regex:/^\+?[0-9]+$/',
-                    'max:255',
-                ],
-            ],
-            [
-                'company.required' => 'The "Contractor Company Name" field is required.',
-                'company.string' => 'The "Contractor Company Name" must be a string.',
-                'company.max' => 'The "Contractor Company Name" must not be greater than :max characters.',
+        // $validator = Validator::make(
+        //     $request->all(),
+        //     [
+        //         'company' => [
+        //             'required',
+        //             'string',
+        //             'max:255',
+        //         ],
+        //         'name' => [
+        //             'required',
+        //             'string',
+        //             'max:255',
+        //         ],
+        //         'phone' => [
+        //             'required',
+        //             'regex:/^\+?[0-9]+$/',
+        //             'max:255',
+        //         ],
+        //     ],
+        //     [
+        //         'company.required' => 'The "Contractor Company Name" field is required.',
+        //         'company.string' => 'The "Contractor Company Name" must be a string.',
+        //         'company.max' => 'The "Contractor Company Name" must not be greater than :max characters.',
 
-                'name.required' => 'The "Contractor Name" field is required.',
-                'name.string' => 'The "Contractor Name" must be a string.',
-                'name.max' => 'The "Contractor Name" must not be greater than :max characters.',
+        //         'name.required' => 'The "Contractor Name" field is required.',
+        //         'name.string' => 'The "Contractor Name" must be a string.',
+        //         'name.max' => 'The "Contractor Name" must not be greater than :max characters.',
 
-                'phone.required' => 'The "Phone No." field is required.',
-                'phone.regex' => 'The "Phone No." field must only contain "+" symbol and numbers.',
-                'phone.max' => 'The "Phone No." field must not be greater than :max characters.',
-            ]
-        );
+        //         'phone.required' => 'The "Phone No." field is required.',
+        //         'phone.regex' => 'The "Phone No." field must only contain "+" symbol and numbers.',
+        //         'phone.max' => 'The "Phone No." field must not be greater than :max characters.',
+        //     ]
+        // );
 
         // Handle failed validations
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()->first()], 422);
-        }
+        // if ($validator->fails()) {
+        //     return response()->json(['error' => $validator->errors()->first()], 422);
+        // }
 
         try {
             // Ensure all queries successfully executed
             DB::beginTransaction();
 
-            // Insert new client company
-            $client = Contractor::create([
-                'company_name'          => $company,
-                'name'          => $name,
-                'phone'       => $phone,
+            // Insert new stock inventory
+            $inventory = StockInventory::create([
+                'contractor_pic'        => $vendor,
+                'billboard_in_id'       => $billboard_in,
+                'billboard_out_id'      => $billboard_out,
+                'company_in_id'         => $client_in,
+                'company_out_id'        => $client_out,
+                'date_in'               => $date_in,
+                'date_out'              => $date_out,
+                'remarks_in'            => $remarks_in,
+                'remarks_out'           => $remarks_out,
+                'quantity_in'           => $quantity_in,
+                'quantity_out'          => $quantity_out,
             ]);
 
             // Ensure all queries successfully executed, commit the db changes
@@ -243,61 +268,77 @@ class StockInventoryController extends Controller
      */
     public function edit(Request $request)
     {
-        $id                     = $request->id;
-        $company                = $request->company;
-        $name                   = $request->name;
-        $phone                  = $request->phone;
+        $id             = $request->id;
+        $vendor         = $request->vendor;
+        $client_in      = $request->client_in;
+        $billboard_in   = $request->billboard_in;
+        $quantity_in    = $request->quantity_in;
+        $remarks_in     = $request->remarks_in;
+        $date_in        = $request->date_in;
+        $client_out     = $request->client_out;
+        $billboard_out  = $request->billboard_out;
+        $quantity_out   = $request->quantity_out;
+        $remarks_out    = $request->remarks_out;
+        $date_out       = $request->date_out;
 
         // Validate fields
-        $validator = Validator::make(
-            $request->all(),
-            [
-                'company' => [
-                    'required',
-                    'string',
-                    'max:255',
-                ],
-                'name' => [
-                    'required',
-                    'string',
-                    'max:255',
-                ],
-                'phone' => [
-                    'required',
-                    'regex:/^\+?[0-9]+$/',
-                    'max:255',
-                ],
-            ],
-            [
-                'company.required' => 'The "Company Name" field is required.',
-                'company.string' => 'The "Company Name" must be a string.',
-                'company.max' => 'The "Company Name" must not be greater than :max characters.',
+        // $validator = Validator::make(
+        //     $request->all(),
+        //     [
+        //         'company' => [
+        //             'required',
+        //             'string',
+        //             'max:255',
+        //         ],
+        //         'name' => [
+        //             'required',
+        //             'string',
+        //             'max:255',
+        //         ],
+        //         'phone' => [
+        //             'required',
+        //             'regex:/^\+?[0-9]+$/',
+        //             'max:255',
+        //         ],
+        //     ],
+        //     [
+        //         'company.required' => 'The "Company Name" field is required.',
+        //         'company.string' => 'The "Company Name" must be a string.',
+        //         'company.max' => 'The "Company Name" must not be greater than :max characters.',
 
-                'name.required' => 'The "Contractor PIC Name" field is required.',
-                'name.string' => 'The "Contractor PIC Name" must be a string.',
-                'name.max' => 'The "Contractor PIC Name" must not be greater than :max characters.',
+        //         'name.required' => 'The "Contractor PIC Name" field is required.',
+        //         'name.string' => 'The "Contractor PIC Name" must be a string.',
+        //         'name.max' => 'The "Contractor PIC Name" must not be greater than :max characters.',
 
-                'phone.required' => 'The "Phone No." field is required.',
-                'phone.regex' => 'The "Phone No." field must only contain "+" symbol and numbers.',
-                'phone.max' => 'The "Phone No." field must not be greater than :max characters.',
-            ]
-        );
+        //         'phone.required' => 'The "Phone No." field is required.',
+        //         'phone.regex' => 'The "Phone No." field must only contain "+" symbol and numbers.',
+        //         'phone.max' => 'The "Phone No." field must not be greater than :max characters.',
+        //     ]
+        // );
 
         // Handle failed validations
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()->first()], 422);
-        }
+        // if ($validator->fails()) {
+        //     return response()->json(['error' => $validator->errors()->first()], 422);
+        // }
 
         try {
             // Ensure all queries successfully executed
             DB::beginTransaction();
 
             // Update client company
-            Contractor::where('id', $id)
+            StockInventory::where('id', $id)
                 ->update([
-                    'company_name'          => $company,
-                    'name'                  => $name,
-                    'phone'               => $phone,
+                    'contractor_pic'        => $vendor,
+                    'billboard_in_id'       => $billboard_in,
+                    'billboard_out_id'      => $billboard_out,
+                    'company_in_id'         => $client_in,
+                    'company_out_id'        => $client_out,
+                    'date_in'               => $date_in,
+                    'date_out'              => $date_out,
+                    'remarks_in'            => $remarks_in,
+                    'remarks_out'           => $remarks_out,
+                    'quantity_in'           => $quantity_in,
+                    'quantity_out'          => $quantity_out,
                 ]);
 
             // Ensure all queries successfully executed, commit the db changes

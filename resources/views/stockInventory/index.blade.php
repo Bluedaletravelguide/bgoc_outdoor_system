@@ -1,7 +1,7 @@
 @extends('layouts.main')
 
 @section('title')
-<title>BGOC Outdoor System - Contractors</title>
+<title>BGOC Outdoor System - Stock Inventory</title>
 @endsection('title')
 
 @section('sidebar')
@@ -38,19 +38,19 @@
                 </form>
                 <!-- END: Filter -->
 
-                <!-- BEGIN: Add Client -->
+                <!-- BEGIN: Add Stock Inventory -->
                 <div class="text-center">
-                    <a href="javascript:;" data-toggle="modal" data-target="#contractorAddModal" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-32 text-white">
+                    <a href="javascript:;" data-toggle="modal" data-target="#inventoryAddModal" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-32 text-white">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus w-4 h-4">
                             <line x1="12" y1="5" x2="12" y2="19"></line>
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                         </svg>
-                        Add New Contractor
+                        Add New Stock Inventory
                     </a>
                 </div>
-                <!-- END: Add Client -->
+                <!-- END: Add Stock Inventory -->
             </div>
-            <!-- END: Filter & Add Client -->
+            <!-- END: Filter & Add Stock Inventory -->
 
             <!-- BEGIN: Stock Inventory List -->
             <div class="overflow-x-auto scrollbar-hidden">
@@ -58,20 +58,22 @@
                     <thead>
                         <tr class="bg-theme-1 text-white">
                             <th width="5%">No.</th>
-                            <th>Vendor</th>
-                            <th>Client</th>
-                            <th>Type</th>
-                            <th>Site</th>
-                            <th>Remarks</th>
-                            <th>Size</th>
-                            <th>Quantity</th>
-                            <th>Bal - Contractor</th>
-                            <th>Bal - BGOC</th>
-                            <th>Quantity</th>
-                            <th>Size</th>
-                            <th>Client</th>
-                            <th>Site</th>
-                            <th>Remarks</th>
+                            <th class="bg-orange-500 text-white">Contractor</th>
+                            <th class="bg-orange-500 text-white">Client</th>
+                            <th class="bg-orange-500 text-white">Type</th>
+                            <th class="bg-orange-500 text-white">Site</th>
+                            <th class="bg-orange-500 text-white">Remarks</th>
+                            <th class="bg-orange-500 text-white">Size</th>
+                            <th class="bg-orange-500 text-white">Quantity</th>
+                            <th class="bg-orange-500 text-white">Date In</th>
+                            <th class="bg-yellow-400 text-black">Bal - Contractor</th>
+                            <th class="bg-yellow-400 text-black">Bal - BGOC</th>
+                            <th class="bg-green-600 text-white">Date Out</th>
+                            <th class="bg-green-600 text-white">Quantity</th>
+                            <th class="bg-green-600 text-white">Size</th>
+                            <th class="bg-green-600 text-white">Client</th>
+                            <th class="bg-green-600 text-white">Site</th>
+                            <th class="bg-green-600 text-white">Remarks</th>
                             <th width="10%">Action</th>
                         </tr>
                     </thead>
@@ -88,66 +90,253 @@
 @endsection('app_content')
 
 @section('modal_content')
-<!-- BEGIN: Client Users Add Modal -->
-<div class="modal" id="contractorAddModal">
-    <div class="modal__content">
-        <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
-            <h2 class="font-medium text-base mr-auto">Add Contractor</h2>
+<!-- BEGIN: Contractor Add Modal -->
+<div class="modal items-center justify-center" id="inventoryAddModal">
+    <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-7xl p-6">
+        
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between border-b pb-3 mb-4">
+            <h2 class="text-lg font-semibold">Add Stock Inventory</h2>
+            <!-- <button type="button" onclick="closeInventoryModal()">✖</button> -->
         </div>
+
         <form>
-        @csrf
-        <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
-            <div class="col-span-12 sm:col-span-12">
-                <label>Company</label>
-                <input type="text" placeholder="Enter a Company Name" class="input w-full border mt-2 flex-1" id="contractorAddCompanyName" required>
+            <div class="mb-4">
+                <label class="block font-medium">Contractor</label>
+                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputContractorName">
+                        <option selected value="">Select an option</option>
+                        @foreach ($contractors as $contractor)
+                            <option value="{{ $contractor->id }}">{{ $contractor->name }}</option>
+                        @endforeach
+                        </select>
             </div>
-            <div class="col-span-12 sm:col-span-12">
-                <label>Contractor PIC Name</label>
-                <input type="text" placeholder="Enter a PIC Name" class="input w-full border mt-2 flex-1" id="contractorAddPICName" required>
+            <div class="grid grid-cols-2 gap-8">
+                
+                <!-- LEFT COLUMN: IN INVENTORY -->
+                <div class="bg-orange-50 p-4 rounded-lg">
+                    <h3 class="font-bold text-orange-600 mb-3">In Inventory</h3>
+
+                    <div class="mb-3">
+                        <label class="block">Balance - Contractor</label>
+                        <input type="number" class="input w-full border mt-1" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="block">Date In</label>
+                        <input type="date" class="input w-full border mt-1" id="inputDateIn">
+                    </div>
+                    <div class="mb-3">
+                        <label class="block">Quantity In</label>
+                        <input type="number" class="input w-full border mt-1" id="inputQtyIn">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="block">Client</label>
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputClientIn">
+                        <option selected value="">Select an option</option>
+                        @foreach ($clientcompany as $clientcomp)
+                            <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
+                        @endforeach
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="block">Site</label>
+                        <input type="text" class="input w-full border mt-1" id="inputBillboardIn">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="block">Type</label>
+                        <input type="text" class="input w-full border mt-1" id="inputTypeIn">
+                    </div>
+                    <div class="mb-3">
+                        <label class="block">Size</label>
+                        <input type="text" class="input w-full border mt-1" id="inputSizeIn">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="block">Remarks</label>
+                        <input type="text" class="input w-full border mt-1" id="inputRemarksIn">
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN: OUT INVENTORY -->
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h3 class="font-bold text-green-600 mb-3">Out Inventory</h3>
+
+                    <div class="mb-3">
+                        <label class="block">Bal - BGOC</label>
+                        <input type="number" class="input w-full border mt-1" readonly>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="block">Date Out</label>
+                        <input type="date" class="input w-full border mt-1" id="inputDateOut">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="block">Quantity Out</label>
+                        <input type="number" class="input w-full border mt-1" id="inputQtyOut">
+                    </div>
+                    <div class="mb-3">
+                        <label class="block">Client</label>
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputClientOut">
+                        <option selected value="">Select an option</option>
+                        @foreach ($clientcompany as $clientcomp)
+                            <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
+                        @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="block">Site</label>
+                        <input type="text" class="input w-full border mt-1" id="inputBillboardOut">
+                    </div>
+                    <div class="mb-3">
+                        <label class="block">Type</label>
+                        <input type="text" class="input w-full border mt-1" id="inputTypeOut">
+                    </div>
+                    <div class="mb-3">
+                        <label class="block">Size</label>
+                        <input type="text" class="input w-full border mt-1" id="inputSizeOut">
+                    </div>
+                    <div class="mb-3">
+                        <label class="block">Remarks</label>
+                        <input type="text" class="input w-full border mt-1" id="inputRemarksOut">
+                    </div>
+                </div>
             </div>
-            <div class="col-span-12 sm:col-span-12">
-                <label>Phone No.</label>
-                <input type="text"  title="Please enter Phone number in correct format" placeholder="Enter a Phone Number" class="input w-full border mt-2 flex-1" id="contractorAddPhone" required>
-            </div>
-            </div>
-            <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
-                <button type="submit" class="button w-50 bg-theme-1 text-white" id="contractorAddButton">Save</button>
+
+            <!-- Footer -->
+            <div class="mt-6 text-right">
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Submit</button>
             </div>
         </form>
-        
     </div>
 </div>
 <!-- END: Client Users Add Modal -->
 
-<!-- BEGIN: Client Edit Modal -->
-<div class="modal" id="contractorEditModal">
-    <div class="modal__content">
-        <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
-            <h2 class="font-medium text-base mr-auto">Edit Contractor</h2>
+<!-- BEGIN: Inventory Edit Modal -->
+<div class="modal items-center justify-center" id="inventoryEditModal">
+    <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-7xl p-6">
+        
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between border-b pb-3 mb-4">
+            <h2 class="text-lg font-semibold">Edit Stock Inventory</h2>
+            <!-- <button type="button" onclick="closeInventoryModal()">✖</button> -->
         </div>
+
         <form>
-            <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
-                <div class="col-span-12 sm:col-span-12">
-                    <label>Company Name</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Company Name" id="contractorEditCompanyName" required>
+            <div class="mb-4">
+                <label class="block font-medium">Contractor</label>
+                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editContractorName">
+                        <option selected value="">Select an option</option>
+                        @foreach ($contractors as $contractor)
+                            <option value="{{ $contractor->id }}">{{ $contractor->name }}</option>
+                        @endforeach
+                        </select>
+            </div>
+            <div class="grid grid-cols-2 gap-8">
+                
+                <!-- LEFT COLUMN: IN INVENTORY -->
+                <div class="bg-orange-50 p-4 rounded-lg">
+                    <h3 class="font-bold text-orange-600 mb-3">In Inventory</h3>
+
+                    <div class="mb-3">
+                        <label class="block">Bal - Contractor</label>
+                        <input type="number" class="input w-full border mt-1" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="block">Date In</label>
+                        <input type="date" class="input w-full border mt-1">
+                    </div>
+                    <div class="mb-3">
+                        <label class="block">Quantity</label>
+                        <input type="number" class="input w-full border mt-1">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="block">Client</label>
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editClientIn">
+                        <option selected value="">Select an option</option>
+                        @foreach ($clientcompany as $clientcomp)
+                            <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
+                        @endforeach
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="block">Site</label>
+                        <input type="text" class="input w-full border mt-1">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="block">Type</label>
+                        <input type="text" class="input w-full border mt-1">
+                    </div>
+                    <div class="mb-3">
+                        <label class="block">Size</label>
+                        <input type="text" class="input w-full border mt-1">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="block">Remarks</label>
+                        <input type="text" class="input w-full border mt-1">
+                    </div>
                 </div>
-                <div class="col-span-12 sm:col-span-12">
-                    <label>Contractor PIC Name</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Contractor PIC Name" id="contractorEditPICName" required>
-                </div>
-                <div class="col-span-12 sm:col-span-12">
-                    <label>Phone No.</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Phone No" id="contractorEditPhone" required>
+
+                <!-- RIGHT COLUMN: OUT INVENTORY -->
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h3 class="font-bold text-green-600 mb-3">Out Inventory</h3>
+
+                    <div class="mb-3">
+                        <label class="block">Bal - BGOC</label>
+                        <input type="number" class="input w-full border mt-1" readonly>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="block">Date Out</label>
+                        <input type="date" class="input w-full border mt-1">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="block">Quantity</label>
+                        <input type="number" class="input w-full border mt-1">
+                    </div>
+                    <div class="mb-3">
+                        <label class="block">Client</label>
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editClientOut">
+                        <option selected value="">Select an option</option>
+                        @foreach ($clientcompany as $clientcomp)
+                            <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
+                        @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="block">Site</label>
+                        <input type="text" class="input w-full border mt-1">
+                    </div>
+                    <div class="mb-3">
+                        <label class="block">Type</label>
+                        <input type="text" class="input w-full border mt-1">
+                    </div>
+                    <div class="mb-3">
+                        <label class="block">Size</label>
+                        <input type="text" class="input w-full border mt-1">
+                    </div>
+                    <div class="mb-3">
+                        <label class="block">Remarks</label>
+                        <input type="text" class="input w-full border mt-1">
+                    </div>
                 </div>
             </div>
 
-            <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
-                <button type="submit" class="button w-20 bg-theme-1 text-white" id="contractorEditButton">Update</button>
+            <!-- Footer -->
+            <div class="mt-6 text-right">
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Update</button>
             </div>
         </form>
     </div>
 </div>
-<!-- END: Client Edit Modal -->
+<!-- END: Inventory Edit Modal -->
 
 <!-- BEGIN: Client Delete Modal -->
 <div class="modal" id="contractorDeleteModal">
@@ -171,12 +360,12 @@
         
         // Global variables
         var filterClientCompany;
-        var contractorID;
+        var inventoryId;
         var lastClickedLink;
 
         // Listen to below buttons
         document.getElementById("filterClientButton").addEventListener("click", filterClientButton);
-        document.getElementById("contractorAddButton").addEventListener("click", contractorAddButton);
+        // document.getElementById("inventoryAddButton").addEventListener("click", inventoryAddButton);
         document.getElementById("contractorDeleteButton").addEventListener("click", contractorDeleteButton);
 
         // When "filterClientButton" button is clicked, initiate initClientCompanyDatatable
@@ -189,38 +378,39 @@
         filterClientButton();
 
         // When any submit button is clicked
-        (function() {
-            var inventory_table = $('#inventory_table')[0].altEditor;
+        // (function() {
+        //     var inventory_table = $('#inventory_table')[0].altEditor;
 
-            document.getElementById('contractorAddButton').addEventListener('click', function(e) {
-                // Prevent the default form submission behavior
-                e.preventDefault();
-            });
+        //     document.getElementById('inventoryAddButton').addEventListener('click', function(e) {
+        //         // Prevent the default form submission behavior
+        //         e.preventDefault();
+        //     });
 
-            document.getElementById('contractorEditButton').addEventListener('click', function(e) {
-                // Prevent the default form submission behavior
-                e.preventDefault();
+        //     document.getElementById('inventoryEditButton').addEventListener('click', function(e) {
+        //         // Prevent the default form submission behavior
+        //         e.preventDefault();
 
-                // Edit client
-                editContractor();
-            });
-        })();
+        //         // Edit client
+        //         editContractor();
+        //     });
+        // })();
 
         // Open modal
         function openAltEditorModal(element) {
+            console.log('disini pak');
             cash(element).modal('show');
         }
 
         // Close modal
-        function closeAltEditorModal(element) {
-            cash(element).modal('hide');
+        function closeAltEditorModal(selector) {
+            $(selector).addClass('hidden').removeClass('flex');
         }
 
         // Add New Client
-        function contractorAddButton() {
+        function inventoryAddButton() {
             $.ajax({
                 type: 'POST',
-                url: "{{ route('contractors.create') }}",
+                url: "{{ route('stockInventory.create') }}",
                 data: {
                     _token: $('meta[name="csrf-token"]').attr('content'),
                     company: document.getElementById("contractorAddCompanyName").value,
@@ -229,7 +419,7 @@
                 },
                 success: function(response) {
                     // Close modal after successfully edited
-                    var element = "#contractorAddModal";
+                    var element = "#inventoryAddModal";
                     closeAltEditorModal(element);
 
                     // Show successful toast
@@ -268,11 +458,11 @@
                     company: company,
                     name: name,
                     phone: phone,
-                    id: contractorID,
+                    id: inventoryId,
                 },
                 success: function(response) {
                     // Close modal after successfully edited
-                    var element = "#contractorEditModal";
+                    var element = "#inventoryEditModal";
                     closeAltEditorModal(element);
 
                     // Show successful toast
@@ -393,7 +583,7 @@
                         data: "client_in_name",
                     },
                     {
-                        data: "remarks_in",
+                        data: "billboard_in_type",
                     },
                     {
                         data: "billboard_in_site",
@@ -402,16 +592,22 @@
                         data: "remarks_in",
                     },
                     {
-                        data: "remarks_in",
+                        data: "billboard_in_size",
                     },
                     {
                         data: "quantity_in",
                     },
                     {
-                        data: "quantity_in",
+                        data: "date_in",
                     },
                     {
-                        data: "quantity_in",
+                        data: "balance_contractor",
+                    },
+                    {
+                        data: "balance_bgoc",
+                    },
+                    {
+                        data: "date_out",
                     },
                     {
                         data: "quantity_out",
@@ -433,12 +629,6 @@
                         render: function(data, type, row) {
                             return `
                             <div class="flex items-center justify-center space-x-3">
-                                <!-- Edit Icon -->
-                                <a href="javascript:;" class="text-theme-9" data-toggle="modal" data-target="#contractorEditModal" id="edit-${data}" title="Edit">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path d="M15.232 5.232l3.536 3.536M9 13h3l9-9a1.5 1.5 0 00-2.121-2.121l-9 9v3z"/>
-                                    </svg>
-                                </a>
 
                                 <!-- Delete Icon -->
                                 <a href="javascript:;" class="text-theme-6" data-toggle="modal" data-target="#contractorDeleteModal" id="delete-${data}" title="Delete">
@@ -501,26 +691,25 @@
             }
 
             // Open modal to edit client
-            contractorEditModal();
+            inventoryEditModal();
         };
 
         // Open modal to edit client
-        function contractorEditModal() {
-            // Remove previous click event listeners
-            $(document).off('click', "[id^='inventory_table'] tbody tr td:not(:last-child)");
+        function inventoryEditModal() {
+            $(document).off('click', "#inventory_table tbody tr td:not(:last-child)");
 
-            $(document).on('click', "[id^='inventory_table'] tbody tr td:not(:last-child)", function() {
-                // Place values to edit form fields in the modal
-                document.getElementById("contractorEditCompanyName").value = $(event.target).closest('tr').find('td:nth-child(' + '2' + ')').text();
-                document.getElementById("contractorEditPICName").value = $(event.target).closest('tr').find('td:nth-child(' + '3' + ')').text();
-                document.getElementById("contractorEditPhone").value = $(event.target).closest('tr').find('td:nth-child(' + '4' + ')').text();
+            $(document).on('click', "#inventory_table tbody tr td:not(:last-child)", function (e) {
+                const $row = $(this).closest('tr');
 
-                // Grab row client id
-                contractorID = $(event.target).closest('tr').find('td:nth-child(5) a').attr('id').split('-')[1];
+                // Grab ID from last column action button
+                const btn = $row.find('td:last-child a[id^="delete-"]');
+                if (btn.length) {
+                    inventoryId = btn.attr('id').split('-')[1];
+                    console.log("Selected Inventory ID:", inventoryId);
+                }
 
                 // Open modal
-                var element = "#contractorEditModal";
-                openAltEditorModal(element);
+                openAltEditorModal("#inventoryEditModal");
             });
         }
 

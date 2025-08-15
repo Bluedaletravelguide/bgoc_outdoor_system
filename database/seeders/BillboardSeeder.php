@@ -70,6 +70,153 @@ class BillboardSeeder extends Seeder
             'Banner'    => 'BN',
         ];
 
+        // ✅ 3A. Insert actual billboard data (realistic example)
+        $realBillboards = [
+            [
+                'location_id'           => 1,
+                'site_number'           => 'SEL-001',
+                'gps_latitude'          => $faker->latitude(1.2, 6.7),     // Malaysia approx. lat range
+                'gps_longitude'         => $faker->longitude(99.6, 119.3), // Malaysia approx. lng range
+                'traffic_volume'        => $faker->numerify('#######'),
+                'size'                  => '30x20',
+                'lighting'              => $faker->randomElement(['TNB', 'SOLAR', 'None']),
+                'type'                  => 'Billboard',
+                'prefix'                => 'BB',
+                'status'                => 1,
+                'created_at'            => Carbon::now()->subDays(rand(0, 10))->toDateTimeString(), // Random timestamp between today and 10 days ago
+                'updated_at'            => Carbon::now()->subDays(rand(0, 10))->toDateTimeString(), // Random timestamp between today and 10 days ago
+                ],
+                [
+                'location_id'           => 2,
+                'site_number'           => 'SEL-002',
+                'gps_latitude'          => $faker->latitude(1.2, 6.7),     // Malaysia approx. lat range
+                'gps_longitude'         => $faker->longitude(99.6, 119.3), // Malaysia approx. lng range
+                'traffic_volume'        => $faker->numerify('#######'),
+                'size'                  => '30x20',
+                'lighting'              => $faker->randomElement(['TNB', 'SOLAR', 'None']),
+                'type'                  => 'Billboard',
+                'prefix'                => 'BB',
+                'status'                => 1,
+                'created_at'            => Carbon::now()->subDays(rand(0, 10))->toDateTimeString(), // Random timestamp between today and 10 days ago
+                'updated_at'            => Carbon::now()->subDays(rand(0, 10))->toDateTimeString(), // Random timestamp between today and 10 days ago
+                ],
+                [
+                'location_id'           => 3,
+                'site_number'           => 'SEL-005',
+                'gps_latitude'          => $faker->latitude(1.2, 6.7),     // Malaysia approx. lat range
+                'gps_longitude'         => $faker->longitude(99.6, 119.3), // Malaysia approx. lng range
+                'traffic_volume'        => $faker->numerify('#######'),
+                'size'                  => '30x20',
+                'lighting'              => $faker->randomElement(['TNB', 'SOLAR', 'None']),
+                'type'                  => 'Billboard',
+                'prefix'                => 'BB',
+                'status'                => 1,
+                'created_at'            => Carbon::now()->subDays(rand(0, 10))->toDateTimeString(), // Random timestamp between today and 10 days ago
+                'updated_at'            => Carbon::now()->subDays(rand(0, 10))->toDateTimeString(), // Random timestamp between today and 10 days ago
+                ],
+                [
+                'location_id'           => 4,
+                'site_number'           => 'SEL-006',
+                'gps_latitude'          => $faker->latitude(1.2, 6.7),     // Malaysia approx. lat range
+                'gps_longitude'         => $faker->longitude(99.6, 119.3), // Malaysia approx. lng range
+                'traffic_volume'        => $faker->numerify('#######'),
+                'size'                  => '30x20',
+                'lighting'              => $faker->randomElement(['TNB', 'SOLAR', 'None']),
+                'type'                  => 'Billboard',
+                'prefix'                => 'BB',
+                'status'                => 1,
+                'created_at'            => Carbon::now()->subDays(rand(0, 10))->toDateTimeString(), // Random timestamp between today and 10 days ago
+                'updated_at'            => Carbon::now()->subDays(rand(0, 10))->toDateTimeString(), // Random timestamp between today and 10 days ago
+                ],
+                [
+                'location_id'           => 5,
+                'site_number'           => 'SEL-007',
+                'gps_latitude'          => $faker->latitude(1.2, 6.7),     // Malaysia approx. lat range
+                'gps_longitude'         => $faker->longitude(99.6, 119.3), // Malaysia approx. lng range
+                'traffic_volume'        => $faker->numerify('#######'),
+                'size'                  => '30x20',
+                'lighting'              => $faker->randomElement(['TNB', 'SOLAR', 'None']),
+                'type'                  => 'Billboard',
+                'prefix'                => 'BB',
+                'status'                => 1,
+                'created_at'            => Carbon::now()->subDays(rand(0, 10))->toDateTimeString(), // Random timestamp between today and 10 days ago
+                'updated_at'            => Carbon::now()->subDays(rand(0, 10))->toDateTimeString(), // Random timestamp between today and 10 days ago
+                ],
+                [
+                'location_id'           => 6,
+                'site_number'           => 'WPK-001',
+                'gps_latitude'          => $faker->latitude(1.2, 6.7),     // Malaysia approx. lat range
+                'gps_longitude'         => $faker->longitude(99.6, 119.3), // Malaysia approx. lng range
+                'traffic_volume'        => $faker->numerify('#######'),
+                'size'                  => '30x20',
+                'lighting'              => $faker->randomElement(['TNB', 'SOLAR', 'None']),
+                'type'                  => 'Tempboard',
+                'prefix'                => 'TB',
+                'status'                => 1,
+                'created_at'            => Carbon::now()->subDays(rand(0, 10))->toDateTimeString(), // Random timestamp between today and 10 days ago
+                'updated_at'            => Carbon::now()->subDays(rand(0, 10))->toDateTimeString(), // Random timestamp between today and 10 days ago
+                ],
+                [
+                'location_id'           => 7,
+                'site_number'           => 'WPK-002',
+                'gps_latitude'          => $faker->latitude(1.2, 6.7),     // Malaysia approx. lat range
+                'gps_longitude'         => $faker->longitude(99.6, 119.3), // Malaysia approx. lng range
+                'traffic_volume'        => $faker->numerify('#######'),
+                'size'                  => '30x20',
+                'lighting'              => $faker->randomElement(['TNB', 'SOLAR', 'None']),
+                'type'                  => 'Tempboard',
+                'prefix'                => 'TB',
+                'status'                => 1,
+                'created_at'            => Carbon::now()->subDays(rand(0, 10))->toDateTimeString(), // Random timestamp between today and 10 days ago
+                'updated_at'            => Carbon::now()->subDays(rand(0, 10))->toDateTimeString(), // Random timestamp between today and 10 days ago
+                ],
+                [
+                'location_id'           => 8,
+                'site_number'           => 'WPK-003',
+                'gps_latitude'          => $faker->latitude(1.2, 6.7),     // Malaysia approx. lat range
+                'gps_longitude'         => $faker->longitude(99.6, 119.3), // Malaysia approx. lng range
+                'traffic_volume'        => $faker->numerify('#######'),
+                'size'                  => '30x20',
+                'lighting'              => $faker->randomElement(['TNB', 'SOLAR', 'None']),
+                'type'                  => 'Tempboard',
+                'prefix'                => 'TB',
+                'status'                => 1,
+                'created_at'            => Carbon::now()->subDays(rand(0, 10))->toDateTimeString(), // Random timestamp between today and 10 days ago
+                'updated_at'            => Carbon::now()->subDays(rand(0, 10))->toDateTimeString(), // Random timestamp between today and 10 days ago
+                ],
+                [
+                'location_id'           => 9,
+                'site_number'           => 'WPK-004',
+                'gps_latitude'          => $faker->latitude(1.2, 6.7),     // Malaysia approx. lat range
+                'gps_longitude'         => $faker->longitude(99.6, 119.3), // Malaysia approx. lng range
+                'traffic_volume'        => $faker->numerify('#######'),
+                'size'                  => '30x20',
+                'lighting'              => $faker->randomElement(['TNB', 'SOLAR', 'None']),
+                'type'                  => 'Tempboard',
+                'prefix'                => 'TB',
+                'status'                => 1,
+                'created_at'            => Carbon::now()->subDays(rand(0, 10))->toDateTimeString(), // Random timestamp between today and 10 days ago
+                'updated_at'            => Carbon::now()->subDays(rand(0, 10))->toDateTimeString(), // Random timestamp between today and 10 days ago
+                ],
+                [
+                'location_id'           => 10,
+                'site_number'           => 'WPK-005',
+                'gps_latitude'          => $faker->latitude(1.2, 6.7),     // Malaysia approx. lat range
+                'gps_longitude'         => $faker->longitude(99.6, 119.3), // Malaysia approx. lng range
+                'traffic_volume'        => $faker->numerify('#######'),
+                'size'                  => '30x20',
+                'lighting'              => $faker->randomElement(['TNB', 'SOLAR', 'None']),
+                'type'                  => 'Tempboard',
+                'prefix'                => 'TB',
+                'status'                => 1,
+                'created_at'            => Carbon::now()->subDays(rand(0, 10))->toDateTimeString(), // Random timestamp between today and 10 days ago
+                'updated_at'            => Carbon::now()->subDays(rand(0, 10))->toDateTimeString(), // Random timestamp between today and 10 days ago
+                ],
+
+        ];
+
+        DB::table('billboards')->insert($realBillboards);
+
         // ✅ 3. Create billboards
         for ($i = 1; $i <= 50; $i++) {
             $type = $faker->randomElement(array_keys($prefixMap));
