@@ -2,57 +2,50 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class StockInventory extends Model
 {
     use HasFactory;
 
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
     protected $table = 'stock_inventory';
 
     protected $fillable = [
         'contractor_pic',
-        'billboard_in_id',
-        'billboard_out_id',
-        'company_in_id',
-        'company_out_id',
+        'client_in',
+        'client_out',
         'date_in',
         'date_out',
         'remarks_in',
         'remarks_out',
         'balance_contractor',
         'balance_bgoc',
-        'quantity_in',
-        'quantity_out',
-        'created_at',
-        'updated_at'
     ];
 
-    // Relations for client companies
+    // Relationships
+    public function contractor()
+    {
+        return $this->belongsTo(Contractor::class, 'contractor_pic');
+    }
+
     public function clientIn()
     {
-        return $this->belongsTo(ClientCompany::class, 'company_in_id');
+        return $this->belongsTo(ClientCompany::class, 'client_in');
     }
 
     public function clientOut()
     {
-        return $this->belongsTo(ClientCompany::class, 'company_out_id');
+        return $this->belongsTo(ClientCompany::class, 'client_out');
     }
 
-    // Relations for billboards
-    public function billboardIn()
+    public function sites()
     {
-        return $this->belongsTo(Billboard::class, 'billboard_in_id');
+        return $this->hasMany(StockInventorySite::class, 'stock_inventory_id');
     }
 
-    public function billboardOut()
+    public function history()
     {
-        return $this->belongsTo(Billboard::class, 'billboard_out_id');
+        return $this->hasMany(StockInventoryHistory::class, 'stock_inventory_id');
     }
 }

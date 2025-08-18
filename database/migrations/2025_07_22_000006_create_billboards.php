@@ -116,84 +116,119 @@ return new class extends Migration
             ->onDelete('cascade');
         });
 
+        // Schema::create('stock_inventory', function (Blueprint $table) {
+        //     $table->id();
+        //     $table->unsignedBigInteger('contractor_pic');
+        //     $table->unsignedBigInteger('billboard_in')->nullable()->change();
+        //     $table->unsignedBigInteger('billboard_out')->nullable()->change();
+        //     $table->unsignedBigInteger('client_in')->nullable()->change();
+        //     $table->unsignedBigInteger('client_out')->nullable()->change();
+        //     $table->dateTime('date_in')->nullable()->change();
+        //     $table->dateTime('date_out')->nullable()->change();
+        //     $table->string('remarks_in')->nullable()->change();
+        //     $table->string('remarks_out')->nullable()->change();
+        //     $table->string('balance_contractor')->nullable()->change();
+        //     $table->string('balance_bgoc')->nullable()->change();
+        //     $table->string('quantity_in')->nullable()->change();
+        //     $table->string('quantity_out')->nullable()->change();
+
+        //     $table->dateTime('created_at', $precision = 0)->useCurrent();
+        //     $table->dateTime('updated_at', $precision = 0)->nullable()->useCurrentOnUpdate();
+
+        //     $table->foreign('contractor_pic')
+        //         ->references('id')
+        //         ->on('contractors')
+        //         ->onDelete('cascade');
+
+        //     $table->foreign('billboard_in')
+        //         ->references('id')
+        //         ->on('billboards')
+        //         ->onDelete('cascade');
+
+        //     $table->foreign('billboard_out')
+        //         ->references('id')
+        //         ->on('billboards')
+        //         ->onDelete('cascade');
+
+        //     $table->foreign('client_in')
+        //         ->references('id')
+        //         ->on('client_companies')
+        //         ->onDelete('cascade');
+
+        //     $table->foreign('client_out')
+        //         ->references('id')
+        //         ->on('client_companies')
+        //         ->onDelete('cascade');
+        // });
+
         Schema::create('stock_inventory', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('contractor_pic');
-            $table->unsignedBigInteger('billboard_in_id');
-            $table->unsignedBigInteger('billboard_out_id');
-            $table->unsignedBigInteger('company_in_id');
-            $table->unsignedBigInteger('company_out_id');
-            $table->dateTime('date_in');
-            $table->dateTime('date_out');
-            $table->string('remarks_in');
-            $table->string('remarks_out');
-            $table->string('balance_contractor');
-            $table->string('balance_bgoc');
-            $table->string('quantity_in');
-            $table->string('quantity_out');
-            $table->dateTime('created_at', $precision = 0)->useCurrent();
-            $table->dateTime('updated_at', $precision = 0)->nullable()->useCurrentOnUpdate();
+            $table->unsignedBigInteger('client_in')->nullable();
+            $table->unsignedBigInteger('client_out')->nullable();
+            $table->dateTime('date_in')->nullable();
+            $table->dateTime('date_out')->nullable();
+            $table->string('remarks_in')->nullable();
+            $table->string('remarks_out')->nullable();
+            $table->string('balance_contractor')->nullable();
+            $table->string('balance_bgoc')->nullable();
+            $table->timestamps();
 
-            $table->foreign('contractor_pic')
-                ->references('id')
-                ->on('contractors')
-                ->onDelete('cascade');
+            $table->foreign('contractor_pic')->references('id')->on('contractors')->onDelete('cascade');
+            $table->foreign('client_in')->references('id')->on('client_companies')->onDelete('cascade');
+            $table->foreign('client_out')->references('id')->on('client_companies')->onDelete('cascade');
+        });
 
-            $table->foreign('billboard_in_id')
-                ->references('id')
-                ->on('billboards')
-                ->onDelete('cascade');
+        Schema::create('stock_inventory_sites', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('stock_inventory_id');
+            $table->unsignedBigInteger('billboard_id');
+            $table->enum('type', ['in','out']); // IN = delivery, OUT = release
+            $table->unsignedInteger('quantity');
+            $table->timestamps();
 
-            $table->foreign('billboard_out_id')
-                ->references('id')
-                ->on('billboards')
-                ->onDelete('cascade');
-
-            $table->foreign('company_in_id')
-                ->references('id')
-                ->on('client_companies')
-                ->onDelete('cascade');
-
-            $table->foreign('company_out_id')
-                ->references('id')
-                ->on('client_companies')
-                ->onDelete('cascade');
+            $table->foreign('stock_inventory_id')->references('id')->on('stock_inventory')->onDelete('cascade');
+            $table->foreign('billboard_id')->references('id')->on('billboards')->onDelete('cascade');
         });
 
         Schema::create('stock_inventory_history', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('stock_inventory_id');
             $table->unsignedBigInteger('contractor_pic')->nullable();
-            $table->unsignedBigInteger('billboard_in_id')->nullable();
-            $table->unsignedBigInteger('billboard_out_id')->nullable();
-            $table->unsignedBigInteger('company_in_id')->nullable();
-            $table->unsignedBigInteger('company_out_id')->nullable();
-            $table->date('date_in')->nullable();
-            $table->date('date_out')->nullable();
+            $table->unsignedBigInteger('client_in')->nullable();
+            $table->unsignedBigInteger('client_out')->nullable();
+            $table->dateTime('date_in')->nullable();
+            $table->dateTime('date_out')->nullable();
             $table->text('remarks_in')->nullable();
             $table->text('remarks_out')->nullable();
             $table->integer('balance_contractor')->nullable();
             $table->integer('balance_bgoc')->nullable();
-            $table->integer('quantity_in')->nullable();
-            $table->integer('quantity_out')->nullable();
-            $table->timestamp('changed_at')->useCurrent();
+
+            $table->enum('change_type', ['create','update','delete']);
             $table->unsignedBigInteger('changed_by')->nullable();
-            $table->enum('change_type', ['create', 'update', 'delete']);
+            $table->timestamp('changed_at')->useCurrent();
 
-            // Relationships
-            $table->foreign('stock_inventory_id')
-                ->references('id')
-                ->on('stock_inventory')
-                ->onDelete('cascade');
-
-            $table->foreign('changed_by')
-                ->references('id')
-                ->on('users')
-                ->onDelete('set null');
+            $table->foreign('stock_inventory_id')->references('id')->on('stock_inventory')->onDelete('cascade');
+            $table->foreign('changed_by')->references('id')->on('users')->onDelete('set null');
         });
 
+        Schema::create('stock_inventory_sites_history', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('stock_inventory_site_id');
+            $table->unsignedBigInteger('stock_inventory_id');
+            $table->unsignedBigInteger('billboard_id');
+            $table->enum('type', ['in','out']);
+            $table->unsignedInteger('quantity');
 
+            $table->enum('change_type', ['create','update','delete']);
+            $table->unsignedBigInteger('changed_by')->nullable();
+            $table->timestamp('changed_at')->useCurrent();
 
+            $table->foreign('stock_inventory_site_id')->references('id')->on('stock_inventory_sites')->onDelete('cascade');
+            $table->foreign('stock_inventory_id')->references('id')->on('stock_inventory')->onDelete('cascade');
+            $table->foreign('billboard_id')->references('id')->on('billboards')->onDelete('cascade');
+            $table->foreign('changed_by')->references('id')->on('users')->onDelete('set null');
+        });
     }
 
     /**
@@ -201,11 +236,14 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('stock_inventory_sites_history');
         Schema::dropIfExists('stock_inventory_history');
+        Schema::dropIfExists('stock_inventory_sites');
         Schema::dropIfExists('stock_inventory');
         Schema::dropIfExists('monthly_ongoing_jobs');
         Schema::dropIfExists('billboard_bookings');
         Schema::dropIfExists('billboard_images');
         Schema::dropIfExists('billboards');
     }
+
 };
