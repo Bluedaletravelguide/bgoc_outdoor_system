@@ -69,6 +69,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('billboard_id');
             $table->unsignedBigInteger('company_id');
+            $table->string('job_order_no');
             $table->dateTime('start_date');
             $table->dateTime('end_date');
             $table->string('status');

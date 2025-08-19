@@ -179,14 +179,14 @@ class BillboardBookingController extends Controller
 
             DB::beginTransaction();
             
-            $billboard_id = Billboard::where('location_id', $location)->value('id');
+            $billboard  = Billboard::where('location_id', $location)->first();
 
-            if (!$billboard_id) {
+            if (!$billboard ) {
                 return response()->json(['error' => 'Billboard not found for the selected location.'], 404);
             }
 
             // Check for overlapping bookings
-            $overlap = BillboardBooking::where('billboard_id', $billboard_id)
+            $overlap = BillboardBooking::where('billboard_id', $billboard->id)
                 ->where(function ($query) use ($start_date, $end_date) {
                     $query->whereBetween('start_date', [$start_date, $end_date])
                         ->orWhereBetween('end_date', [$start_date, $end_date])
@@ -201,10 +201,21 @@ class BillboardBookingController extends Controller
                 return response()->json(['error' => 'This billboard is already booked for the selected date range.'], 409);
             }
 
+            // Generate Job Order No
+            $prefix = $billboard->prefix; // BB, TB, etc.
+            $monthYear = date('my', strtotime($start_date)); // MMYY
+
+            $lastBooking = BillboardBooking::orderBy('id', 'desc')->first();
+            $lastNumber = $lastBooking ? (int) substr($lastBooking->job_order_no, -5) : 0;
+            $nextNumber = $lastNumber + 1;
+            $runningNumber = str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
+            $jobOrderNo = $prefix . '-' . $monthYear . '-' . $runningNumber;
+
             //Create a new service request
             $booking = BillboardBooking::create([
-                'billboard_id'      => $billboard_id,
+                'billboard_id'      => $billboard->id,
                 'company_id'        => $client,
+                'job_order_no'      => $jobOrderNo,
                 'start_date'        => $start_date,
                 'end_date'          => $end_date,
                 'status'            => $status,

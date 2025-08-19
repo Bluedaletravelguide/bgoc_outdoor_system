@@ -19,6 +19,7 @@ class BillboardBooking extends Model
     protected $fillable = [
         'billboard_id',
         'company_id',
+        'job_order_no',
         'start_date',
         'end_date',
         'status',

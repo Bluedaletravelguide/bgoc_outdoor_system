@@ -253,9 +253,13 @@ class BillboardSeeder extends Seeder
         // ✅ 4. Pluck billbnards IDs
         $billboardIds = Billboard::pluck('id')->toArray();
 
+        $globalRunningNumber = 0;
+
         // 5: Create non-overlapping bookings with at least 30-day gaps
         foreach ($billboardIds as $billboardId) {
             $currentStart = Carbon::create(2025, 1, 1); // Seed for year 2025
+            $billboard = Billboard::find($billboardId);
+            $prefix = $billboard->prefix; // BB, TB, etc.
 
             // Fixed status per billboard
             $billboardStatus = $faker->randomElement(['ongoing', 'pending_install', 'pending_payment']);
@@ -270,9 +274,16 @@ class BillboardSeeder extends Seeder
                     break;
                 }
 
+                // Generate job_order_no
+                $monthYear = $currentStart->format('my'); // MMYY
+                $globalRunningNumber++;
+                $runningNumber = str_pad($globalRunningNumber, 5, '0', STR_PAD_LEFT);
+                $jobOrderNo = "{$prefix}-{$monthYear}-{$runningNumber}";
+
                 DB::table('billboard_bookings')->insert([
                     'billboard_id'   => $billboardId,
                     'company_id'     => $faker->randomElement($companyIds),
+                    'job_order_no'   => $jobOrderNo,
                     'start_date'     => $currentStart->toDateString(),
                     'end_date'       => $end->toDateString(),
                     'status'         => $billboardStatus,
