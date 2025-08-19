@@ -192,9 +192,7 @@
                         </div>
                         <div class="col-span-12 sm:col-span-12">
                             <label>Area</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardLocation">
-                                <option value="">-- Select Area --</option>
-                            </select>
+                            <input type="text" class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardLocation" placeholder="Enter area name">
                         </div>
                         <div class="col-span-12 sm:col-span-6">
                             <label for="start_date" class="form-label">GPS Longitude</label>
@@ -230,6 +228,7 @@
                 <form>
                     <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                         <div class="col-span-12 sm:col-span-12">
+                            <input type="hidden" id="editBillboardModalId" name="id">
                             <label>Outdoor Type</label>
                             <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardType">
                                 <option value="">-- Select Outdoor Type --</option>
@@ -258,7 +257,7 @@
                         </div>
                         <div class="col-span-12 sm:col-span-12">
                             <label>State</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardState">
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardState"  disabled>
                                 <option value="">-- Select State --</option>
                                 @foreach ($states as $state)
                                     <option value="{{ $state->id }}">{{ $state->name }}</option>
@@ -267,15 +266,13 @@
                         </div>
                         <div class="col-span-12 sm:col-span-12">
                             <label>District</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardDistrict">
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardDistrict" disabled>
                                 <option value="">-- Select District --</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
                             <label>Area</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardLocation">
-                                <option value="">-- Select Area --</option>
-                            </select>
+                            <input type="text" class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardLocation" placeholder="Enter area name">
                         </div>
                         <div class="col-span-12 sm:col-span-6">
                             <label for="start_date" class="form-label">GPS Longitude</label>
@@ -844,7 +841,6 @@
 
             // Reset District and Location dropdowns
             $('#inputBillboardDistrict').empty().append('<option value="">-- Select District --</option>');
-            $('#inputBillboardLocation').empty().append('<option value="">-- Select Location --</option>');
 
             if (stateId !== '') {
                 $.ajax({
@@ -861,33 +857,6 @@
                     },
                     error: function () {
                         alert('Failed to load districts.');
-                    }
-                });
-            }
-        });
-
-        // When "District" is changed in add form
-        $('#inputBillboardDistrict').on('change', function () {
-            let districtId = $(this).val();
-
-            // Reset Location dropdown
-            $('#inputBillboardLocation').empty().append('<option value="">-- Select Location --</option>');
-
-            if (districtId !== '') {
-                $.ajax({
-                    url: '{{ route("location.getLocations") }}',
-                    type: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}',
-                        district_id: districtId
-                    },
-                    success: function (locations) {
-                        locations.forEach(function (location) {
-                            $('#inputBillboardLocation').append(`<option value="${location.id}">${location.name}</option>`);
-                        });
-                    },
-                    error: function () {
-                        alert('Failed to load locations.');
                     }
                 });
             }
@@ -951,7 +920,7 @@
                 serverSide: true,
                 ordering: true,
                 order: [
-                    [0, 'desc']
+                    [7, 'desc']
                 ],
                 pagingType: 'full_numbers',
                 pageLength: 25,
@@ -1098,12 +1067,15 @@
                                 <a href="javascript:;" 
                                     class="button w-24 inline-block mr-2 mb-2 bg-theme-1 text-white edit-billboard" 
                                     data-id="${row.id}"
-                                    data-type="${row.type}"
+                                    data-type="${row.type_prefix}"
                                     data-size="${row.size}"
                                     data-lighting="${row.lighting}"
                                     data-state_id="${row.state_id}"
                                     data-district_id="${row.district_id}"
-                                    data-location_id="${row.location_id}"
+                                    data-location="${row.location_name}"
+                                    data-gps_latitude="${row.gps_latitude}"
+                                    data-gps_longitude="${row.gps_longitude}"
+                                    data-traffic_volume="${row.traffic_volume}"
                                 >
                                     Edit
                                 </a>
@@ -1202,16 +1174,22 @@
 
         $('#billboard_table').off('click', '.edit-billboard').on('click', '.edit-billboard', function () {
             const $this = $(this);
+            const billboardID = $this.data('id');
 
             // Set values
             $('#editBillboardType').val($this.data('type'));
             $('#editBillboardSize').val($this.data('size'));
             $('#editBillboardLighting').val($this.data('lighting'));
+            $('#editGPSLatitude').val($this.data('gps_latitude'));
+            $('#editGPSLongitude').val($this.data('gps_longitude'));
+            $('#editBillboardTrafficVolume').val($this.data('traffic_volume'));
+
+            $('#editBillboardModalId').val(billboardID);
 
             // Set state and load districts
             const stateID = $this.data('state_id');
             const districtID = $this.data('district_id');
-            const locationID = $this.data('location_id');
+            const location   = $this.data('location');
 
             $('#editBillboardState').val(stateID).trigger('change');
 
@@ -1224,19 +1202,10 @@
                     $('#editBillboardDistrict').append(`<option value="${d.id}">${d.name}</option>`);
                 });
                 $('#editBillboardDistrict').val(districtID).trigger('change');
-
-                // Load locations
-                $.post('{{ route("location.getLocations") }}', {
-                    _token: '{{ csrf_token() }}',
-                    district_id: districtID
-                }, function (locations) {
-                    $('#editBillboardLocation').empty().append(`<option value="">-- Select Location --</option>`);
-                    locations.forEach(function (l) {
-                        $('#editBillboardLocation').append(`<option value="${l.id}">${l.name}</option>`);
-                    });
-                    $('#editBillboardLocation').val(locationID);
-                });
             });
+
+            // Now just set the location text directly
+            $('#editBillboardLocation').val(location);
 
             // Open modal
             openAltEditorModal("#billboardEditModal");
@@ -1335,6 +1304,64 @@
             });
         };
 
+        $('#billboardEditButton').on('click', function (e) {
+            e.preventDefault();
+
+            $.ajax({
+                url: '{{ route("billboard.update") }}',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    id: $('#editBillboardModalId').val(),
+                    type: $('#editBillboardType').val(),
+                    size: $('#editBillboardSize').val(),
+                    lighting: $('#editBillboardLighting').val(),
+                    state_id: $('#editBillboardState').val(),
+                    district_id: $('#editBillboardDistrict').val(),
+                    location_name: $('#editBillboardLocation').val(), // 👈 send as name
+                    gps_latitude: $('#editGPSLatitude').val(),
+                    gps_longitude: $('#editGPSLongitude').val(),
+                    traffic_volume: $('#editBillboardTrafficVolume').val(),
+                },
+                success: function(response) {
+                    // Close modal after successfully edited
+                    var element = "#billboardEditModal";
+                    closeAltEditorModal(element);
+
+                    // Show successful toast
+                    window.showSubmitToast("Successfully added.", "#91C714");
+
+                    // Clean fields
+                    document.getElementById("editBillboardModalId").value = "";
+                    document.getElementById("editBillboardType").value = "";
+                    document.getElementById("editBillboardSize").value = "";
+                    document.getElementById("editBillboardLighting").value = "";
+                    document.getElementById("editBillboardState").value = "";
+                    document.getElementById("editBillboardDistrict").value = "";
+                    document.getElementById("editBillboardLocation").value = "";
+                    document.getElementById("editGPSLongitude").value = "";
+                    document.getElementById("editGPSLatitude").value = "";
+                    document.getElementById("editBillboardTrafficVolume").value = "";
+
+                    // Reload table
+                    $('#billboard_table').DataTable().ajax.reload();
+                    
+                    // Reset the button visibility and enable it for next submission
+                    document.getElementById("billboardEditButton").disabled = false;
+                    document.getElementById('billboardEditButton').style.display = 'inline-block';  // Shows the button again
+                },
+                error: function(xhr, status, error) {
+                    // Display the validation error message
+                    var response = JSON.parse(xhr.responseText);
+                    var error = "Error: " + response.error;
+
+                    // Show fail toast
+                    window.showSubmitToast(error, "#D32929");
+                }
+            });
+        });
+
+
         function billboardEditModal() {
             $(document).off('click', "[id^='edit-']");
 
@@ -1359,6 +1386,9 @@
                 $('#editBillboardType').val(prefix);
                 $('#editBillboardSize').val(size);
                 $('#editBillboardLighting').val(lighting);
+                $('#editGPSLatitude').val(latitude);
+                $('#editGPSLongitude').val(longitude);
+                $('#editBillboardTrafficVolume').val(traffic);
 
                 // Set state and trigger change to load districts
                 $('#editBillboardState').val(stateID).trigger('change');
@@ -1446,136 +1476,6 @@
 
 
 
-
-
-        // Open modal to edit Billboard
-        function workOrderEditModal() {            
-            // Remove previous click event listeners
-            $(document).off('click', "[id^='billboard_table'] tbody tr td:not(:nth-last-child(2)):not(:last-child)");
-
-            $(document).on('click', "[id^='billboard_table'] tbody tr td:not(:nth-last-child(2)):not(:last-child)", function() {
-                // Grab row client company id
-                originalWorkOrderIdEdit = $(event.target).closest('tr').find('td:nth-last-child(2) a').attr('id').split('-')[1];
-
-                // Place values to edit form fields in the modal
-                document.getElementById("workOrderEditPriority").value = $(event.target).closest('tr').find('td:nth-child(' + '5' + ')').text();
-                
-                // Open modal
-                var element = "#workOrderEditModal";
-                openAltEditorModal(element);
-            });
-        };
-
-        //Edit Billboard
-        function editWorkOrder() {
-            var statusUpdated ;
-            var priority = document.getElementById("workOrderEditPriority").value;
-
-            statusUpdated = ((document.getElementById("workOrderAssignTechnician").value) ? 'STARTED'
-                : null 
-            );
-
-            $.ajax({
-                type: 'POST',
-                url: "{{ route('billboard.edit') }}",
-                data: {
-                    _token                  : $('meta[name="csrf-token"]').attr('content'),
-                    priority                : priority,
-                    original_workOrder_id   : originalWorkOrderIdEdit,
-                },
-                success: function(response) {
-                    console.log(response);
-                    // Close modal after successfully edited
-                    var element = "#workOrderEditModal";
-                    closeAltEditorModal(element);
-
-                    // Show successful toast
-                    window.showSubmitToast("Successfully added.", "#91C714");
-
-                    // Clean fields
-                    document.getElementById("workOrderEditPriority").value = "";
-
-                    // Reload table
-                    $('#billboard_table').DataTable().ajax.reload();
-                },
-                error: function(xhr, status, error) {
-                    // Display the validation error message
-                    var response = JSON.parse(xhr.responseText);
-                    var error    = "Error: " + response.error;
-
-                    // Show fail toast
-                    window.showSubmitToast(error, "#D32929");
-                }
-            });
-        };
-        
-        //Update Billboard status
-        function updateStatusWorkOrder(){
-            var updateStatus ;
-            var assignedTechnician = null;
-            
-            if(document.getElementById("workOrderAssignTechnician").value) {
-                //Assign technician and update Billboard status to STARTED
-                updateStatus   = 'STARTED';
-                assignedTechnician     = document.getElementById("workOrderAssignTechnician").value ;
-
-            } 
-            else if(document.getElementById("workOrderStatusUpdate").value) {
-                //Update Billboard status to VERIFICATION_PASSED/VERIFICATION_FAILED
-                updateStatus   = 'COMPLETED';
-                // statusValue     = document.getElementById("workOrderStatusUpdate").value ;
-
-            } 
-            else {
-                // Show fail toast
-                window.showSubmitToast("Error: No option is selected. Please select one.", "#D32929") ;
-            }
-
-            if(updateStatus || assignedTechnician) {
-                $.ajax({
-                    type: 'POST',
-                    url: "{{ route('billboard.update') }}",
-                    data: {
-                        _token                  : $('meta[name="csrf-token"]').attr('content'),
-                        update_status           : updateStatus,
-                        assigned_technician     : assignedTechnician ? assignedTechnician : null,
-                        original_workOrder_id   : originalWorkOrderIdStatusUpdate,
-                    },
-                    success: function(response) {
-                        console.log(response);
-                        if(updateStatus == 'STARTED') {
-                            var modalElement = "#workOrderAssignTcModal" ;
-                            var elementId    = "workOrderAssignTechnician" ;
-
-                        } 
-                        else if(updateStatus == 'COMPLETED') {
-                            var modalElement = "#workOrderStatusUpdateModal" ;
-                            var elementId    = "workOrderStatusUpdate" ;
-                        }
-
-                        // Close modal after successfully edited
-                        closeAltEditorModal(modalElement);
-    
-                        // Show successful toast
-                        window.showSubmitToast((response.message) ? response.message : "Successfully added.", "#91C714");
-    
-                        // Clean fields
-                        document.getElementById(elementId).value = "";
-    
-                        // Reload table
-                        $('#billboard_table').DataTable().ajax.reload();
-                    },
-                    error: function(xhr, status, error) {
-                        // Display the validation error message
-                        var response = JSON.parse(xhr.responseText);
-                        var error    = "Error: " + response.error;
-    
-                        // Show fail toast
-                        window.showSubmitToast(error, "#D32929");
-                    }
-                });
-            }
-        };
 
         // Store the ID of the last clicked modal when it's triggered
         (function() {

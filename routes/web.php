@@ -53,9 +53,9 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/billboard/list', [BillboardController::class, 'list'])->name('billboard.list');
     Route::post('/billboard/create', [BillboardController::class, 'create'])->name('billboard.create');
     Route::post('/billboard/delete', [BillboardController::class, 'delete'])->name('billboard.delete');
-    Route::post('/billboard/edit', [WorkOrderController::class, 'edit'])->name('billboard.edit');
-    Route::post('/billboard/updateStatus', [WorkOrderController::class, 'update'])->name('billboard.update');
-    Route::get('/notification', [PushNotificationController::class, 'notificationHistory']);
+    // Route::post('/billboard/edit', [WorkOrderController::class, 'edit'])->name('billboard.edit');
+    Route::post('/billboard/update', [BillboardController::class, 'update'])->name('billboard.update');
+    // Route::get('/notification', [PushNotificationController::class, 'notificationHistory']);
     Route::get('/billboards/export/pdf', [BillboardController::class, 'exportListPdf'])->name('billboards.export.pdf');
 
 

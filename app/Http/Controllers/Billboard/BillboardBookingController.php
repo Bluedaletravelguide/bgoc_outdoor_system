@@ -284,8 +284,6 @@ class BillboardBookingController extends Controller
             // Retrieve the WorkOrder and related ServiceRequest
             $id = BillboardBooking::findOrFail($booking_id);
 
-            logger('idnya apaan: ' . $id);
-
             // Update work order
             BillboardBooking::where('id', $id->id)
                 ->update([
@@ -544,7 +542,6 @@ class BillboardBookingController extends Controller
 
     private function applyBookingFilters($query, $filters)
     {
-        logger('hoho: ' , $filters);
         return $query
             ->when(!empty($filters['start_date']) && !empty($filters['end_date']), function ($q) use ($filters) {
                 $q->where(function ($sub) use ($filters) {
@@ -677,8 +674,6 @@ class BillboardBookingController extends Controller
 
         $statusUpdated = $request->update_status;
 
-        logger('status updatedd: '. $statusUpdated);
-
         //Point to relevant function based on the new work order status need to assign 
         if($statusUpdated == 'STARTED') {
             $result = $this->updateStatus_AssignTechnician($request) ;
@@ -719,9 +714,6 @@ class BillboardBookingController extends Controller
             ->first();
 
         $billboard_images = BillboardImage::where('billboard_id', $request->id)->get();
-
-
-            logger('bb details: ' . $billboard_detail);
 
             // Convert to Dubai time
             // $dubaiTime = Carbon::parse($open_WO_DetailId->created_dt);

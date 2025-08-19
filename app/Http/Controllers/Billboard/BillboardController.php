@@ -114,27 +114,8 @@ class BillboardController extends Controller
             ->leftJoin('locations', 'billboards.location_id', '=', 'locations.id')
             ->leftJoin('districts', 'locations.district_id', '=', 'districts.id')
             ->leftJoin('states', 'districts.state_id', '=', 'states.id')
-            ->orderBy($orderColumnName, $orderDirection);
-
-        // Superadmin permission
-        // if($isAdmin){
-        //     if($teamleader != 'all' && $teamleader != 'none'){
-        //         $query = $query->where('work_order.assigned_teamleader', $teamleader);
-        //     }elseif($teamleader == 'none'){
-        //         $query = $query->whereNull('work_order.assigned_teamleader');
-        //     }
-
-        //     if($technician != 'all' && $technician != 'none'){
-        //         $query = $query->where('work_order.assign_to_technician', $technician);
-        //     }elseif($technician == 'none'){
-        //         $query = $query->where('work_order.assign_to_technician', $technician);
-        //     }
-        // }
-
-        // Technician permission
-        // if($isTechnician){
-        //     $query = $query->where('work_order.assign_to_technician', $userID);
-        // }
+            ->orderBy($orderColumnName, $orderDirection)
+            ->orderBy('billboards.id', 'desc');
 
         if ($status != "all") {
             $query->where('billboards.status', $status);
@@ -179,11 +160,12 @@ class BillboardController extends Controller
         $data = array();
 
         foreach ($filteredData as $d) {
-            $created_at = Carbon::parse($d->created_at)->format('Y-m-d');
+            $created_at = Carbon::parse($d->start_date)->format('d/m/y');
 
             $nestedData = array(
                 'site_number'           => $d->site_number,
-                'type'                  => $d->type,
+                'type'                  => $d->type, // display name
+                'type_prefix'           => $d->prefix,
                 'size'                  => $d->size,
                 'lighting'              => $d->lighting,
                 'location_id'           => $d->location_id,
@@ -191,6 +173,9 @@ class BillboardController extends Controller
                 'district_id'           => $d->district_id,
                 'location_name'         => $d->location_name,
                 'region'                => $d->district_name . ', ' . $d->state_name,
+                'gps_latitude'          => $d->gps_latitude,
+                'gps_longitude'         => $d->gps_longitude,
+                'traffic_volume'        => $d->traffic_volume,
                 'created_at'            => $created_at,
                 'status'                => $d->status,
                 'id'                    => $d->id,
@@ -222,14 +207,12 @@ class BillboardController extends Controller
         $role = $user->roles->pluck('name')[0];
         $userID = $this->user->id;
 
-        logger('masuk sini3');
-
         $type               = $request->type;
         $size               = $request->size;
         $lighting           = $request->lighting;
         $state              = $request->state;
         $district           = $request->district;
-        $location           = $request->location;
+        $locationName       = $request->location;
         $gpslongitude       = $request->gpslongitude;
         $gpslatitude        = $request->gpslatitude;
         $trafficvolume      = $request->trafficvolume;
@@ -240,10 +223,22 @@ class BillboardController extends Controller
         DB::beginTransaction();
 
         try {
-            // Step 1: Fetch state code from state model (assuming you have it)
+
+            // Step 1: Ensure location exists (or create new)
+            $location = Location::firstOrCreate(
+                [
+                    'name' => $locationName,
+                    'district_id' => $district,
+                ],
+                // [
+                //     'created_by' => $userID
+                // ]
+            );
+
+            // Step 2: Fetch state code from state model (assuming you have it)
             $stateCode = State::select('prefix')->where('id', $state)->first();
 
-            // Step 2: Count existing records for the same type and state to get the next number
+            // Step 3: Count existing records for the same type and state to get the next number
             $runningNumber = Billboard::leftJoin('locations', 'billboards.location_id', '=', 'locations.id')
             ->leftJoin('districts', 'locations.district_id', '=', 'districts.id')
             ->leftJoin('states', 'districts.state_id', '=', 'states.id')
@@ -255,13 +250,13 @@ class BillboardController extends Controller
             // Format as 4-digit number with leading zeros
             $formattedNumber = str_pad($runningNumber, 4, '0', STR_PAD_LEFT);
 
-            // Step 3: Set status character
+            // Step 4: Set status character
             $statusChar = 'A'; // or use: $status == 1 ? 'A' : 'I'
 
-            // Step 4: Generate site_number
+            // Step 5: Generate site_number
             $siteNumber = "{$type}-{$stateCode->prefix}-{$formattedNumber}-{$statusChar}";
 
-            //Create a new service request
+            // Step 6: Create a new service request
             $billboard = Billboard::create([
                 'site_number'      => $siteNumber,
                 'status'            => 1,
@@ -271,7 +266,7 @@ class BillboardController extends Controller
                 'lighting'          => $lighting,
                 'state'             => $state,
                 'district'          => $district,
-                'location_id'          => $location,
+                'location_id'        => $location->id,
                 'gps_longitude'      => $gpslongitude,
                 'gps_latitude'       => $gpslatitude,
                 'traffic_volume'     => $trafficvolume,
@@ -316,98 +311,70 @@ class BillboardController extends Controller
     }
 
     /**
-     * Edit work order.
+     * Update status of billboard
      */
-    public function edit(Request $request)
+    public function update(Request $request)
     {
+        $billboard = Billboard::find($request->id);
 
-        //Check the permission to edit the work order 
-        if (!$this->user->can('work_order.edit')) {
-            return response()->json(['error' => 'Sorry !! You are Unauthorized to edit work order. Contact system admin for access !'], 403);
+        if (!$billboard) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Billboard not found.'
+            ], 404);
         }
 
-        // Get the current UTC time
-        $current_UTC = Carbon::now('UTC');
+        // validate (you can adjust rules)
+        $request->validate([
+            'id' => 'required|integer|exists:billboards,id',
+            'type' => 'required|string|max:255',
+            'size' => 'nullable|string|max:255',
+            'lighting' => 'nullable|string|max:255',
+            'state_id' => 'nullable|integer',
+            'district_id' => 'nullable|integer',
+            'location_name' => 'nullable|string|max:255',
+            'gps_latitude' => 'nullable|numeric',
+            'gps_longitude' => 'nullable|numeric',
+            'traffic_volume' => 'nullable|integer',
+        ]);
 
-        $original_workOrder_id   = $request->original_workOrder_id;
-        $priority                = $request->priority;
-        
-        //Validation rules
-        $validator = Validator::make(
-            $request->all(),
-            [
-                'original_workOrder_id' => [
-                    'required',
-                    'string',
-                    'max:700',
-                    Rule::exists('work_order','id')->whereNot('status', 'VERIFICATION_PASSED'),
-                    Rule::exists('work_order','id')->whereNot('priority', $priority),
-                ],
-                'priority' => [
-                    'required',
-                    'string',
-                    'in: 1,2,3,4',
-                    // Rule::exists('work_order')->where(fn($query)=>
-                    //     $query->where('id', $original_workOrder_id) 
-                    //         ->where('priority', '!=', $priority) 
-                        
-                    // ),
-                    // Rule::exists('work_order')->where('id', $original_workOrder_id),
-                    //'exists:work_order,priority,id,' . $original_workOrder_id . '0',
-                ],
-            ],
-
-            [
-                'original_workOrder_id.exists' => 'Work order is not allowed to be edited in VERIFICATION_PASSED phse',
-
-                'priority.required' => 'The "Priority" field is required.',
-                'priority.in'       => 'The value of "Priority" field is incorrect.',
-                //'priority.exists'   => 'The "Priority" field is no change',
-            ],
-        );
-
-        // Handle failed validations
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()->first()], 422);
-        }
         try {
             // Ensure all queries successfully executed
             DB::beginTransaction();
 
-            // Retrieve the WorkOrder and related ServiceRequest
-            $workOrder = WorkOrder::findOrFail($original_workOrder_id);
-            $serviceRequest = ServiceRequest::findOrFail($workOrder->service_request_id);
+            $billboard = Billboard::findOrFail($request->id);
+            $location = Location::find($billboard->location_id);
 
-            // Get the created_at timestamp from ServiceRequest
-            $createdAt = Carbon::parse($serviceRequest->created_at);
-            
-
-                // Set due_date based on priority
-                switch ($priority) {
-                    case '1':
-                        $dueDate = $createdAt->addDays(15)->toDateTimeString(); // Add 5 days for Low priority
-                        break;
-                    case '2':
-                        $dueDate = $createdAt->addDays(30)->toDateTimeString(); // Add 3 days for Medium priority
-                        break;
-                    case '3':
-                        $dueDate = $createdAt->addDays(60)->toDateTimeString(); // Add 2 days for High priority
-                        break;
-                    case '4':
-                        $dueDate = $createdAt->addDays(70)->toDateTimeString(); // Add 2 days for High priority
-                        break;    
-                    default:
-                        $dueDate = $createdAt->toDateString(); // Default to created_at if priority is not recognized
-                        break;        
+            if ($location) {
+                $location->update([
+                    'name' => $request->location_name, 
+                ]);
             }
 
-            // Update work order
-            WorkOrder::where('id', $original_workOrder_id)
-                ->update([
-                    'priority'      => $priority,
-                    'due_date'      => $dueDate,
-                    'updated_at'    => $current_UTC,
-                ]);
+            // Map prefix to full type name
+            $prefixMap = [
+                'BB' => 'Billboard',
+                'TB' => 'Tempboard',
+                'BT' => 'Bunting',
+                'BN' => 'Banner',
+            ];
+
+            $prefix = $request->type; // sent from JS, e.g., "BB"
+            $fullType = $prefixMap[$prefix] ?? 'Unknown'; // map to full name
+
+            $fullType = $prefixMap[$request->type] ?? $request->type; // fallback in case unknown
+
+            $billboard->update([
+                'prefix'         => $prefix,    // store the short code
+                'type'           => $fullType,  // store the full name
+                'size'           => $request->size,
+                'lighting'       => $request->lighting,
+                'state_id'       => $request->state_id,
+                'district_id'    => $request->district_id,
+                'gps_latitude'   => (float)$request->gps_latitude,
+                'gps_longitude'  => (float)$request->gps_longitude,
+                'traffic_volume' => (int)$request->traffic_volume,
+            ]);
 
             // Ensure all queries successfully executed, commit the db changes
             DB::commit();
@@ -415,8 +382,7 @@ class BillboardController extends Controller
             return response()->json([
                 "success"   => "success",
             ], 200);
-        } 
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             // If any queries fail, undo all changes
             DB::rollback();
 
@@ -424,28 +390,6 @@ class BillboardController extends Controller
         }
     }
 
-    /**
-     * Update status of work order
-     */
-    public function update(Request $request){
-
-        $statusUpdated = $request->update_status;
-
-        logger('status updatedd: '. $statusUpdated);
-
-        //Point to relevant function based on the new work order status need to assign 
-        if($statusUpdated == 'STARTED') {
-            $result = $this->updateStatus_AssignTechnician($request) ;
-
-        } elseif($statusUpdated == 'COMPLETED') {
-            $result = $this->updateStatus_Completed($request) ;
-
-        } else {
-            return response()->json(['error' => 'Incorrect process or no value is applied.' ], 422); 
-        }
-         
-        return $result;
-    }
 
     /**
      * Delete billboard
@@ -459,8 +403,6 @@ class BillboardController extends Controller
         $userID = $this->user->id;
 
         $id = $request->id;
-
-        logger('delete: ' . $id);
 
         try {
             // Ensure all queries successfully executed
@@ -508,8 +450,6 @@ class BillboardController extends Controller
 
         $billboard_images = BillboardImage::where('billboard_id', $request->id)->get();
 
-
-            logger('bb details: ' . $billboard_detail);
 
             // Convert to Dubai time
             // $dubaiTime = Carbon::parse($open_WO_DetailId->created_dt);
