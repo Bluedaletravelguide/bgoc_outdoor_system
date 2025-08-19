@@ -192,8 +192,6 @@ class StockInventoryController extends Controller
     public function create(Request $request)
     {
 
-        logger('masuk ke tu');
-
         // try {
 
             $requestData = $request->json()->all();
@@ -284,94 +282,110 @@ class StockInventoryController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Request $request)
+    // public function edit(Request $request)
+    // {
+    //     $id             = $request->id;
+    //     $vendor         = $request->vendor;
+    //     $client_in      = $request->client_in;
+    //     $billboard_in   = $request->billboard_in;
+    //     $quantity_in    = $request->quantity_in;
+    //     $remarks_in     = $request->remarks_in;
+    //     $date_in        = $request->date_in;
+    //     $client_out     = $request->client_out;
+    //     $billboard_out  = $request->billboard_out;
+    //     $quantity_out   = $request->quantity_out;
+    //     $remarks_out    = $request->remarks_out;
+    //     $date_out       = $request->date_out;
+
+    //     // Validate fields
+    //     // $validator = Validator::make(
+    //     //     $request->all(),
+    //     //     [
+    //     //         'company' => [
+    //     //             'required',
+    //     //             'string',
+    //     //             'max:255',
+    //     //         ],
+    //     //         'name' => [
+    //     //             'required',
+    //     //             'string',
+    //     //             'max:255',
+    //     //         ],
+    //     //         'phone' => [
+    //     //             'required',
+    //     //             'regex:/^\+?[0-9]+$/',
+    //     //             'max:255',
+    //     //         ],
+    //     //     ],
+    //     //     [
+    //     //         'company.required' => 'The "Company Name" field is required.',
+    //     //         'company.string' => 'The "Company Name" must be a string.',
+    //     //         'company.max' => 'The "Company Name" must not be greater than :max characters.',
+
+    //     //         'name.required' => 'The "Contractor PIC Name" field is required.',
+    //     //         'name.string' => 'The "Contractor PIC Name" must be a string.',
+    //     //         'name.max' => 'The "Contractor PIC Name" must not be greater than :max characters.',
+
+    //     //         'phone.required' => 'The "Phone No." field is required.',
+    //     //         'phone.regex' => 'The "Phone No." field must only contain "+" symbol and numbers.',
+    //     //         'phone.max' => 'The "Phone No." field must not be greater than :max characters.',
+    //     //     ]
+    //     // );
+
+    //     // Handle failed validations
+    //     // if ($validator->fails()) {
+    //     //     return response()->json(['error' => $validator->errors()->first()], 422);
+    //     // }
+
+    //     try {
+    //         // Ensure all queries successfully executed
+    //         DB::beginTransaction();
+
+    //         // Update client company
+    //         StockInventory::where('id', $id)
+    //             ->update([
+    //                 'contractor_pic'        => $vendor,
+    //                 'billboard_in_id'       => $billboard_in,
+    //                 'billboard_out_id'      => $billboard_out,
+    //                 'company_in_id'         => $client_in,
+    //                 'company_out_id'        => $client_out,
+    //                 'date_in'               => $date_in,
+    //                 'date_out'              => $date_out,
+    //                 'remarks_in'            => $remarks_in,
+    //                 'remarks_out'           => $remarks_out,
+    //                 'quantity_in'           => $quantity_in,
+    //                 'quantity_out'          => $quantity_out,
+    //             ]);
+
+    //         // Ensure all queries successfully executed, commit the db changes
+    //         DB::commit();
+
+    //         return response()->json([
+    //             "success"   => "success",
+    //         ], 200);
+    //     } catch (\Exception $e) {
+    //         // If any queries fail, undo all changes
+    //         DB::rollback();
+
+    //         return response()->json(['error' => $e->getMessage()], 422);
+    //     }
+    // }
+
+    public function edit($inventoryId)
     {
-        $id             = $request->id;
-        $vendor         = $request->vendor;
-        $client_in      = $request->client_in;
-        $billboard_in   = $request->billboard_in;
-        $quantity_in    = $request->quantity_in;
-        $remarks_in     = $request->remarks_in;
-        $date_in        = $request->date_in;
-        $client_out     = $request->client_out;
-        $billboard_out  = $request->billboard_out;
-        $quantity_out   = $request->quantity_out;
-        $remarks_out    = $request->remarks_out;
-        $date_out       = $request->date_out;
+        $inventory = StockInventory::with('sites.billboard')->findOrFail($inventoryId);
 
-        // Validate fields
-        // $validator = Validator::make(
-        //     $request->all(),
-        //     [
-        //         'company' => [
-        //             'required',
-        //             'string',
-        //             'max:255',
-        //         ],
-        //         'name' => [
-        //             'required',
-        //             'string',
-        //             'max:255',
-        //         ],
-        //         'phone' => [
-        //             'required',
-        //             'regex:/^\+?[0-9]+$/',
-        //             'max:255',
-        //         ],
-        //     ],
-        //     [
-        //         'company.required' => 'The "Company Name" field is required.',
-        //         'company.string' => 'The "Company Name" must be a string.',
-        //         'company.max' => 'The "Company Name" must not be greater than :max characters.',
+        // Separate IN and OUT sites
+        $sites_in  = $inventory->sites->where('type', 'in')->values();
+        $sites_out = $inventory->sites->where('type', 'out')->values();
 
-        //         'name.required' => 'The "Contractor PIC Name" field is required.',
-        //         'name.string' => 'The "Contractor PIC Name" must be a string.',
-        //         'name.max' => 'The "Contractor PIC Name" must not be greater than :max characters.',
-
-        //         'phone.required' => 'The "Phone No." field is required.',
-        //         'phone.regex' => 'The "Phone No." field must only contain "+" symbol and numbers.',
-        //         'phone.max' => 'The "Phone No." field must not be greater than :max characters.',
-        //     ]
-        // );
-
-        // Handle failed validations
-        // if ($validator->fails()) {
-        //     return response()->json(['error' => $validator->errors()->first()], 422);
-        // }
-
-        try {
-            // Ensure all queries successfully executed
-            DB::beginTransaction();
-
-            // Update client company
-            StockInventory::where('id', $id)
-                ->update([
-                    'contractor_pic'        => $vendor,
-                    'billboard_in_id'       => $billboard_in,
-                    'billboard_out_id'      => $billboard_out,
-                    'company_in_id'         => $client_in,
-                    'company_out_id'        => $client_out,
-                    'date_in'               => $date_in,
-                    'date_out'              => $date_out,
-                    'remarks_in'            => $remarks_in,
-                    'remarks_out'           => $remarks_out,
-                    'quantity_in'           => $quantity_in,
-                    'quantity_out'          => $quantity_out,
-                ]);
-
-            // Ensure all queries successfully executed, commit the db changes
-            DB::commit();
-
-            return response()->json([
-                "success"   => "success",
-            ], 200);
-        } catch (\Exception $e) {
-            // If any queries fail, undo all changes
-            DB::rollback();
-
-            return response()->json(['error' => $e->getMessage()], 422);
-        }
+        return response()->json([
+            'inventory' => $inventory,
+            'sites_in'  => $sites_in,
+            'sites_out' => $sites_out,
+        ]);
     }
+
 
     /**
      * Delete client.

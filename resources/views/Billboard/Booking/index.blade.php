@@ -82,6 +82,23 @@
                     @endforeach
                 </select>
             </div>
+            
+        </form> 
+
+        <div class="text-center"> 
+            <a href="javascript:;" data-toggle="modal" data-target="#addBookingModal" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-32 text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus w-4 h-4">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Add New Job Order
+            </a> 
+        </div> 
+    </div>
+
+    <!-- Monthly Ongoing Date Filter -->
+    <div class="flex flex-col sm:flex-row sm:items-end xl:items-start mb-2 mt-2">
+        <form class="xl:flex flex-wrap items-end">
             <div class="row sm:flex items-center sm:mr-4">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">State</label>
                 <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardBookingState">
@@ -118,23 +135,22 @@
                     <option value="pending_payment">Pending Payment</option>
                 </select>
             </div>
-        </form> 
-
-        <div class="text-center"> 
-            <a href="javascript:;" data-toggle="modal" data-target="#addBookingModal" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-32 text-white">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus w-4 h-4">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                Add New Job Order
-            </a> 
-        </div> 
+        </form>
     </div>
     <!-- Filter End -->
 
-    <!-- Availability Year Filter -->
+    <!-- Monthly Ongoing Date Filter -->
     <div class="flex flex-col sm:flex-row sm:items-end xl:items-start mb-2 mt-2">
-        <form class="xl:flex flex-wrap items-end space-y-4 xl:space-y-0 xl:space-x-4 mb-4">
+        <form class="xl:flex flex-wrap items-end">
+            <div class="row sm:flex items-center sm:mr-4">
+                <label class="w-24 text-gray-700">Start Date</label>
+                <input type="date" id="filterBillboardBookingStart" class="input border w-48" />
+            </div>
+
+            <div class="row sm:flex items-center sm:mr-4">
+                <label class="w-24 text-gray-700">End Date</label>
+                <input type="date" id="filterBillboardBookingEnd" class="input border w-48" />
+            </div>
             <div class="row sm:flex items-center sm:mr-4">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Year</label>
                 <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardBookingYear">
@@ -182,7 +198,7 @@
                     <th class="whitespace-nowrap">Duration (Month)</th>
                     <th class="whitespace-nowrap">Status</th>
                     <th class="whitespace-nowrap">Remarks</th>
-                    <th class="whitespace-nowrap">Calendar</th>
+                    <th class="whitespace-nowrap">Detail</th>
                     <th class="whitespace-nowrap flex flex-row">Action</th>
                 </tr>
             </thead>
@@ -192,19 +208,6 @@
         </table>
     </div>
     <!-- Table End -->
-    
-    <!-- Billboard Booking Calendar -->
-    <div class="mb-5 p-5 rounded-md border border-dashed border-theme-1">
-        <h2 class="text-base font-bold mb-3 text-theme-1">Calendar View</h2>
-
-        <!-- FullCalendar Container -->
-        <div id="billboard-booking-calendar" class="mb-5"></div>
-
-        <!-- ✅ Legend (place this inside the same box) -->
-        <div id="calendarLegend" class="flex flex-wrap gap-4 mt-4">
-            <!-- Legend items will be injected here -->
-        </div>
-    </div>
 </div>
 @endsection('app_content')
 
@@ -449,7 +452,7 @@
     });
     // <!-- END: Billboard Booking List Filter -->
 
-    let startPicker, endPicker;
+     let startPicker, endPicker;
 
     // init datepicker
     function initDatePickers() {
@@ -472,7 +475,6 @@
 
         startPicker = flatpickr("#start_date", {
             dateFormat: "Y-m-d",
-            minDate: "today",
             onChange: function (selectedDates, dateStr) {
                 if (endPicker) {
                     // Set min date for endPicker
@@ -511,33 +513,6 @@
         }
     });
 
-
-    function reloadBookingData() {
-        // Reload calendar
-        if (calendar) {
-            calendar.refetchEvents();
-        }
-
-        // Reload DataTable
-        if ($.fn.DataTable.isDataTable('#billboard_booking_table')) {
-            $('#billboard_booking_table').DataTable().ajax.reload();
-        }
-    }
-
-    // Function to reload the DataTable when any filter changes
-    // function setupAutoFilter() {
-    //     const tableElement = $('#billboard_booking_table');
-    //     if (!$.fn.DataTable.isDataTable(tableElement)) {
-    //         console.warn("DataTable is not yet initialized.");
-    //         return;
-    //     }
-
-    //     const table = tableElement.DataTable();
-
-    //     $('#filterBillboardBookingCompany, #filterBillboardBookingState, #filterBillboardBookingDistrict, #filterBillboardBookingLocation, #filterBillboardBookingStatus').on('change', function () {
-    //         table.ajax.reload();
-    //     });
-    // }
     	
     $(document).ready(function() {
 
@@ -626,43 +601,27 @@
             width: '100%'
         });
 
-
-
-
-
-
         function setupAutoFilter() {
-            const filterSelectors = '#filterBillboardBookingCompany, #filterAvailabilityDistrict, #filterAvailabilityLocation, #filterAvailabilityStatus, #filterAvailabilityStart, #filterAvailabilityEnd, #filterBillboardBookingYear';
-
-            $(filterSelectors).on('change', function () {
-                const selectedYear = $('#filterBillboardBookingYear').val();
-                buildMonthlyJobTableHead(selectedYear);
-                loadMonthlyAvailability(); // this function contains your $.ajax code
-                loadMonthlyJobs();
-            });
-        }
-
-        $(document).ready(function () {
+            const tableElement = $('#billboard_booking_table');
+            const filterSelectors = '#filterBillboardBookingCompany, #filterBillboardBookingState, #filterBillboardBookingDistrict, #filterBillboardBookingLocation, #filterBillboardBookingStatus, #filterBillboardBookingStart, #filterBillboardBookingEnd, #filterBillboardBookingYear';
             const selectedYear = $('#filterBillboardBookingYear').val();
-            setupAutoFilter(); // your existing DataTable filter
-            // setupMonthlyAvailabilityFilter(); // new for monthly table
-            buildMonthlyJobTableHead(selectedYear);
-            loadMonthlyJobs(); // load once on page load
-        });
 
+            // Reload DataTable
+            if ($.fn.DataTable.isDataTable(tableElement)) {
+                const table = tableElement.DataTable();
 
+                $(filterSelectors).on('change', function () {
+                    const selectedYear = $('#filterBillboardBookingYear').val();
 
+                    table.ajax.reload();
+                    buildMonthlyJobTableHead(selectedYear);
+                    loadMonthlyJobs();
+                    initBillboardBookingDatatable()
+                });
 
-
-
-
-
-
-
-
-
-
-
+                $('#billboard_booking_table').DataTable().ajax.reload();
+            }
+        }
 
         function buildMonthlyJobTableHead(selectedYear) {
             const shortYear = String(selectedYear).slice(-2);
@@ -691,9 +650,17 @@
                 url: '{{ route("billboard.monthly.ongoing") }}',
                 method: 'GET',
                 data: {
-                    year: 2025,
-                    state_id: $('#filterState').val(),
-                    client_id: $('#filterClient').val()
+                    client: $('#filterBillboardBookingCompany').val(),
+                    
+                    start_date: $('#filterBillboardBookingStart').val(),
+                    end_date: $('#filterBillboardBookingEnd').val(),
+
+                    year: $('#filterBillboardBookingYear').val(),
+                    type: $('#filterBillboardBookingType').val(),
+                    state: $('#filterBillboardBookingState').val(),
+                    district: $('#filterBillboardBookingDistrict').val(),
+                    location: $('#filterBillboardBookingLocation').val(),
+                    status: $('#filterBillboardBookingStatus').val()
                 },
                 success: function (response) {
                     const tbody = $('#monthly-ongoing-body');
@@ -779,6 +746,7 @@
                 success: function () {
                     console.log(`Status updated for job ${id}, month ${month}`);
                     loadMonthlyJobs();
+                    initBillboardBookingDatatable()
                 },
                 error: function (xhr) {
                     alert('Failed to update status');
@@ -787,87 +755,14 @@
             });
         });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        function loadMonthlyAvailability() {
-            
-            $.ajax({
-                url: '{{ route("billboard.monthly.availability") }}',
-                method: 'GET',
-                data: {
-                    start_date: $('#filterAvailabilityStart').val(),
-                    end_date: $('#filterAvailabilityEnd').val(),
-                    year: $('#filterAvailabilityYear').val(),
-                    type: $('#filterAvailabilityType').val(),
-                    state: $('#filterAvailabilityState').val(),
-                    district: $('#filterAvailabilityDistrict').val(),
-                    location: $('#filterAvailabilityLocation').val(),
-                    status: $('#filterAvailabilityStatus').val()
-                },
-                success: function (response) {
-                    const tbody = $('#monthly-booking-body');
-                    tbody.empty();
-
-                    if (!response.data || response.data.length === 0) {
-                        tbody.append(`<tr><td colspan="16" class="text-center p-4">No data available</td></tr>`);
-                        return;
-                    }
-
-                    response.data.forEach((row, index) => {
-                        let html = `<tr>
-                            <td class="border border-gray-300">${index + 1}</td>
-                            <td class="border border-gray-300">${row.site_number}</td>
-                            <td class="border border-gray-300">${row.location}</td>
-                            <td class="border border-gray-300">${row.size}</td>`;
-
-                        row.months.forEach(month => {
-                            let cellClass = `border border-gray-300 ${month.color} text-white font-semibold`;
-                            html += `<td colspan="${month.span}" class="${cellClass}">${month.text}</td>`;
-                        });
-
-                        html += `</tr>`;
-                        tbody.append(html);
-                    });
-                },
-                error: function (xhr) {
-                    console.error("AJAX error:", xhr.responseText);
-                }
-            });
-        }
-
         $(document).ready(function () {
-            // const selectedYear = $('#filterAvailabilityYear').val();
-            setupAutoFilter(); // your existing DataTable filter
-            // setupMonthlyAvailabilityFilter(); // new for monthly table
-            // buildMonthlyJobTableHead(selectedYear);
-            loadMonthlyAvailability(); // load once on page load
+            setupAutoFilter();
+
+            // Initial loads
+            const selectedYear = $('#filterBillboardBookingYear').val();
+            buildMonthlyJobTableHead(selectedYear);
             loadMonthlyJobs();
+            initBillboardBookingDatatable();
         });
 
         /**
@@ -877,115 +772,11 @@
             return $('<div>').text(text).html();
         }
 
-
-
-
-
-
-
-
-
-
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-
-        // Billboard Booking Calendar
-        let calendar = null;
-
-        function initBookingCalendar() {
-            const calendarEl = document.getElementById('billboard-booking-calendar');
-
-            calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                height: 600,
-                events: function(fetchInfo, successCallback, failureCallback) {
-                    $.ajax({
-                        url: '{{ route("billboard.booking.calendar") }}',
-                        type: 'POST',
-                        data: {
-                            _token: '{{ csrf_token() }}',
-                            company: $('#filterBillboardBookingCompany').val(),
-                            state: $('#filterBillboardBookingState').val(),
-                            district: $('#filterBillboardBookingDistrict').val(),
-                            location: $('#filterBillboardBookingLocation').val(),
-                            status: $('#filterBillboardBookingStatus').val(),
-                            start: fetchInfo.startStr,
-                            end: fetchInfo.endStr
-                        },
-                        success: function(response) {
-                            // ✅ Return only the events to FullCalendar
-                            successCallback(response.events || []);
-
-                            // ✅ Render the legend
-                            const legendWrapper = $('#calendarLegend');
-                            legendWrapper.empty();
-
-                            if (response.legend && Array.isArray(response.legend)) {
-                                response.legend.forEach(item => {
-                                    legendWrapper.append(`
-                                        <div class="flex items-center space-x-4 mr-4 mb-2">
-                                            <span class="w-4 h-4 inline-block rounded-sm" style="background-color:${item.color}"></span>
-                                            <span class="text-sm text-gray-700">${item.label}</span>
-                                        </div>
-                                    `);
-                                });
-                            }
-                        },
-                        error: function(err) {
-                            console.error("Calendar load error:", err);
-                            failureCallback(err);
-                        }
-                    });
-                }
-            });
-
-            calendar.render();
-        }
-
-
-        initBookingCalendar();
-
-        $('#filterBillboardBookingCompany, #filterBillboardBookingState, #filterBillboardBookingDistrict, #filterBillboardBookingLocation, #filterBillboardBookingStatus').on('change', function () {
-            if (calendar) {
-                calendar.refetchEvents(); // reload calendar bookings with new filter
-            }
-        });
-
-
-        
+        // $('#filterBillboardBookingCompany, #filterBillboardBookingState, #filterBillboardBookingDistrict, #filterBillboardBookingLocation, #filterBillboardBookingStatus').on('change', function () {
+        //     if (calendar) {
+        //         calendar.refetchEvents(); // reload calendar bookings with new filter
+        //     }
+        // });
 
         $('[data-toggle="modal"][data-target="#addBookingModal"]').on('click', function () {
             setTimeout(() => {
@@ -1042,7 +833,7 @@
                 url: "{{ route('billboard.booking.create') }}",
                 data: {
                     _token          : $('meta[name="csrf-token"]').attr('content'),
-                    company         : document.getElementById("inputBookingCompany").value,
+                    client         : document.getElementById("inputBookingCompany").value,
                     state           : document.getElementById("inputBookingState").value,
                     district        : document.getElementById("inputBookingDistrict").value,
                     location        : document.getElementById("inputBookingLocation").value,
@@ -1140,49 +931,6 @@
             });
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         // Open modal
         function openAltEditorModal(element) {
             cash(element).modal('show');
@@ -1191,15 +939,13 @@
         function closeAltEditorModal(element) {
             cash(element).modal('hide');
         }
-
-        
-    
+ 
         // Setup the in-house users datatable
         function initBillboardBookingDatatable() {
             const dt = new Date();
             const formattedDate = `${dt.getFullYear()}${(dt.getMonth() + 1).toString().padStart(2, '0')}${dt.getDate().toString().padStart(2, '0')}`;
             const formattedTime = `${dt.getHours()}:${dt.getMinutes()}:${dt.getSeconds()}`;
-            const $fileName = `Billboard_Booking_List_${formattedDate}_${formattedTime}`;
+            const $fileName = `Monthly_Ongoing_List_${formattedDate}_${formattedTime}`;
 
             const table = $('#billboard_booking_table').DataTable({
                 altEditor: true,
@@ -1225,11 +971,13 @@
                     type: "POST",
                     data: function(d) {
                         d._token    = $('meta[name="csrf-token"]').attr('content');
-                        d.company  = $('#filterBillboardBookingCompany').val();
+                        d.client  = $('#filterBillboardBookingCompany').val();
                         d.status    = $('#filterBillboardBookingStatus').val();
                         d.state     = $('#filterBillboardBookingState').val();
                         d.district  = $('#filterBillboardBookingDistrict').val();
                         d.location  = $('#filterBillboardBookingLocation').val();
+                        d.start_date = $('#filterBillboardBookingStart').val();
+                        d.end_date = $('#filterBillboardBookingEnd').val();
                     },
                     dataSrc: function(json) {
                         json.recordsTotal = json.recordsTotal;
@@ -1417,26 +1165,6 @@
 
         initBillboardBookingDatatable();
         setupAutoFilter();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         // Open modal to edit Billboard Booking
         function editBookingModal() {

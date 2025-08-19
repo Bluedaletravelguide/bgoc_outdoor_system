@@ -12,6 +12,7 @@ use App\Models\ClientCompany;
 use App\Models\User;
 use App\Models\Billboard;
 use App\Models\BillboardImage;
+use App\Models\Contractor;
 use App\Models\State;
 use App\Models\District;
 use App\Models\Location;
@@ -59,9 +60,14 @@ class BillboardController extends Controller
         $billboardStatus = Billboard::distinct()->pluck('status');
         $billboardSize = Billboard::distinct()->pluck('size');
         $billboardLighting = Billboard::distinct()->pluck('lighting');
+        $billboards = Billboard::leftJoin('locations', 'billboards.location_id', '=', 'locations.id')->get();
+
+        $contractors = Contractor::all();
+        $clientcompany = ClientCompany::all();
 
         // return view('workOrder.index', compact('clientcompany', 'projects', 'supervisors', 'technicians'));
-        return view('billboard.index', compact('states', 'districts', 'locations', 'billboardTypes', 'billboardStatus', 'billboardSize', 'billboardLighting'));
+        return view('billboard.index', compact('states', 'districts', 'locations', 'billboardTypes', 'billboardStatus', 'billboardSize', 'billboardLighting', 'contractors',
+    'clientcompany', 'billboards'));
     }
 
     /**

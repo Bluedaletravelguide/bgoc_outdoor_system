@@ -769,6 +769,80 @@
         updateTotalOut();
     });
 
+    function openInventoryEditModal(inventoryId) {
+    $.get(`/stock-inventory/${inventoryId}/edit`, function(res) {
+        const inventory = res.inventory;
+
+        // Set main fields
+        $('#editContractorName').val(inventory.contractor_pic).trigger('change');
+        $('#editClientIn').val(inventory.client_in).trigger('change');
+        $('#editClientOut').val(inventory.client_out).trigger('change');
+        $('#siteInEditContainer').empty();
+        $('#siteOutEditContainer').empty();
+
+        // Add IN sites
+        res.sites_in.forEach(site => {
+            const row = `
+                <div class="siteInEdit">
+                    <div class="mb-3">
+                        <label>Site</label>
+                        <select class="input w-full border mt-2 select2" name="sites_in_edit[]">
+                            <option value="${site.billboard_id}" selected>${site.billboard.site_number} - ${site.billboard.name}</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label>Type</label>
+                        <input type="text" class="input w-full border mt-1" name="types_in_edit[]" value="${site.type}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label>Size</label>
+                        <input type="text" class="input w-full border mt-1" name="sizes_in_edit[]" value="${site.billboard.size}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label>Quantity</label>
+                        <input type="number" class="input w-full border mt-1" name="qtys_in_edit[]" value="${site.quantity}">
+                    </div>
+                    <div class="mb-3">
+                        <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteInEdit(this)">Remove</a>
+                    </div>
+                </div>`;
+            $('#siteInEditContainer').append(row);
+        });
+
+        // Add OUT sites
+        res.sites_out.forEach(site => {
+            const row = `
+                <div class="siteOutEdit">
+                    <div class="mb-3">
+                        <label>Site</label>
+                        <select class="input w-full border mt-2 select2" name="sites_out_edit[]">
+                            <option value="${site.billboard_id}" selected>${site.billboard.site_number} - ${site.billboard.name}</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label>Type</label>
+                        <input type="text" class="input w-full border mt-1" name="types_out_edit[]" value="${site.type}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label>Size</label>
+                        <input type="text" class="input w-full border mt-1" name="sizes_out_edit[]" value="${site.billboard.size}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label>Quantity</label>
+                        <input type="number" class="input w-full border mt-1" name="qtys_out_edit[]" value="${site.quantity}">
+                    </div>
+                    <div class="mb-3">
+                        <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteOutEdit(this)">Remove</a>
+                    </div>
+                </div>`;
+            $('#siteOutEditContainer').append(row);
+        });
+
+        $('#inventoryEditModal').addClass('flex').removeClass('hidden');
+    });
+}
+
+
 
     $(document).ready(function() {
         
@@ -1148,18 +1222,104 @@
 
             $(document).on('click', "#inventory_table tbody tr td:not(:last-child)", function (e) {
                 const $row = $(this).closest('tr');
+                const rowData = $('#inventory_table').DataTable().row($row).data();
 
-                // Grab ID from last column action button
+                if (!rowData) return;
+
+                // Optional: grab ID from last column (if needed)
                 const btn = $row.find('td:last-child a[id^="delete-"]');
                 if (btn.length) {
                     inventoryId = btn.attr('id').split('-')[1];
-                    console.log("Selected Inventory ID:", inventoryId);
                 }
+
+                // Populate modal fields
+                populateInventoryEditModal(rowData);
 
                 // Open modal
                 openAltEditorModal("#inventoryEditModal");
             });
         }
+
+        function populateInventoryEditModal(data) {
+            // Contractor
+            $('#editContractorName').val(data.contractor_id);
+
+            // Client In / Out
+            $('#editClientIn').val(data.client_in_id);
+            $('#editClientOut').val(data.client_out_id);
+
+            // Dates & Remarks
+            $('#inventoryEditModal input[name="date_in"]').val(data.date_in);
+            $('#inventoryEditModal input[name="date_out"]').val(data.date_out);
+            $('#inventoryEditModal input[name="remarks_in"]').val(data.remarks_in);
+            $('#inventoryEditModal input[name="remarks_out"]').val(data.remarks_out);
+
+            // Clear existing site rows
+            $('#siteInEditContainer').empty();
+            $('#siteOutEditContainer').empty();
+
+            // Populate In Sites
+            (data.sites_in || []).forEach(site => {
+                const row = `
+                <div class="siteInEdit">
+                    <div class="mb-3">
+                        <label class="block">Site</label>
+                        <select class="input w-full border mt-2 select2" name="sites_in_edit[]">
+                            <option value="${site.id}" selected>${site.site_number} - ${site.name}</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="block">Type</label>
+                        <input type="text" class="input w-full border mt-1" name="types_in_edit[]" value="${site.type}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="block">Size</label>
+                        <input type="text" class="input w-full border mt-1" name="sizes_in_edit[]" value="${site.size}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="block"><strong>Quantity In</strong></label>
+                        <input type="number" class="input w-full border mt-1" name="qtys_in_edit[]" value="${site.qty}">
+                    </div>
+                    <div class="mb-3">
+                        <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteInEdit(this)">Remove</a>
+                    </div>
+                </div>`;
+                $('#siteInEditContainer').append(row);
+            });
+
+            // Populate Out Sites
+            (data.sites_out || []).forEach(site => {
+                const row = `
+                <div class="siteOutEdit">
+                    <div class="mb-3">
+                        <label class="block">Site</label>
+                        <select class="input w-full border mt-2 select2" name="sites_out_edit[]">
+                            <option value="${site.id}" selected>${site.site_number} - ${site.name}</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="block">Type</label>
+                        <input type="text" class="input w-full border mt-1" name="types_out_edit[]" value="${site.type}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="block">Size</label>
+                        <input type="text" class="input w-full border mt-1" name="sizes_out_edit[]" value="${site.size}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="block"><strong>Quantity Out</strong></label>
+                        <input type="number" class="input w-full border mt-1" name="qtys_out_edit[]" value="${site.qty}">
+                    </div>
+                    <div class="mb-3">
+                        <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteOutEdit(this)">Remove</a>
+                    </div>
+                </div>`;
+                $('#siteOutEditContainer').append(row);
+            });
+
+            // Reinitialize Select2
+            $('.select2').select2();
+        }
+
 
         var filterClientCompany;
 

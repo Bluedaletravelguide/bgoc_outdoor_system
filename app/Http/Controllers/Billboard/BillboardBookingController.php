@@ -73,12 +73,6 @@ class BillboardBookingController extends Controller
 
         $userID = $this->user->id;
 
-        $company    = $request->input('company');
-        $status     = $request->input('status');
-        $state      = $request->input('state');
-        $district   = $request->input('district');
-        $location   = $request->input('location');
-
         $columns = array(
             0 => 'site_number',
             1 => 'company_name',
@@ -97,58 +91,30 @@ class BillboardBookingController extends Controller
         $orderColumnName    = $columns[$orderColumnIndex];
         $orderDirection     = $request->input('order.0.dir');
 
-        $query = BillboardBooking::select(
-            'billboard_bookings.*',
-            'billboards.site_number as site_number',
-            'client_companies.name as company_name',
-            'locations.id as location_id',
-            'locations.name as location_name',
-            'districts.id as district_id',
-            'districts.name as district_name',
-            'states.id as state_id',
-            'states.name as state_name'
-        )
-        ->leftJoin('client_companies', 'client_companies.id', '=', 'billboard_bookings.company_id')
-        ->leftJoin('billboards', 'billboards.id', '=', 'billboard_bookings.billboard_id')
-        ->leftJoin('locations', 'locations.id', '=', 'billboards.location_id')
-        ->leftJoin('districts', 'districts.id', '=', 'locations.district_id')
-        ->leftJoin('states', 'states.id', '=', 'districts.state_id')
-        ->orderBy($orderColumnName, $orderDirection);
+        $filters = $this->extractFilters($request);
 
-        if (!empty($status)) {
-            $query->where('billboard_bookings.status', $status);
-        }
+        $query = $this->baseBookingQuery();
 
-        if (!empty($company)) {
-            $query->where('billboard_bookings.company_id', $company);
-        }
-
-        if (!empty($state)) {
-            $query->where('states.id', $state);
-        }
-
-        if (!empty($district)) {
-            $query->where('districts.id', $district);
-        }
-
-        if (!empty($location)) {
-            $query->where('locations.id', $location);
-        }
+        $this->applyBookingFilters($query, $filters);
 
         // Get total records count
         $totalData = $query->count();
 
-        $searchValue = trim(strtolower($request->input('search.value')));
-
-        if (!empty($searchValue)) {
-            $query->where(function ($query) use ($searchValue) {
-                $query->where('billboards.site_number', 'LIKE', "%{$searchValue}%")
+        // Search (same as other endpoint)
+        if (!empty($filters['search_value'])) {
+            $searchValue = trim(strtolower($filters['search_value']));
+            $query->where(function ($q) use ($searchValue) {
+                $q->where('billboards.site_number', 'LIKE', "%{$searchValue}%")
                 ->orWhere('client_companies.name', 'LIKE', "%{$searchValue}%")
                 ->orWhere('locations.name', 'LIKE', "%{$searchValue}%")
                 ->orWhere('districts.name', 'LIKE', "%{$searchValue}%")
                 ->orWhere('states.name', 'LIKE', "%{$searchValue}%");
             });
         }
+
+        $query->orderBy('billboard_bookings.id', 'desc');
+
+        
 
         // Get total filtered records count
         $totalFiltered = $query->count();
@@ -201,7 +167,7 @@ class BillboardBookingController extends Controller
         $userID = $this->user->id;
 
         $location           = $request->location;
-        $company            = $request->company;
+        $client            = $request->client;
         $start_date         = $request->start_date;
         $end_date           = $request->end_date;
         $status             = $request->status;
@@ -238,7 +204,7 @@ class BillboardBookingController extends Controller
             //Create a new service request
             $booking = BillboardBooking::create([
                 'billboard_id'      => $billboard_id,
-                'company_id'        => $company,
+                'company_id'        => $client,
                 'start_date'        => $start_date,
                 'end_date'          => $end_date,
                 'status'            => $status,
@@ -448,75 +414,6 @@ class BillboardBookingController extends Controller
         return $pdf->download($filename . '.pdf');
     }
 
-    public function getCalendarBookings(Request $request)
-    {
-        $company = $request->input('company');
-        $state = $request->input('state');
-        $district = $request->input('district');
-        $location = $request->input('location');
-
-        // ✅ Return no bookings if no filters are selected
-        if (!$company && !$state && !$district && !$location) {
-            return response()->json([]); // Return empty events
-        }
-
-        $query = BillboardBooking::select(
-            'billboard_bookings.*',
-            'billboards.site_number',
-            'locations.name as location_name'
-        )
-        ->leftJoin('billboards', 'billboards.id', '=', 'billboard_bookings.billboard_id')
-        ->leftJoin('locations', 'locations.id', '=', 'billboards.location_id')
-        ->leftJoin('districts', 'districts.id', '=', 'locations.district_id')
-        ->leftJoin('states', 'states.id', '=', 'districts.state_id');
-
-        if ($company) {
-            $query->where('billboard_bookings.company_id', $company);
-        }
-        if ($state) {
-            $query->where('states.id', $state);
-        }
-        if ($district) {
-            $query->where('districts.id', $district);
-        }
-        if ($location) {
-            $query->where('locations.id', $location);
-        }
-
-        $bookings = $query->get();
-
-        $events = [];
-
-        foreach ($bookings as $booking) {
-            $events[] = [
-                'title' => $booking->site_number . ' - ' . $booking->location_name,
-                'start' => $booking->start_date,
-                'end'   => $booking->end_date ? Carbon::parse($booking->end_date)->addDay()->toDateString() : null,
-                'color' => match ($booking->status) {
-                    'ongoing' => '#22C55E',
-                    'pending_install' => '#6366F1',
-                    'pending_payment' => '#EF4444',
-                    default => '#eff163ff',
-                }
-            ];
-        }
-
-        return response()->json([
-            'events' => $events,
-            'legend' => self::getBookingLegend()
-        ]);
-    }
-
-    private static function getBookingLegend()
-    {
-        return [
-            ['label' => 'Ongoing', 'color' => '#22C55E'],
-            ['label' => 'Pending Install', 'color' => '#6366F1'],
-            ['label' => 'Pending Payment', 'color' => '#EF4444'],
-            ['label' => 'Other', 'color' => '#FACC15'],
-        ];
-    }
-
 
 
 
@@ -531,21 +428,46 @@ class BillboardBookingController extends Controller
 
     public function getMonthlyOngoingJobs(Request $request)
     {
-        $year = $request->input('year', now()->year);
+        $filters = $this->extractFilters($request);
+        $orderColumn = $request->input('order.0.column', 'id'); 
+        $orderDir    = $request->input('order.0.dir', 'desc');
 
-        // Correct eager loading
-        $query = BillboardBooking::with(['clientCompany', 'billboard.location']);
+        $query = $this->baseBookingQuery();
 
-        // Filter by state (via billboard → location → district → state)
-        if ($request->filled('state_id')) {
-            $query->whereHas('billboard.location.district.state', function ($q) use ($request) {
-                $q->where('id', $request->state_id);
+        $this->applyBookingFilters($query, $filters);
+
+        // search (same as DataTable)
+        if (!empty($filters['search_value'])) {
+            $searchValue = trim(strtolower($filters['search_value']));
+            $query->where(function ($q) use ($searchValue) {
+                $q->where('billboards.site_number', 'LIKE', "%{$searchValue}%")
+                ->orWhere('client_companies.name', 'LIKE', "%{$searchValue}%")
+                ->orWhere('locations.name', 'LIKE', "%{$searchValue}%")
+                ->orWhere('districts.name', 'LIKE', "%{$searchValue}%")
+                ->orWhere('states.name', 'LIKE', "%{$searchValue}%");
             });
         }
 
-        if ($request->filled('client_id')) {
-            $query->where('client_id', $request->client_id);
-        }
+        // order (use DataTable column mapping)
+        $columns = [
+            0 => 'billboards.site_number',
+            1 => 'client_companies.name',
+            2 => 'locations.name',
+            3 => 'billboard_bookings.start_date',
+            4 => 'billboard_bookings.end_date',
+            5 => 'duration', // virtual
+            6 => 'billboard_bookings.status',
+            7 => 'billboard_bookings.remarks',
+            8 => 'billboard_bookings.id',
+        ];
+
+        $orderColumnIndex = $filters['order_column_index'] ?? 8; // default to id
+        $orderColumnName = $columns[$orderColumnIndex] ?? 'billboard_bookings.id';
+        $orderDir = $filters['order_dir'] ?? 'desc';
+
+        $query->orderBy($orderColumnName, $orderDir)
+            ->orderBy('billboard_bookings.id', 'desc');
+
 
         $jobs = $query->get();
 
@@ -559,7 +481,7 @@ class BillboardBookingController extends Controller
             $months = array_fill(1, 12, '');
 
             $monthStatuses = MonthlyOngoingJob::where('booking_id', $job->id)
-                ->where('year', $year)
+                ->where('year', $filters['year'])
                 ->pluck('status', 'month');
 
             foreach ($monthStatuses as $month => $status) {
@@ -580,6 +502,111 @@ class BillboardBookingController extends Controller
 
         return response()->json(['data' => $data]);
     }
+
+    private function extractFilters(Request $request)
+    {
+        return [
+            'client'      => $request->input('client'),
+            'start_date'  => $request->filled('start_date') ? Carbon::parse($request->input('start_date'))->format('Y-m-d') : null,
+            'end_date'    => $request->filled('end_date') ? Carbon::parse($request->input('end_date'))->format('Y-m-d') : null,
+            'year'       => $request->input('year', now()->year),
+            'state'      => $request->input('state'),
+            'district'   => $request->input('district'),
+            'location'   => $request->input('location'),
+            'type'       => $request->input('type'),
+            'status'     => $request->input('status'),
+            'search_value' => $request->input('search.value'),
+            'order_column_index' => $request->input('order.0.column'),
+            'order_dir' => $request->input('order.0.dir', 'desc'),
+        ];
+    }
+
+    private function baseBookingQuery()
+    {
+        return BillboardBooking::select(
+            'billboard_bookings.*',
+            'billboards.site_number as site_number',
+            'client_companies.name as company_name',
+            'locations.id as location_id',
+            'locations.name as location_name',
+            'districts.id as district_id',
+            'districts.name as district_name',
+            'states.id as state_id',
+            'states.name as state_name'
+        )
+        ->leftJoin('client_companies', 'client_companies.id', '=', 'billboard_bookings.company_id')
+        ->leftJoin('billboards', 'billboards.id', '=', 'billboard_bookings.billboard_id')
+        ->leftJoin('locations', 'locations.id', '=', 'billboards.location_id')
+        ->leftJoin('districts', 'districts.id', '=', 'locations.district_id')
+        ->leftJoin('states', 'states.id', '=', 'districts.state_id');
+    }
+
+
+    private function applyBookingFilters($query, $filters)
+    {
+        logger('hoho: ' , $filters);
+        return $query
+            ->when(!empty($filters['start_date']) && !empty($filters['end_date']), function ($q) use ($filters) {
+                $q->where(function ($sub) use ($filters) {
+                    $sub->where('billboard_bookings.start_date', '<=', $filters['end_date'])
+                        ->where('billboard_bookings.end_date', '>=', $filters['start_date']);
+                });
+            })
+            ->when(!empty($filters['state']), fn($q) => $q->where('states.id', $filters['state']))
+            ->when(!empty($filters['district']), fn($q) => $q->where('districts.id', $filters['district']))
+            ->when(!empty($filters['location']), fn($q) => $q->where('locations.id', $filters['location']))
+            ->when(!empty($filters['status']), fn($q) => $q->where('billboard_bookings.status', $filters['status']))
+            ->when(!empty($filters['client']), fn($q) => $q->where('billboard_bookings.company_id', $filters['client']));
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public function updateJobMonthlyStatus(Request $request)
     {

@@ -96,7 +96,7 @@
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
-                Add New Billboard
+                Add New Stock
             </a>
             <a href="#" id="exportBtn" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-9 text-white" target="_blank">
                 <svg xmlns="http://www.w3.org/2000/svg"
@@ -144,21 +144,21 @@
         <div class="modal" id="addBillboardModal">
             <div class="modal__content">
                 <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
-                    <h2 class="font-medium text-base mr-auto">Add New Billboard</h2>
+                    <h2 class="font-medium text-base mr-auto">Add New Stock</h2>
                 </div>
                 <form>
                     <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Billboard Type</label>
+                            <label>Outdoor Type</label>
                             <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardType">
-                                <option value="">-- Select Bilboard Type --</option>
+                                <option value="">-- Select Outdoor Type --</option>
                                 @foreach ($billboardTypes as $prefix => $type)
                                     <option value="{{ $prefix }}">{{ $type }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Billboard Size</label>
+                            <label>Size</label>
                             <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardSize">
                                 <option value="">-- Select Size --</option>
                                 @foreach ($billboardSize as $size)
@@ -225,14 +225,14 @@
         <div class="modal" id="billboardEditModal">
             <div class="modal__content">
                 <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
-                    <h2 class="font-medium text-base mr-auto">Edit Billboard</h2>
+                    <h2 class="font-medium text-base mr-auto">Edit Stock</h2>
                 </div>
                 <form>
                     <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Billboard Type</label>
+                            <label>Outdoor Type</label>
                             <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardType">
-                                <option value="">-- Select Bilboard Type --</option>
+                                <option value="">-- Select Outdoor Type --</option>
                                 @foreach ($billboardTypes as $prefix => $type)
                                     <option value="{{ $prefix }}">{{ $type }}</option>
                                 @endforeach
@@ -316,9 +316,178 @@
     </div>
 </div>
 <!-- END: Service Request Reject Modal -->
+
+<!-- BEGIN: Inventory Add Modal -->
+<div class="modal items-center justify-center" id="inventoryAddModal">
+    <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-7xl p-6">
+        
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between border-b pb-3 mb-4">
+            <h2 class="text-lg font-semibold">Add Stock Inventory</h2>
+            <!-- <button type="button" onclick="closeInventoryModal()">✖</button> -->
+        </div>
+        <form id="addStockInventoryForm">
+            <div class="mb-4">
+                <label class="block font-medium">Contractor</label>
+                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputContractorName" required>
+                        <option selected value="">Select an option</option>
+                        @foreach ($contractors as $contractor)
+                            <option value="{{ $contractor->id }}">{{ $contractor->name }}</option>
+                        @endforeach
+                        </select>
+            </div>
+            <div class="grid grid-cols-2 gap-8">
+                
+                <!-- LEFT COLUMN: IN INVENTORY -->
+                <div class="bg-orange-50 p-4 rounded-lg">
+                    <h3 class="font-bold text-orange-600 mb-3">In Inventory</h3>
+
+                    <div class="mb-3">
+                        <label class="block">Balance - Contractor</label>
+                        <input type="number" class="input w-full border mt-1" id="balContractor" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="block">Date In</label>
+                        <input type="date" class="input w-full border mt-1" id="inputDateIn">
+                    </div>
+                    <div class="mb-3">
+                        <label class="block">Client</label>
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputClientIn">
+                        <option selected value="">Select an option</option>
+                        @foreach ($clientcompany as $clientcomp)
+                            <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
+                        @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="block">Remarks</label>
+                        <input type="text" class="input w-full border mt-1" id="inputRemarksIn">
+                    </div>
+                    <div class="flex items-center sm:py-3 border-gray-200 dark:border-dark-5">
+                        <h2 class="font-medium text-base mr-auto">Add Sites</h2>
+                    </div>
+                    <div id="siteInContainer">
+                        <div class="siteIn">
+                            <div class="mb-3">
+                                <label class="block">Site</label>
+                                <select class="input w-full border mt-2 select2" id="inputBillboardIn" name="sites_in[]">
+                                    <option selected value="">Select an option</option>
+                                    @foreach ($billboards as $billboard)
+                                        <option 
+                                            value="{{ $billboard->id }}" 
+                                            data-type="{{ $billboard->type }}" 
+                                            data-size="{{ $billboard->size }}">
+                                            {{ $billboard->site_number }} - {{ $billboard->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block">Type</label>
+                                <input type="text" class="input w-full border mt-1" name="types_in[]" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block">Size</label>
+                                <input type="text" class="input w-full border mt-1" name="sizes_in[]" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block"><strong>Quantity In</strong></label>
+                                <input type="number" class="input w-full border mt-1" name="qtys_in[]">
+                            </div>
+                            <div class="mb-3">
+                                <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteIn(this)">
+                                    Remove
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="siteInAdd()" class="bg-blue-600 text-white px-4 py-2 rounded">Add Site</button>
+                </div>
+
+                <!-- RIGHT COLUMN: OUT INVENTORY -->
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h3 class="font-bold text-green-600 mb-3">Out Inventory</h3>
+
+                    <div class="mb-3">
+                        <label class="block">Bal - BGOC</label>
+                        <input type="number" class="input w-full border mt-1" id="balBgoc" readonly>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="block">Date Out</label>
+                        <input type="date" class="input w-full border mt-1" id="inputDateOut">
+                    </div>
+                    <div class="mb-3">
+                        <label class="block">Client</label>
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputClientOut">
+                        <option selected value="">Select an option</option>
+                        @foreach ($clientcompany as $clientcomp)
+                            <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
+                        @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="block">Remarks</label>
+                        <input type="text" class="input w-full border mt-1" id="inputRemarksOut">
+                    </div>
+                    <div class="flex items-center sm:py-3 border-gray-200 dark:border-dark-5">
+                        <h2 class="font-medium text-base mr-auto">Add Sites</h2>
+                    </div>
+                    <div id="siteOutContainer">
+                        <div class="siteOut">
+                            <div class="mb-3">
+                                <label class="block">Site</label>
+                                <select class="input w-full border mt-2 select2" id="inputBillboardOut" name="sites_out[]">
+                                    <option selected value="">Select an option</option>
+                                    @foreach ($billboards as $billboard)
+                                        <option 
+                                            value="{{ $billboard->id }}" 
+                                            data-type="{{ $billboard->type }}" 
+                                            data-size="{{ $billboard->size }}">
+                                            {{ $billboard->site_number }} - {{ $billboard->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block">Type</label>
+                                <input type="text" class="input w-full border mt-1" name="types_out[]" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block">Size</label>
+                                <input type="text" class="input w-full border mt-1" name="sizes_out[]" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block"><strong>Quantity Out</strong></label>
+                                <input type="number" class="input w-full border mt-1" name="qtys_out[]">
+                            </div>
+                            <div class="mb-3">
+                                <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteOut(this)">
+                                    Remove
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="siteOutAdd()" class="bg-blue-600 text-white px-4 py-2 rounded">Add Site</button>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="mt-6 text-right">
+                <button type="submit" id="inventoryAddButton" class="bg-blue-600 text-white px-4 py-2 rounded">Submit</button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- END: Inventory Add Modal -->
 @endsection('modal_content')
 
 @section('script')
+
+<!-- searchable dropdown -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
     $('#filterBillboardState').on('change', function () {
         let stateId = $(this).val();
@@ -398,6 +567,261 @@
         });
     }
 
+    // Add site to In Inventory
+    function siteInAdd() {
+        let html = `
+            <br><div class="siteIn">
+                <div class="mb-3">
+                    <label class="block">Site</label>
+                    <select class="input w-full border mt-2 select2" name="sites_in[]">
+                        <option selected value="">Select an option</option>
+                        @foreach ($billboards as $billboard)
+                            <option 
+                                value="{{ $billboard->id }}" 
+                                data-type="{{ $billboard->type }}" 
+                                data-size="{{ $billboard->size }}">
+                                {{ $billboard->site_number }} - {{ $billboard->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="block">Type</label>
+                    <input type="text" class="input w-full border mt-1" name="types_in[]" readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="block">Size</label>
+                    <input type="text" class="input w-full border mt-1" name="sizes_in[]" readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="block"><strong>Quantity In</strong></label>
+                    <input type="number" class="input w-full border mt-1" name="qtys_in[]">
+                </div>
+                <div class="mb-3">
+                    <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteIn(this)">
+                        Remove
+                    </a>
+                </div>
+            </div>`;
+
+        // Append
+        $("#siteInContainer").append(html);
+
+        // Re-init select2 for all .select2 (new + old)
+        $("#siteInContainer .select2").select2({
+            width: '100%'
+        });
+
+        updateTotalIn();
+    }
+
+    function removeSiteIn(el) {
+        el.closest(".siteIn").remove();
+        updateTotalIn();
+    }
+
+    // Add site to Out Inventory
+    function siteOutAdd() {
+        let html = `
+            <br><div class="siteOut">
+                <div class="mb-3">
+                    <label class="block">Site</label>
+                    <select class="input w-full border mt-2 select2" name="sites_out[]" required>
+                        <option selected value="">Select an option</option>
+                        @foreach ($billboards as $billboard)
+                            <option 
+                                value="{{ $billboard->id }}" 
+                                data-type="{{ $billboard->type }}" 
+                                data-size="{{ $billboard->size }}">
+                                {{ $billboard->site_number }} - {{ $billboard->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="block">Type</label>
+                    <input type="text" class="input w-full border mt-1" name="types_out[]" readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="block">Size</label>
+                    <input type="text" class="input w-full border mt-1" name="sizes_out[]" readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="block"><strong>Quantity Out</strong></label>
+                    <input type="number" class="input w-full border mt-1" name="qtys_out[]" required>
+                </div>
+                <div class="mb-3">
+                    <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteOut(this)">
+                        Remove
+                    </a>
+                </div>
+            </div>`;
+        
+        $("#siteOutContainer").append(html);
+
+        // Re-init select2
+        $("#siteOutContainer .select2").select2({
+            width: '100%'
+        });
+
+        updateTotalOut();
+    }
+
+    function removeSiteOut(el) {
+        el.closest(".siteOut").remove();
+        updateTotalOut();
+    }
+
+    // Add In Site (Edit)
+    function siteInEditAdd() {
+        let html = `
+            <div class="siteInEdit">
+                <div class="mb-3">
+                    <label class="block">Site</label>
+                    <select class="input w-full border mt-2 select2" name="sites_in_edit[]">
+                        <option selected value="">Select an option</option>
+                        @foreach ($billboards as $billboard)
+                            <option 
+                                value="{{ $billboard->id }}" 
+                                data-type="{{ $billboard->type }}" 
+                                data-size="{{ $billboard->size }}">
+                                {{ $billboard->site_number }} - {{ $billboard->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="block">Type</label>
+                    <input type="text" class="input w-full border mt-1" name="types_in_edit[]" readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="block">Size</label>
+                    <input type="text" class="input w-full border mt-1" name="sizes_in_edit[]" readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="block"><strong>Quantity In</strong></label>
+                    <input type="number" class="input w-full border mt-1" name="qtys_in_edit[]">
+                </div>
+                <div class="mb-3">
+                    <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteInEdit(this)">
+                        Remove
+                    </a>
+                </div>
+            </div>`;
+        
+        $("#siteInEditContainer").append(html);
+
+        // Re-init select2
+        $("#siteInEditContainer .select2").select2({
+            width: '100%'
+        });
+    }
+
+    function removeSiteInEdit(el) {
+        el.closest(".siteInEdit").remove();
+    }
+
+    // Add Out Site (Edit)
+    function siteOutEditAdd() {
+        let html = `
+            <div class="siteOutEdit">
+                <div class="mb-3">
+                    <label class="block">Site</label>
+                    <select class="input w-full border mt-2 select2" name="sites_out_edit[]">
+                        <option selected value="">Select an option</option>
+                        @foreach ($billboards as $billboard)
+                            <option 
+                                value="{{ $billboard->id }}" 
+                                data-type="{{ $billboard->type }}" 
+                                data-size="{{ $billboard->size }}">
+                                {{ $billboard->site_number }} - {{ $billboard->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="block">Type</label>
+                    <input type="text" class="input w-full border mt-1" name="types_out_edit[]" readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="block">Size</label>
+                    <input type="text" class="input w-full border mt-1" name="sizes_out_edit[]" readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="block"><strong>Quantity Out</strong></label>
+                    <input type="number" class="input w-full border mt-1" name="qtys_out_edit[]">
+                </div>
+                <div class="mb-3">
+                    <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteOutEdit(this)">
+                        Remove
+                    </a>
+                </div>
+            </div>`;
+
+        $("#siteOutEditContainer").append(html);
+
+        // Re-init select2
+        $("#siteOutEditContainer .select2").select2({
+            width: '100%'
+        });
+    }
+
+    function removeSiteOutEdit(el) {
+        el.closest(".siteOutEdit").remove();
+    }
+
+    // Handle auto-fill Type & Size for ADD modal
+    $(document).on('change', '#siteInContainer .select2, #siteOutContainer .select2', function() {
+        let selected = $(this).find(':selected');
+        let type = selected.data('type') || '';
+        let size = selected.data('size') || '';
+
+        // find the nearest .siteIn or .siteOut row
+        let row = $(this).closest('.siteIn, .siteOut');
+        row.find('input[name="types_in[]"], input[name="types_out[]"]').val(type);
+        row.find('input[name="sizes_in[]"], input[name="sizes_out[]"]').val(size);
+    });
+
+    // Handle auto-fill Type & Size for EDIT modal
+    $(document).on('change', '#siteInEditContainer .select2, #siteOutEditContainer .select2', function() {
+        let selected = $(this).find(':selected');
+        let type = selected.data('type') || '';
+        let size = selected.data('size') || '';
+
+        let row = $(this).closest('.siteInEdit, .siteOutEdit');
+        row.find('input[name="types_in_edit[]"], input[name="types_out_edit[]"]').val(type);
+        row.find('input[name="sizes_in_edit[]"], input[name="sizes_out_edit[]"]').val(size);
+    });
+
+    // Function to calculate total In
+    function updateTotalIn() {
+        let total = 0;
+        document.querySelectorAll("input[name='qtys_in[]']").forEach(function(input) {
+            let val = parseInt(input.value) || 0;
+            total += val;
+        });
+        document.getElementById("balContractor").value = total;
+    }
+
+    // Function to calculate total Out
+    function updateTotalOut() {
+        let total = 0;
+        document.querySelectorAll("input[name='qtys_out[]']").forEach(function(input) {
+            let val = parseInt(input.value) || 0;
+            total += val;
+        });
+        document.getElementById("balBgoc").value = total;
+    }
+
+    // Attach events when typing in Quantity fields
+    $(document).on("input", "input[name='qtys_in[]']", function() {
+        updateTotalIn();
+    });
+
+    $(document).on("input", "input[name='qtys_out[]']", function() {
+        updateTotalOut();
+    });
+
     
     
     $(document).ready(function() {
@@ -405,6 +829,13 @@
         var filterBillboardStatus;
 
         document.getElementById("billboardDeleteButton").addEventListener("click", billboardDeleteButton);
+
+        // Initialize Select2 with search
+        $('.select2').select2({
+            placeholder: "Select an option",
+            allowClear: true,
+            width: '100%'
+        });
 
 
         // When "State" is changed in add form
@@ -647,6 +1078,11 @@
                                     <a href="javascript:;" id="detail-` + data + `"
                                         class="button w-24 inline-block mr-2 mb-2 bg-theme-9 text-white" data-toggle="button" onclick="window.open('${a}')" >
                                         Details
+                                    </a>
+
+                                    <!-- Inventory Button -->
+                                    <a class="button w-24 inline-block mr-2 mb-2 bg-theme-1 text-white" href="javascript:;" data-toggle="modal" data-target="#inventoryAddModal" id="delete-billboard-` + data + `">
+                                        Inventory
                                     </a>
                                 </div>`;
 
