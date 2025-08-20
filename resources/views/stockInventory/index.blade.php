@@ -9,6 +9,21 @@
 @endsection
 
 @section('app_content')
+<style>
+    #inventory_table {
+        border-collapse: collapse !important; /* merge borders */
+    }
+
+    #inventory_table th,
+    #inventory_table td {
+        border: 1px solid #ddd !important; /* light gray border */
+        padding: 6px 10px;
+    }
+
+    #inventory_table thead th {
+        border-bottom: 2px solid #bbb !important;
+    }
+</style>
 <div class="intro-y flex flex-col sm:flex-row items-center mt-8">
     <h2 class="text-lg font-medium mr-auto">
         Stock Inventory
@@ -25,7 +40,7 @@
                 <form class="xl:flex sm:mr-auto">
                     <div class="sm:flex items-center sm:mr-4">
                         <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Company Name</label>
-                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputCompanyName">
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="fliterClient">
                         <option selected value="">Select an option</option>
                         @foreach ($clientcompany as $clientcomp)
                             <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
@@ -59,20 +74,23 @@
                         <tr class="bg-theme-1 text-white">
                             <th width="5%">No.</th>
                             <th class="bg-orange-500 text-white">Contractor</th>
+                            <!-- stock inventory IN section -->
                             <th class="bg-orange-500 text-white">Client</th>
-                            <th class="bg-orange-500 text-white">Type</th>
                             <th class="bg-orange-500 text-white">Site</th>
-                            <th class="bg-orange-500 text-white">Remarks</th>
-                            <th class="bg-orange-500 text-white">Size</th>
+                            <!-- <th class="bg-orange-500 text-white">Type</th> -->
+                            <!-- <th class="bg-orange-500 text-white">Size</th> -->
                             <th class="bg-orange-500 text-white">Quantity</th>
+                            <th class="bg-orange-500 text-white">Remarks</th>
                             <th class="bg-orange-500 text-white">Date In</th>
                             <th class="bg-yellow-400 text-black">Bal - Contractor</th>
+                            <!-- stock inventory OUT section -->
                             <th class="bg-yellow-400 text-black">Bal - BGOC</th>
                             <th class="bg-green-600 text-white">Date Out</th>
                             <th class="bg-green-600 text-white">Quantity</th>
-                            <th class="bg-green-600 text-white">Size</th>
-                            <th class="bg-green-600 text-white">Client</th>
+                            <!-- <th class="bg-green-600 text-white">Size</th> -->
+                            <!-- <th class="bg-green-600 text-white">Type</th> -->
                             <th class="bg-green-600 text-white">Site</th>
+                            <th class="bg-green-600 text-white">Client</th>
                             <th class="bg-green-600 text-white">Remarks</th>
                             <th width="10%">Action</th>
                         </tr>
@@ -90,38 +108,68 @@
 
 <div class="intro-y flex flex-col sm:flex-row items-center mt-8">
     <h2 class="text-lg font-medium mr-auto">
+        Stock Inventory Transactions
+    </h2>
+</div>
+
+<div class="intro-y box p-5 mt-5">
+    <!-- <div class="pos col-span-12 lg:col-span-4"> -->
+        <!-- BEGIN: Client -->
+        <!-- <div> -->
+
+            <!-- BEGIN: Stock Inventory List -->
+            <div class="overflow-x-auto scrollbar-hidden">
+                <table class="table table-report mt-5" id="inventory_trxn_table">
+                    <thead>
+                        <tr class="bg-theme-1 text-white">
+                            <th width="5%">No.</th>
+                            <th class="bg-orange-500 text-white">Contractor</th>
+                            <!-- stock inventory IN section -->
+                            <th class="bg-orange-500 text-white">Client</th>
+                            <th class="bg-orange-500 text-white">Site</th>
+                            <th class="bg-orange-500 text-white">Type</th>
+                            <th class="bg-orange-500 text-white">Size</th>
+                            <th class="bg-orange-500 text-white">Quantity</th>
+                            <th class="bg-orange-500 text-white">Remarks</th>
+                            <th class="bg-orange-500 text-white">Date In</th>
+                            <th class="bg-yellow-400 text-black">Bal - Contractor</th>
+                            <!-- stock inventory OUT section -->
+                            <th class="bg-yellow-400 text-black">Bal - BGOC</th>
+                            <th class="bg-green-600 text-white">Date Out</th>
+                            <th class="bg-green-600 text-white">Quantity</th>
+                            <th class="bg-green-600 text-white">Size</th>
+                            <th class="bg-green-600 text-white">Type</th>
+                            <th class="bg-green-600 text-white">Site</th>
+                            <th class="bg-green-600 text-white">Client</th>
+                            <th class="bg-green-600 text-white">Remarks</th>
+                            <th width="10%">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                </table>
+            </div>
+            <!-- END: Stock Inventory List -->
+        <!-- </div> -->
+        <!-- END: Client -->
+    <!-- </div> -->
+</div>
+
+<div class="intro-y flex flex-col sm:flex-row items-center mt-8">
+    <h2 class="text-lg font-medium mr-auto">
         Stock Inventory History
     </h2>
 </div>
 
 <div class="intro-y box p-5 mt-5">
-    <div class="pos col-span-12 lg:col-span-4">
+    <!-- <div class="pos col-span-12 lg:col-span-4"> -->
         <!-- BEGIN: Client -->
-        <div>
-            <!-- BEGIN: Filter & Add Client -->
-            <div class="flex flex-col sm:flex-row sm:items-end xl:items-start">
-                <!-- BEGIN: Filter -->
-                <form class="xl:flex sm:mr-auto">
-                    <div class="sm:flex items-center sm:mr-4">
-                        <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Company Name</label>
-                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputCompanyName">
-                        <option selected value="">Select an option</option>
-                        @foreach ($clientcompany as $clientcomp)
-                            <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
-                        @endforeach
-                        </select>
-                    </div>
-                    <div class="mt-2 xl:mt-0">
-                        <button type="button" class="button w-full sm:w-16 bg-theme-32 text-white" id="filterClientButton">Filter</button>
-                    </div>
-                </form>
-                <!-- END: Filter -->
-            </div>
-            <!-- END: Filter & Add Stock Inventory -->
+        <!-- <div> -->
 
             <!-- BEGIN: Stock Inventory List -->
             <div class="overflow-x-auto scrollbar-hidden">
-                <table class="table table-report mt-5" id="inventory_table">
+                <table class="table table-report mt-5" id="inventory_history_table">
                     <thead>
                         <tr class="bg-theme-1 text-white">
                             <th width="5%">No.</th>
@@ -149,9 +197,9 @@
                 </table>
             </div>
             <!-- END: Stock Inventory List -->
-        </div>
+        <!-- </div> -->
         <!-- END: Client -->
-    </div>
+    <!-- </div> -->
 </div>
 @endsection('app_content')
 
@@ -189,15 +237,7 @@
                         <label class="block">Date In</label>
                         <input type="date" class="input w-full border mt-1" id="inputDateIn">
                     </div>
-                    <div class="mb-3">
-                        <label class="block">Client</label>
-                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputClientIn">
-                        <option selected value="">Select an option</option>
-                        @foreach ($clientcompany as $clientcomp)
-                            <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
-                        @endforeach
-                        </select>
-                    </div>
+                    
                     <div class="mb-3">
                         <label class="block">Remarks</label>
                         <input type="text" class="input w-full border mt-1" id="inputRemarksIn">
@@ -207,6 +247,15 @@
                     </div>
                     <div id="siteInContainer">
                         <div class="siteIn">
+                            <div class="mb-3">
+                                <label class="block">Client</label>
+                                <select class="input w-full border mt-2 select2" name="clients_in[]">
+                                <option selected value="">Select an option</option>
+                                @foreach ($clientcompany as $clientcomp)
+                                    <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
+                                @endforeach
+                                </select>
+                            </div>
                             <div class="mb-3">
                                 <label class="block">Site</label>
                                 <select class="input w-full border mt-2 select2" id="inputBillboardIn" name="sites_in[]">
@@ -256,15 +305,7 @@
                         <label class="block">Date Out</label>
                         <input type="date" class="input w-full border mt-1" id="inputDateOut">
                     </div>
-                    <div class="mb-3">
-                        <label class="block">Client</label>
-                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputClientOut">
-                        <option selected value="">Select an option</option>
-                        @foreach ($clientcompany as $clientcomp)
-                            <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
-                        @endforeach
-                        </select>
-                    </div>
+                    
                     <div class="mb-3">
                         <label class="block">Remarks</label>
                         <input type="text" class="input w-full border mt-1" id="inputRemarksOut">
@@ -274,6 +315,15 @@
                     </div>
                     <div id="siteOutContainer">
                         <div class="siteOut">
+                            <div class="mb-3">
+                                <label class="block">Client</label>
+                                <select class="input w-full border mt-2 select2" name="clients_out[]">
+                                <option selected value="">Select an option</option>
+                                @foreach ($clientcompany as $clientcomp)
+                                    <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
+                                @endforeach
+                                </select>
+                            </div>
                             <div class="mb-3">
                                 <label class="block">Site</label>
                                 <select class="input w-full border mt-2 select2" id="inputBillboardOut" name="sites_out[]">
@@ -519,6 +569,15 @@
         let html = `
             <br><div class="siteIn">
                 <div class="mb-3">
+                    <label class="block">Client</label>
+                    <select class="input w-full border mt-2 select2" name="clients_in[]">
+                    <option selected value="">Select an option</option>
+                    @foreach ($clientcompany as $clientcomp)
+                        <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
+                    @endforeach
+                    </select>
+                </div>
+                <div class="mb-3">
                     <label class="block">Site</label>
                     <select class="input w-full border mt-2 select2" name="sites_in[]">
                         <option selected value="">Select an option</option>
@@ -571,6 +630,15 @@
     function siteOutAdd() {
         let html = `
             <br><div class="siteOut">
+                <div class="mb-3">
+                    <label class="block">Client</label>
+                    <select class="input w-full border mt-2 select2" name="clients_out[]">
+                    <option selected value="">Select an option</option>
+                    @foreach ($clientcompany as $clientcomp)
+                        <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
+                    @endforeach
+                    </select>
+                </div>
                 <div class="mb-3">
                     <label class="block">Site</label>
                     <select class="input w-full border mt-2 select2" name="sites_out[]" required>
@@ -858,8 +926,8 @@
 
         // When "filterClientButton" button is clicked, initiate initClientCompanyDatatable
         function filterClientButton() {
-            filterClientCompany = document.getElementById("inputCompanyName").value;
-            initStockInventoryDatatable(filterClientCompany);
+            filterClientCompany = document.getElementById("fliterClient").value;
+            // initStockInventoryDatatable(filterClientCompany);
         };
 
         // When page first loads, load table
@@ -909,8 +977,6 @@
             let contractor_id = $("#inputContractorName").val();
             let date_in = $("#inputDateIn").val();
             let date_out = $("#inputDateOut").val();
-            let client_in = $("#inputClientIn").val();
-            let client_out = $("#inputClientOut").val();
             let remarks_in = $("#inputRemarksIn").val();
             let remarks_out = $("#inputRemarksOut").val();
             let bal_contractor = $("#balContractor").val();
@@ -920,30 +986,35 @@
             let sites_in = [];
             $("#siteInContainer .siteIn").each(function () {
                 let siteId = $(this).find("select[name='sites_in[]']").val();
+                let clientId = $(this).find("select[name='clients_in[]']").val(); // attach client per site
                 if (!siteId) return; // skip empty
 
                 sites_in.push({
                     id: siteId,
+                    client_id: clientId || null,
                     type: $(this).find("input[name='types_in[]']").val(),
                     size: $(this).find("input[name='sizes_in[]']").val(),
                     qty: parseInt($(this).find("input[name='qtys_in[]']").val()) || 0
                 });
             });
-
+            
             // Gather site OUT rows
             let sites_out = [];
             $("#siteOutContainer .siteOut").each(function () {
                 let siteId = $(this).find("select[name='sites_out[]']").val();
+                let clientId = $(this).find("select[name='clients_out[]']").val(); // attach client per site
                 if (!siteId) return; // skip empty
 
                 sites_out.push({
                     id: siteId,
+                    client_id: clientId || null,
                     type: $(this).find("input[name='types_out[]']").val(),
                     size: $(this).find("input[name='sizes_out[]']").val(),
                     qty: parseInt($(this).find("input[name='qtys_out[]']").val()) || 0
                 });
             });
 
+            // Send request
             $.ajax({
                 type: 'POST',
                 url: "{{ route('stockInventory.create') }}",
@@ -952,48 +1023,39 @@
                     contractor_id: contractor_id,
                     date_in: date_in,
                     date_out: date_out,
-                    client_in: client_in,
-                    client_out: client_out,
                     remarks_in: remarks_in,
                     remarks_out: remarks_out,
-                    sites_in: sites_in,
-                    sites_out: sites_out,
+                    sites_in: sites_in,   // ✅ contains client + site info
+                    sites_out: sites_out, // ✅ contains client + site info
                     bal_contractor: bal_contractor,
                     bal_bgoc: bal_bgoc
                 }),
-                contentType: "application/json",   // 👈 tell jQuery to send JSON
+                contentType: "application/json",   // 👈 send JSON
                 dataType: "json",
                 success: function(response) {
                     // Close modal after successfully edited
-                    var element = "#inventoryAddModal";
-                    closeAltEditorModal(element);
+                    closeAltEditorModal("#inventoryAddModal");
 
                     // Show successful toast
                     window.showSubmitToast("Successfully added.", "#91C714");
 
-                    // Text inputs
+                    // Reset form
                     $('#inventoryAddModal input[type="text"], #inventoryAddModal input[type="number"], #inventoryAddModal input[type="date"]').val('');
-
-                    // Select inputs
                     $('#inventoryAddModal select').val('').trigger('change');
-
-                    // Clear dynamic site rows
                     $('#siteInContainer').empty();
                     $('#siteOutContainer').empty();
-        
+
                     // Reload table
                     $('#inventory_table').DataTable().ajax.reload();
                 },
                 error: function(xhr, status, error) {
-                    // Display the validation error message
                     var response = JSON.parse(xhr.responseText);
                     var error = "Error: " + response.error;
-
-                    // Show fail toast
                     window.showSubmitToast(error, "#D32929");
                 }
             });
         }
+
 
         // Edit Client 
         function editContractor() {
@@ -1038,183 +1100,278 @@
             });
         }
 
-        // Setup the contractors datatable
-        function initStockInventoryDatatable() {
-            const dt = new Date();
-            const formattedDate = `${dt.getFullYear()}${(dt.getMonth() + 1).toString().padStart(2, '0')}${dt.getDate().toString().padStart(2, '0')}`;
-            const formattedTime = `${dt.getHours()}:${dt.getMinutes()}:${dt.getSeconds()}`;
-            const $fileName = `Stock_Inventory_List_${formattedDate}_${formattedTime}`;
+        // // Setup the contractors datatable
+        // function initStockInventoryDatatable() {
+        //     const dt = new Date();
+        //     const formattedDate = `${dt.getFullYear()}${(dt.getMonth() + 1).toString().padStart(2, '0')}${dt.getDate().toString().padStart(2, '0')}`;
+        //     const formattedTime = `${dt.getHours()}:${dt.getMinutes()}:${dt.getSeconds()}`;
+        //     const $fileName = `Stock_Inventory_List_${formattedDate}_${formattedTime}`;
 
-            const table = $('#inventory_table').DataTable({
-                altEditor: true, // Enable altEditor
-                destroy: true,
-                debug: true,
-                processing: true,
-                searching: true,
-                serverSide: true,
-                ordering: true,
-                order: [
-                    [0, 'desc']
-                ],
-                pagingType: 'full_numbers',
-                pageLength: 25,
-                aLengthMenu: [
-                    [25, 50, 75, -1],
-                    [25, 50, 75, "All"]
-                ],
-                iDisplayLength: 25,
-                ajax: {
-                    url: "{{ route('stockInventory.list') }}",
-                    dataType: "json",
-                    type: "POST",
-                    data: function(d) {
-                        d._token = $('meta[name="csrf-token"]').attr('content');
-                        d.company = filterClientCompany;
-                        return d;
-                    },
-                    dataSrc: function(json) {
-                        json.recordsTotal = json.recordsTotal;
-                        json.recordsFiltered = json.recordsFiltered;
-                        return json.data;
+        //     const table = $('#inventory_table').DataTable({
+        //         altEditor: true, // Enable altEditor
+        //         destroy: true,
+        //         debug: true,
+        //         processing: true,
+        //         searching: true,
+        //         serverSide: true,
+        //         ordering: true,
+        //         order: [
+        //             [0, 'desc']
+        //         ],
+        //         pagingType: 'full_numbers',
+        //         pageLength: 25,
+        //         aLengthMenu: [
+        //             [25, 50, 75, -1],
+        //             [25, 50, 75, "All"]
+        //         ],
+        //         iDisplayLength: 25,
+        //         ajax: {
+        //             url: "{{ route('stockInventory.list') }}",
+        //             dataType: "json",
+        //             type: "POST",
+        //             data: function(d) {
+        //                 d._token = $('meta[name="csrf-token"]').attr('content');
+        //                 d.company = filterClientCompany;
+        //                 return d;
+        //             },
+        //             dataSrc: function(json) {
+        //                 json.recordsTotal = json.recordsTotal;
+        //                 json.recordsFiltered = json.recordsFiltered;
+        //                 return json.data;
+        //             }
+        //         },
+        //         dom: "lBfrtip",
+        //         buttons: [{
+        //                 extend: "csv",
+        //                 className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
+        //                 title: $fileName,
+        //                 exportOptions: {
+        //                     columns: ":not(.dt-exclude-export)"
+        //                 },
+        //                 init: function(api, node, config) {
+        //                     $(node).removeClass('dt-button');
+        //                     $(node).removeClass('buttons-html5');
+        //                 },
+        //             },
+        //             {
+        //                 extend: "excel",
+        //                 className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
+        //                 title: $fileName,
+        //                 exportOptions: {
+        //                     columns: ":not(.dt-exclude-export)"
+        //                 },
+        //                 init: function(api, node, config) {
+        //                     $(node).removeClass('dt-button');
+        //                     $(node).removeClass('buttons-html5');
+        //                 },
+        //             },
+        //             {
+        //                 extend: "print",
+        //                 className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
+        //                 title: $fileName,
+        //                 // including printing image
+        //                 exportOptions: {
+        //                     stripHtml: false,
+        //                 },
+        //                 init: function(api, node, config) {
+        //                     $(node).removeClass('dt-button');
+        //                     $(node).removeClass('buttons-html5');
+        //                 },
+        //             },
+        //         ],
+        //         columns: [
+        //             {
+        //                 data: null,
+        //                 name: 'no',
+        //                 orderable: false,
+        //                 searchable: false,
+        //                 render: function (data, type, row, meta) {
+        //                     return meta.row + meta.settings._iDisplayStart + 1;
+        //                 }
+        //             },
+        //             { data: "contractor", name: "contractor" },          // Contractor
+        //             { data: "client_in_name", name: "client_in_name" },  // Client In
+        //             { data: "billboard_in_site", name: "billboard_in_site" }, // Site
+        //             // { data: "billboard_in_type", name: "billboard_in_type" }, // Type
+        //             // { data: "billboard_in_size", name: "billboard_in_size" }, // Size In
+        //             { data: "quantity_in", name: "quantity_in" },        // Quantity In
+        //             { data: "remarks_in", name: "remarks_in" },          // Remarks In
+        //             { data: "date_in", name: "date_in" },                // Date In
+        //             { data: "balance_contractor", name: "balance_contractor" }, // Bal Contractor
+        //             { data: "balance_bgoc", name: "balance_bgoc" },      // Bal BGOC
+        //             { data: "date_out", name: "date_out" },              // Date Out
+        //             { data: "quantity_out", name: "quantity_out" },      // Quantity Out
+        //             // { data: "billboard_out_size", name: "billboard_out_size" }, // Size Out
+        //             // { data: "billboard_out_size", name: "billboard_out_type" }, // type Out
+        //             { data: "billboard_out_site", name: "billboard_out_site" }, // Site Out
+        //             { data: "client_out_name", name: "client_out_name" }, // Client Out
+        //             { data: "remarks_out", name: "remarks_out" },        // Remarks Out
+        //             {
+        //                 data: "id",
+        //                 orderable: false,
+        //                 render: function(data) {
+        //                     return `
+        //                         <div class="flex items-center justify-center space-x-3">
+        //                             <a href="javascript:;" class="text-theme-6" 
+        //                             data-toggle="modal" data-target="#contractorDeleteModal" 
+        //                             id="delete-${data}" title="Delete">
+        //                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" 
+        //                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        //                                     <polyline points="3 6 5 6 21 6"></polyline>
+        //                                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4
+        //                                         a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        //                                     <line x1="10" y1="11" x2="10" y2="17"></line>
+        //                                     <line x1="14" y1="11" x2="14" y2="17"></line>
+        //                                 </svg>
+        //                             </a>
+        //                         </div>`;
+        //                 }
+        //             },
+        //         ],
+
+        //     });
+
+        //     // Add classes to the "dt-buttons" div
+        //     var dtButtonsDiv = document.querySelector(".dt-buttons");
+        //     if (dtButtonsDiv) {
+        //         dtButtonsDiv.classList.add("mt-2");
+        //     }
+
+        //     // Update styling for the filter input
+        //     var filterDiv = document.getElementById("inventory_table_filter");
+        //     if (filterDiv) {
+        //         filterDiv.style.float = "right";
+        //         filterDiv.classList.remove('dataTables_filter');
+
+        //         var inputElement = filterDiv.querySelector("label input");
+        //         if (inputElement) {
+        //             inputElement.classList.add("input", "border", "mt-2", "ml-2", "mr-1", "mb-5");
+        //         }
+        //     }
+
+        //     // Update styling for the info and paginate elements
+        //     var infoDiv = document.getElementById("inventory_table_info");
+        //     var paginateDiv = document.getElementById("inventory_table_paginate");
+
+        //     if (infoDiv) {
+        //         infoDiv.style.float = "left";
+        //         infoDiv.classList.add("mt-5");
+        //     }
+
+        //     if (paginateDiv) {
+        //         paginateDiv.style.float = "right";
+        //         paginateDiv.classList.add("mt-5");
+        //     }
+
+        //     // Update styling for the "client_users_table_length" div and its select element
+        //     var existingDiv = document.getElementById("inventory_table_length");
+        //     if (existingDiv) {
+        //         existingDiv.classList.remove('dataTables_length');
+        //         existingDiv.classList.add('mt-2', 'mb-1');
+
+        //         var existingSelect = existingDiv.querySelector('select');
+        //         if (existingSelect) {
+        //             existingSelect.className = 'input sm:w-auto border';
+        //         }
+        //     }
+
+        //     // Open modal to edit client
+        //     inventoryEditModal();
+        // };
+
+        // stock inventory datatable
+        $('#inventory_table').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: "{{ route('stockInventory.list') }}",
+                type: "POST",
+                data: function (d) {
+                    d._token = "{{ csrf_token() }}";
+                    // add extra filters if needed
+                    d.company = filterClientCompany;
+                    return d;
+                }
+            },
+            columns: [
+                {
+                    data: null,
+                    name: 'no',
+                    orderable: false,
+                    searchable: false,
+                    render: function (data, type, row, meta) {
+                        return meta.row + meta.settings._iDisplayStart + 1;
                     }
                 },
-                dom: "lBfrtip",
-                buttons: [{
-                        extend: "csv",
-                        className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
-                        title: $fileName,
-                        exportOptions: {
-                            columns: ":not(.dt-exclude-export)"
-                        },
-                        init: function(api, node, config) {
-                            $(node).removeClass('dt-button');
-                            $(node).removeClass('buttons-html5');
-                        },
-                    },
-                    {
-                        extend: "excel",
-                        className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
-                        title: $fileName,
-                        exportOptions: {
-                            columns: ":not(.dt-exclude-export)"
-                        },
-                        init: function(api, node, config) {
-                            $(node).removeClass('dt-button');
-                            $(node).removeClass('buttons-html5');
-                        },
-                    },
-                    {
-                        extend: "print",
-                        className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
-                        title: $fileName,
-                        // including printing image
-                        exportOptions: {
-                            stripHtml: false,
-                        },
-                        init: function(api, node, config) {
-                            $(node).removeClass('dt-button');
-                            $(node).removeClass('buttons-html5');
-                        },
-                    },
-                ],
-                columns: [
-                    {
-                        data: null,
-                        name: 'no',
-                        orderable: false,
-                        searchable: false,
-                        render: function (data, type, row, meta) {
-                            return meta.row + meta.settings._iDisplayStart + 1;
+                { data: 'contractor', name: 'contractors.name' }, // Contractor
+                { data: 'client_in_name', name: 'client_companies.name' }, // Client
+                { data: 'site_in', name: 'site_in.name' }, // Site
+                { data: 'quantity_in', name: 'transactions_in.quantity' }, // Quantity In
+                { data: 'remarks_in', name: 'transactions_in.remarks' }, // Remarks In
+                { data: 'date_in', name: 'transactions_in.transaction_date' }, // Date In
+                { data: 'balance_contractor', name: 'stock_inventories.balance_contractor' }, // Bal - Contractor
+                { data: 'balance_bgoc', name: 'stock_inventories.balance_bgoc' }, // Bal - BGOC
+                { data: 'date_out', name: 'transactions_out.transaction_date' }, // Date Out
+                { data: 'remarks_out', name: 'transactions_out.remarks' }, // Remarks Out
+                { data: 'quantity_out', name: 'transactions_out.quantity' }, // Quantity Out
+                { data: 'site_out', name: 'site_out.name' }, // Site Out
+                { data: 'client_out', name: 'client_companies.name' }, // Client Out
+                { data: 'action', name: 'action', orderable: false, searchable: false } // Action
+            ],
+            order: [[0, 'asc']], // sort by No.
+            
+            // 👇 This is where we merge Contractor + Bal-Contractor + Bal-BGOC
+            drawCallback: function(settings) {
+                let api = this.api();
+                let rows = api.rows({ page: 'current' }).nodes();
+                let lastContractor = null;
+                let lastBalanceContractor = null;
+                let lastBalanceBgoc = null;
+                let groupStart = 0;
+
+                api.column(1, { page: 'current' }).data().each(function(contractor, i) {
+                    let balanceContractor = api.cell(i, 7).data();
+                    let balanceBgoc = api.cell(i, 8).data();
+
+                    if (contractor !== lastContractor || balanceContractor !== lastBalanceContractor || balanceBgoc !== lastBalanceBgoc) {
+                        if (i > groupStart) {
+                            let rowCount = i - groupStart;
+                            $('td:eq(1)', rows[groupStart]).attr('rowspan', rowCount);
+                            $('td:eq(7)', rows[groupStart]).attr('rowspan', rowCount);
+                            $('td:eq(8)', rows[groupStart]).attr('rowspan', rowCount);
+
+                            // hide duplicate cells instead of removing
+                            for (let j = groupStart + 1; j < i; j++) {
+                                $('td:eq(1)', rows[j]).css('display', 'none');
+                                $('td:eq(7)', rows[j]).css('display', 'none');
+                                $('td:eq(8)', rows[j]).css('display', 'none');
+                            }
                         }
-                    },
-                    { data: "contractor", name: "contractor" },          // Contractor
-                    { data: "client_in_name", name: "client_in_name" },  // Client In
-                    { data: "billboard_in_type", name: "billboard_in_type" }, // Type
-                    { data: "billboard_in_site", name: "billboard_in_site" }, // Site
-                    { data: "remarks_in", name: "remarks_in" },          // Remarks In
-                    { data: "billboard_in_size", name: "billboard_in_size" }, // Size In
-                    { data: "quantity_in", name: "quantity_in" },        // Quantity In
-                    { data: "date_in", name: "date_in" },                // Date In
-                    { data: "balance_contractor", name: "balance_contractor" }, // Bal Contractor
-                    { data: "balance_bgoc", name: "balance_bgoc" },      // Bal BGOC
-                    { data: "date_out", name: "date_out" },              // Date Out
-                    { data: "quantity_out", name: "quantity_out" },      // Quantity Out
-                    { data: "billboard_out_size", name: "billboard_out_size" }, // Size Out
-                    { data: "client_out_name", name: "client_out_name" }, // Client Out
-                    { data: "billboard_out_site", name: "billboard_out_site" }, // Site Out
-                    { data: "remarks_out", name: "remarks_out" },        // Remarks Out
-                    {
-                        data: "id",
-                        orderable: false,
-                        render: function(data) {
-                            return `
-                                <div class="flex items-center justify-center space-x-3">
-                                    <a href="javascript:;" class="text-theme-6" 
-                                    data-toggle="modal" data-target="#contractorDeleteModal" 
-                                    id="delete-${data}" title="Delete">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" 
-                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <polyline points="3 6 5 6 21 6"></polyline>
-                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4
-                                                a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                                            <line x1="10" y1="11" x2="10" y2="17"></line>
-                                            <line x1="14" y1="11" x2="14" y2="17"></line>
-                                        </svg>
-                                    </a>
-                                </div>`;
-                        }
-                    },
-                ],
+                        groupStart = i;
+                        lastContractor = contractor;
+                        lastBalanceContractor = balanceContractor;
+                        lastBalanceBgoc = balanceBgoc;
+                    }
+                });
 
-            });
+                // handle last group
+                let totalRows = api.rows({ page: 'current' }).data().length;
+                if (groupStart < totalRows) {
+                    let rowCount = totalRows - groupStart;
+                    $('td:eq(1)', rows[groupStart]).attr('rowspan', rowCount);
+                    $('td:eq(7)', rows[groupStart]).attr('rowspan', rowCount);
+                    $('td:eq(8)', rows[groupStart]).attr('rowspan', rowCount);
 
-            // Add classes to the "dt-buttons" div
-            var dtButtonsDiv = document.querySelector(".dt-buttons");
-            if (dtButtonsDiv) {
-                dtButtonsDiv.classList.add("mt-2");
-            }
-
-            // Update styling for the filter input
-            var filterDiv = document.getElementById("inventory_table_filter");
-            if (filterDiv) {
-                filterDiv.style.float = "right";
-                filterDiv.classList.remove('dataTables_filter');
-
-                var inputElement = filterDiv.querySelector("label input");
-                if (inputElement) {
-                    inputElement.classList.add("input", "border", "mt-2", "ml-2", "mr-1", "mb-5");
+                    for (let j = groupStart + 1; j < totalRows; j++) {
+                        $('td:eq(1)', rows[j]).css('display', 'none');
+                        $('td:eq(7)', rows[j]).css('display', 'none');
+                        $('td:eq(8)', rows[j]).css('display', 'none');
+                    }
                 }
             }
 
-            // Update styling for the info and paginate elements
-            var infoDiv = document.getElementById("inventory_table_info");
-            var paginateDiv = document.getElementById("inventory_table_paginate");
+        });
 
-            if (infoDiv) {
-                infoDiv.style.float = "left";
-                infoDiv.classList.add("mt-5");
-            }
-
-            if (paginateDiv) {
-                paginateDiv.style.float = "right";
-                paginateDiv.classList.add("mt-5");
-            }
-
-            // Update styling for the "client_users_table_length" div and its select element
-            var existingDiv = document.getElementById("inventory_table_length");
-            if (existingDiv) {
-                existingDiv.classList.remove('dataTables_length');
-                existingDiv.classList.add('mt-2', 'mb-1');
-
-                var existingSelect = existingDiv.querySelector('select');
-                if (existingSelect) {
-                    existingSelect.className = 'input sm:w-auto border';
-                }
-            }
-
-            // Open modal to edit client
-            inventoryEditModal();
-        };
 
         // Open modal to edit client
         function inventoryEditModal() {
@@ -1325,8 +1482,8 @@
 
         // When "filterClientButton" button is clicked, initiate filterClientCompany
         function filterClientButton() {
-            filterClientCompany = document.getElementById("inputCompanyName").value;
-            initStockInventoryDatatable(filterClientCompany);
+            filterClientCompany = document.getElementById("fliterClient").value;
+            // initStockInventoryDatatable(filterClientCompany);
         };
 
         // When page first loads, load tables

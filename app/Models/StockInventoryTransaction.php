@@ -5,21 +5,26 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class StockInventorySite extends Model
+class StockInventoryTransaction extends Model
 {
     use HasFactory;
 
-    protected $table = 'stock_inventory_sites';
+    // Laravel automatically maps to 'stock_inventory_transactions'
+    // so no need for protected $table unless you want to override.
 
     protected $fillable = [
         'stock_inventory_id',
         'billboard_id',
+        'client_id',
         'type',
         'quantity',
+        'transaction_date',
+        'remarks',
+        'created_by',
     ];
 
     // Relationships
-    public function inventory()
+    public function stockInventory()
     {
         return $this->belongsTo(StockInventory::class, 'stock_inventory_id');
     }
@@ -29,8 +34,13 @@ class StockInventorySite extends Model
         return $this->belongsTo(Billboard::class, 'billboard_id');
     }
 
-    public function history()
+    public function client()
     {
-        return $this->hasMany(StockInventorySiteHistory::class, 'stock_inventory_site_id');
+        return $this->belongsTo(ClientCompany::class, 'client_id');
+    }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

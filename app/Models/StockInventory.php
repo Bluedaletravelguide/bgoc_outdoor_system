@@ -9,16 +9,10 @@ class StockInventory extends Model
 {
     use HasFactory;
 
-    protected $table = 'stock_inventory';
+    // No need for $table because Laravel knows this is 'stock_inventories'
 
     protected $fillable = [
-        'contractor_pic',
-        'client_in',
-        'client_out',
-        'date_in',
-        'date_out',
-        'remarks_in',
-        'remarks_out',
+        'contractor_id',
         'balance_contractor',
         'balance_bgoc',
     ];
@@ -26,26 +20,16 @@ class StockInventory extends Model
     // Relationships
     public function contractor()
     {
-        return $this->belongsTo(Contractor::class, 'contractor_pic');
+        return $this->belongsTo(Contractor::class, 'contractor_id');
     }
 
-    public function clientIn()
+    public function transactions()
     {
-        return $this->belongsTo(ClientCompany::class, 'client_in');
+        return $this->hasMany(StockInventoryTransaction::class, 'stock_inventory_id');
     }
 
-    public function clientOut()
-    {
-        return $this->belongsTo(ClientCompany::class, 'client_out');
-    }
-
-    public function sites()
-    {
-        return $this->hasMany(StockInventorySite::class, 'stock_inventory_id');
-    }
-
-    public function history()
-    {
-        return $this->hasMany(StockInventoryHistory::class, 'stock_inventory_id');
-    }
+    // public function history()
+    // {
+    //     return $this->hasMany(StockInventoryHistory::class, 'stock_inventory_id');
+    // }
 }

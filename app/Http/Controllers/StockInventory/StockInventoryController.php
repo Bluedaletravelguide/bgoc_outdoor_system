@@ -72,61 +72,72 @@ class StockInventoryController extends Controller
     public function list(Request $request)
     {
         $columns = [
-            0  => 'client_in.name',
-            1  => 'billboard_in.site_number',
-            2  => 'billboard_in.type',
-            3  => 'billboard_in.size',
-            4  => 'stock_inventory.balance_contractor',
-            5  => 'stock_inventory.balance_bgoc',
-            6  => 'stock_inventory.remarks_in',
-            7  => 'in_site.quantity',
-            8  => 'stock_inventory.date_in',
-            9  => 'client_out.name',
-            10 => 'billboard_out.site_number',
-            11 => 'stock_inventory.remarks_out',
-            12 => 'out_site.quantity',
-            13 => 'stock_inventory.date_out',
-            14 => 'contractors.company_name',
-            15 => 'stock_inventory.id',
+            0  => 'contractors.name',
+            1  => 'billboards.site_number',
+            2  => 'billboards.type',
+            3  => 'billboards.size',
+            4  => 'stock_inventories.balance_contractor',
+            5  => 'stock_inventories.balance_bgoc',
+            6  => 'transactions_in.remarks',
+            7  => 'transactions_in.quantity',
+            8  => 'transactions_in.transaction_date',
+            9  => 'transactions_out.remarks',
+            10 => 'transactions_out.quantity',
+            11 => 'transactions_out.transaction_date',
+            12 => 'contractors.company_name',
+            13 => 'stock_inventories.id',
         ];
 
         $limit = $request->input('length');
         $start = $request->input('start');
         $orderColumnIndex = $request->input('order.0.column');
-        $orderColumnName = $columns[$orderColumnIndex] ?? 'stock_inventory.id';
+        $orderColumnName = $columns[$orderColumnIndex] ?? 'stock_inventories.id';
         $orderDirection = $request->input('order.0.dir', 'asc');
 
         // Base query with joins
         $query = StockInventory::select(
-                'stock_inventory.*',
-                'client_in.name as client_in_name',
-                'client_out.name as client_out_name',
+                'stock_inventories.*',
+                'transactions_in.quantity as quantity_in',
+                'transactions_in.transaction_date as date_in',
+                'transactions_in.remarks as remarks_in',
                 'billboard_in.site_number as billboard_in_site',
                 'billboard_in.type as billboard_in_type',
                 'billboard_in.size as billboard_in_size',
+                'client_in.name as client_in_name',
+                'site_in.name as site_in',
+
+                'transactions_out.quantity as quantity_out',
+                'transactions_out.transaction_date as date_out',
+                'transactions_out.remarks as remarks_out',
                 'billboard_out.site_number as billboard_out_site',
                 'billboard_out.size as billboard_out_size',
-                'in_site.quantity as quantity_in',
-                'out_site.quantity as quantity_out',
+                'client_out.name as client_out_name',
+                'site_out.name as site_out',
+
                 'contractors.company_name as contractor_company',
                 'contractors.name as contractor_name',
                 'contractors.phone as contractor_phone'
             )
-            ->leftJoin('client_companies as client_in', 'client_in.id', '=', 'stock_inventory.client_in')
-            ->leftJoin('client_companies as client_out', 'client_out.id', '=', 'stock_inventory.client_out')
-            // Join for IN sites
-            ->leftJoin('stock_inventory_sites as in_site', function($join) {
-                $join->on('in_site.stock_inventory_id', '=', 'stock_inventory.id')
-                    ->where('in_site.type', '=', 'in');
+            // IN transactions
+            ->leftJoin('stock_inventory_transactions as transactions_in', function($join) {
+                $join->on('transactions_in.stock_inventory_id', '=', 'stock_inventories.id')
+                    ->where('transactions_in.type', '=', 'in');
             })
-            ->leftJoin('billboards as billboard_in', 'billboard_in.id', '=', 'in_site.billboard_id')
-            // Join for OUT sites
-            ->leftJoin('stock_inventory_sites as out_site', function($join) {
-                $join->on('out_site.stock_inventory_id', '=', 'stock_inventory.id')
-                    ->where('out_site.type', '=', 'out');
+            ->leftJoin('billboards as billboard_in', 'billboard_in.id', '=', 'transactions_in.billboard_id')
+            ->leftJoin('locations as site_in', 'site_in.id', '=', 'transactions_in.billboard_id')
+            ->leftJoin('client_companies as client_in', 'client_in.id', '=', 'transactions_in.client_id')
+
+            // OUT transactions
+            ->leftJoin('stock_inventory_transactions as transactions_out', function($join) {
+                $join->on('transactions_out.stock_inventory_id', '=', 'stock_inventories.id')
+                    ->where('transactions_out.type', '=', 'out');
             })
-            ->leftJoin('billboards as billboard_out', 'billboard_out.id', '=', 'out_site.billboard_id')
-            ->leftJoin('contractors', 'contractors.id', '=', 'stock_inventory.contractor_pic')
+            ->leftJoin('billboards as billboard_out', 'billboard_out.id', '=', 'transactions_out.billboard_id')
+            ->leftJoin('locations as site_out', 'site_out.id', '=', 'transactions_out.billboard_id')
+            ->leftJoin('client_companies as client_out', 'client_out.id', '=', 'transactions_out.client_id')
+
+            // Contractor
+            ->leftJoin('contractors', 'contractors.id', '=', 'stock_inventories.contractor_id')
             ->orderBy($orderColumnName, $orderDirection);
 
         $totalData = $query->count();
@@ -141,8 +152,8 @@ class StockInventoryController extends Controller
                 ->orWhere('billboard_in.type', 'LIKE', "%{$searchValue}%")
                 ->orWhere('billboard_in.size', 'LIKE', "%{$searchValue}%")
                 ->orWhere('billboard_out.site_number', 'LIKE', "%{$searchValue}%")
-                ->orWhere('stock_inventory.remarks_in', 'LIKE', "%{$searchValue}%")
-                ->orWhere('stock_inventory.remarks_out', 'LIKE', "%{$searchValue}%")
+                ->orWhere('transactions_in.remarks', 'LIKE', "%{$searchValue}%")
+                ->orWhere('transactions_out.remarks', 'LIKE', "%{$searchValue}%")
                 ->orWhere('contractors.company_name', 'LIKE', "%{$searchValue}%")
                 ->orWhere('contractors.name', 'LIKE', "%{$searchValue}%")
                 ->orWhere('contractors.phone', 'LIKE', "%{$searchValue}%");
@@ -158,6 +169,7 @@ class StockInventoryController extends Controller
             $data[] = [
                 'client_in_name'     => $d->client_in_name,
                 'billboard_in_site'  => $d->billboard_in_site,
+                'site_in'            => $d->site_in,
                 'billboard_in_type'  => $d->billboard_in_type,
                 'billboard_in_size'  => $d->billboard_in_size,
                 'balance_contractor' => $d->balance_contractor,
@@ -165,17 +177,22 @@ class StockInventoryController extends Controller
                 'remarks_in'         => $d->remarks_in,
                 'quantity_in'        => $d->quantity_in,
                 'date_in'            => $d->date_in ? Carbon::parse($d->date_in)->format('d/m/y') : null,
+
                 'client_out_name'    => $d->client_out_name,
                 'billboard_out_site' => $d->billboard_out_site,
+                'site_out'           => $d->site_out,
                 'billboard_out_size' => $d->billboard_out_size,
                 'remarks_out'        => $d->remarks_out,
                 'quantity_out'       => $d->quantity_out,
                 'date_out'           => $d->date_out ? Carbon::parse($d->date_out)->format('d/m/y') : null,
+
                 'contractor'         => $d->contractor_company . ' (' . $d->contractor_name . ')',
                 'contractor_phone'   => $d->contractor_phone,
                 'id'                 => $d->id,
             ];
         }
+
+        logger('data: ' , $data);
 
         return response()->json([
             "draw"            => intval($request->input('draw')),
@@ -186,96 +203,156 @@ class StockInventoryController extends Controller
     }
 
 
+
     /**
      * Create client.
      */
+    // public function create(Request $request)
+    // {
+    //     logger('data masuk: ', $request->all());
+
+    //     $validated = Validator::make($request->all(), [
+    //         'contractor_id'    => 'required|exists:contractors,id',
+    //         'remarks_in'       => 'nullable|string',
+    //         'remarks_out'      => 'nullable|string',
+    //         'bal_contractor'   => 'nullable|integer',
+    //         'bal_bgoc'         => 'nullable|integer',
+    //         'sites_in'         => 'nullable|array',
+    //         'sites_in.*.id'    => 'nullable|exists:billboards,id',
+    //         'sites_in.*.qty'   => 'nullable|integer|min:0',
+    //         'sites_in.*.client_id' => 'nullable|exists:client_companies,id',
+    //         'sites_out'        => 'nullable|array',
+    //         'sites_out.*.id'   => 'nullable|exists:billboards,id',
+    //         'sites_out.*.qty'  => 'nullable|integer|min:0',
+    //         'sites_out.*.client_id' => 'nullable|exists:client_companies,id',
+    //     ])->validate();
+
+    //     // 1️⃣ Create inventory header
+    //     $inventory = StockInventory::create([
+    //         'contractor_id'      => $validated['contractor_id'],
+    //         'balance_contractor' => $validated['bal_contractor'] ?? 0,
+    //         'balance_bgoc'       => $validated['bal_bgoc'] ?? 0,
+    //     ]);
+
+    //     // 2️⃣ Create IN transactions
+    //     if (!empty($validated['sites_in'])) {
+    //         foreach ($validated['sites_in'] as $site) {
+    //             $inventory->transactions()->create([
+    //                 'billboard_id'     => $site['id'],
+    //                 'client_id'        => $site['client_id'] ?? null, // from JS
+    //                 'type'             => 'in',
+    //                 'quantity'         => $site['qty'] ?? 0,
+    //                 'transaction_date' => now(),
+    //                 'remarks'          => $validated['remarks_in'] ?? null,
+    //                 'created_by'       => auth()->id(),
+    //             ]);
+    //         }
+    //     }
+
+    //     // 3️⃣ Create OUT transactions
+    //     if (!empty($validated['sites_out'])) {
+    //         foreach ($validated['sites_out'] as $site) {
+    //             $inventory->transactions()->create([
+    //                 'billboard_id'     => $site['id'],
+    //                 'client_id'        => $site['client_id'] ?? null, // from JS
+    //                 'type'             => 'out',
+    //                 'quantity'         => $site['qty'] ?? 0,
+    //                 'transaction_date' => now(),
+    //                 'remarks'          => $validated['remarks_out'] ?? null,
+    //                 'created_by'       => auth()->id(),
+    //             ]);
+    //         }
+    //     }
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Inventory created successfully.',
+    //         'data'    => $inventory->load('transactions'),
+    //     ]);
+    // }
+
     public function create(Request $request)
     {
+        logger('data masuk: ', $request->all());
 
-        // try {
+        // 1️⃣ Validation
+        $validated = Validator::make($request->all(), [
+            'contractor_id'    => 'required|exists:contractors,id',
+            'remarks_in'       => 'nullable|string',
+            'remarks_out'      => 'nullable|string',
+            'bal_contractor'   => 'nullable|integer',
+            'bal_bgoc'         => 'nullable|integer',
+            'sites_in'         => 'nullable|array',
+            'sites_in.*.id'    => 'nullable|exists:billboards,id',
+            'sites_in.*.qty'   => 'nullable|integer|min:0',
+            'sites_in.*.client_id' => 'nullable|exists:client_companies,id',
+            'date_in'          => 'nullable|date',
+            'date_out'         => 'nullable|date',
+            'sites_out'        => 'nullable|array',
+            'sites_out.*.id'   => 'nullable|exists:billboards,id',
+            'sites_out.*.qty'  => 'nullable|integer|min:0',
+            'sites_out.*.client_id' => 'nullable|exists:client_companies,id',
+        ])->validate();
 
-            $requestData = $request->json()->all();
+        // 2️⃣ Wrap in DB transaction to ensure atomic save
+        DB::transaction(function() use ($validated, &$inventory) {
 
-            logger($requestData);
+            // Find existing inventory or create new
+            $inventory = StockInventory::firstOrNew(
+                ['contractor_id' => $validated['contractor_id']]
+            );
 
-            // ✅ Validate request
-            $validated = Validator::make($requestData, [
-                'contractor_id' => 'required|exists:contractors,id',
-                'date_in'       => 'nullable|date',
-                'date_out'      => 'nullable|date|after_or_equal:date_in',
-                'client_in'     => 'nullable|integer|exists:client_companies,id',
-                'client_out'    => 'nullable|integer|exists:client_companies,id',
-                'remarks_in'    => 'nullable|string',
-                'remarks_out'   => 'nullable|string',
-                'bal_contractor' => 'nullable|integer',
-                'bal_bgoc'       => 'nullable|integer',
+            // Increment balances
+            $inventory->balance_contractor = ($inventory->balance_contractor ?? 0) + ($validated['bal_contractor'] ?? 0);
+            $inventory->balance_bgoc       = ($inventory->balance_bgoc ?? 0) + ($validated['bal_bgoc'] ?? 0);
+            $inventory->save();
 
-                // Sites IN
-                'sites_in'       => 'nullable|array',
-                'sites_in.*.id'  => 'nullable|exists:billboards,id',
-                'sites_in.*.qty' => 'nullable|integer|min:0',
+            $userId = auth()->id() ?? 1; // fallback user ID if auth not set
 
-                // Sites OUT
-                'sites_out'       => 'nullable|array',
-                'sites_out.*.id'  => 'nullable|exists:billboards,id',
-                'sites_out.*.qty' => 'nullable|integer|min:0',
-            ])->validate();
-
-            // ✅ Save main stock inventory record
-            $inventory = StockInventory::create([
-                'contractor_pic'     => $request->contractor_id,
-                'client_in'          => $request->client_in,
-                'client_out'         => $request->client_out,
-                'date_in'            => $request->date_in,
-                'date_out'           => $request->date_out,
-                'remarks_in'         => $request->remarks_in,
-                'remarks_out'        => $request->remarks_out,
-                'balance_contractor' => $request->bal_contractor,
-                'balance_bgoc'       => $request->bal_bgoc,
-            ]);
-
-            logger("Inventory created with ID: " . $inventory->id);
-            logger("Sites IN: " . json_encode($validated['sites_in'] ?? []));
-            logger("Sites OUT: " . json_encode($validated['sites_out'] ?? []));
-
-            // Save related sites (IN)
+            // 3️⃣ Add IN transactions
             if (!empty($validated['sites_in'])) {
                 foreach ($validated['sites_in'] as $site) {
-                    if (empty($site['id'])) continue;
-                    $inventory->sites()->create([
-                        'billboard_id'      => $site['id'],
-                        'type'              => 'in',
-                        'quantity'          => $site['qty'] ?? 0,
-                        // 'stock_inventory_id' will be auto-filled because of $inventory->sites()->create()
+                    $inventory->transactions()->create([
+                        'billboard_id'     => $site['id'],
+                        'client_id'        => $site['client_id'] ?? null,
+                        'type'             => 'in',
+                        'quantity'         => $site['qty'] ?? 0,
+                        'transaction_date' => isset($validated['date_in'])
+                                                ? Carbon::parse($validated['date_in'])->format('Y-m-d H:i:s')
+                                                : now(),
+                        'remarks'          => $validated['remarks_in'] ?? null,
+                        'created_by'       => $userId,
                     ]);
                 }
             }
 
-            // Save related sites (OUT)
+            // 4️⃣ Add OUT transactions
             if (!empty($validated['sites_out'])) {
                 foreach ($validated['sites_out'] as $site) {
-                    if (empty($site['id'])) continue;
-
-                    $inventory->sites()->create([
-                        'billboard_id'      => $site['id'],
-                        'type'              => 'out',
-                        'quantity'          => $site['qty'] ?? 0,
+                    $inventory->transactions()->create([
+                        'billboard_id'     => $site['id'],
+                        'client_id'        => $site['client_id'] ?? null,
+                        'type'             => 'out',
+                        'quantity'         => $site['qty'] ?? 0,
+                        'transaction_date' => isset($validated['date_out'])
+                                                ? Carbon::parse($validated['date_out'])->format('Y-m-d H:i:s')
+                                                : now(),
+                        'remarks'          => $validated['remarks_out'] ?? null,
+                        'created_by'       => $userId,
                     ]);
                 }
             }
+        });
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Inventory created successfully.',
-                'data'    => $inventory->load('sites'),
-            ]);
-
-        // } catch (\Exception $e) {
-        //     return response()->json([
-        //         'error' => $e->getMessage(),
-        //     ], 500);
-        // }
+        // 5️⃣ Return response with transactions
+        return response()->json([
+            'success' => true,
+            'message' => 'Inventory saved successfully.',
+            'data'    => $inventory->load('transactions'),
+        ]);
     }
+
+
 
 
 
@@ -344,7 +421,7 @@ class StockInventoryController extends Controller
     //         // Update client company
     //         StockInventory::where('id', $id)
     //             ->update([
-    //                 'contractor_pic'        => $vendor,
+    //                 'contractor_id'        => $vendor,
     //                 'billboard_in_id'       => $billboard_in,
     //                 'billboard_out_id'      => $billboard_out,
     //                 'company_in_id'         => $client_in,
@@ -388,14 +465,12 @@ class StockInventoryController extends Controller
 
 
     /**
-     * Delete client.
+     * Delete stock inventory.
      */
     public function delete(Request $request)
     {
 
         $id = $request->id;
-
-        logger('delete: ' . $id);
 
         // Validate fields
         $validator = Validator::make(
@@ -422,7 +497,7 @@ class StockInventoryController extends Controller
             DB::beginTransaction();
 
             // Update stus to 0 as deleted (soft delete)
-            Contractor::where('id', $id)->delete();
+            StockInventory::where('id', $id)->delete();
 
             // Ensure all queries successfully executed, commit the db changes
             DB::commit();
