@@ -380,10 +380,10 @@
             <!-- <button type="button" onclick="closeInventoryModal()">✖</button> -->
         </div>
 
-        <form>
+        <form id="inventoryEditForm">
             <div class="mb-4">
                 <label class="block font-medium">Contractor</label>
-                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editContractorName">
+                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editContractorName" disabled>
                         <option selected value="">Select an option</option>
                         @foreach ($contractors as $contractor)
                             <option value="{{ $contractor->id }}">{{ $contractor->name }}</option>
@@ -398,15 +398,23 @@
 
                     <div class="mb-3">
                         <label class="block">Bal - Contractor</label>
-                        <input type="number" class="input w-full border mt-1" readonly>
+                        <input type="number" class="input w-full border mt-1" id="editBalanceContractor" name="balance_contractor" readonly>
                     </div>
                     <div class="mb-3">
                         <label class="block">Date In</label>
-                        <input type="date" class="input w-full border mt-1">
+                        <input type="date" class="input w-full border mt-1" id="editDateIn">
                     </div>
                     <div class="mb-3">
+                        <label class="block">Remarks</label>
+                        <input type="text" class="input w-full border mt-1" id="editRemarksIn">
+                    </div>
+                    <div class="flex items-center py-3 border-b border-gray-200">
+                        <h2 class="font-medium text-base mr-auto">Sites</h2>
+                    </div>
+
+                    <div class="mb-3">
                         <label class="block">Client</label>
-                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editClientIn">
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border select2" id="editClientIn">
                         <option selected value="">Select an option</option>
                         @foreach ($clientcompany as $clientcomp)
                             <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
@@ -414,50 +422,31 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="block">Remarks</label>
-                        <input type="text" class="input w-full border mt-1">
+                        <label class="block">Site</label>
+                        <select class="input w-full border mt-2 select2" id="editBillboardIn">
+                            <option selected value="">Select an option</option>
+                            @foreach ($billboards as $billboard)
+                                <option 
+                                    value="{{ $billboard->id }}" 
+                                    data-type="{{ $billboard->type }}" 
+                                    data-size="{{ $billboard->size }}">
+                                    {{ $billboard->site_number }} - {{ $billboard->name }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
-                    <div class="flex items-center py-3 border-b border-gray-200">
-                        <h2 class="font-medium text-base mr-auto">Sites</h2>
+                    <div class="mb-3">
+                        <label class="block">Type</label>
+                        <input type="text" class="input w-full border mt-1" id="editTypeIn" readonly>
                     </div>
-
-                    <div id="siteInEditContainer">
-                        <div class="siteInEdit">
-                            <div class="mb-3">
-                                <label class="block">Site</label>
-                                <select class="input w-full border mt-2 select2" id="inputBillboardInEdit" name="sites_in_edit[]">
-                                    <option selected value="">Select an option</option>
-                                    @foreach ($billboards as $billboard)
-                                        <option 
-                                            value="{{ $billboard->id }}" 
-                                            data-type="{{ $billboard->type }}" 
-                                            data-size="{{ $billboard->size }}">
-                                            {{ $billboard->site_number }} - {{ $billboard->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="block">Type</label>
-                                <input type="text" class="input w-full border mt-1" name="types_in_edit[]" readonly>
-                            </div>
-                            <div class="mb-3">
-                                <label class="block">Size</label>
-                                <input type="text" class="input w-full border mt-1" name="sizes_in_edit[]" readonly>
-                            </div>
-                            <div class="mb-3">
-                                <label class="block"><strong>Quantity In</strong></label>
-                                <input type="number" class="input w-full border mt-1" name="qtys_in_edit[]">
-                            </div>
-                            <div class="mb-3">
-                                <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteInEdit(this)">
-                                    Remove
-                                </a>
-                            </div>
-                        </div>
+                    <div class="mb-3">
+                        <label class="block">Size</label>
+                        <input type="text" class="input w-full border mt-1" id="editSizeIn" readonly>
                     </div>
-
-                    <button type="button" onclick="siteInEditAdd()" class="bg-blue-600 text-white px-4 py-2 rounded">Add Site</button>
+                    <div class="mb-3">
+                        <label class="block"><strong>Quantity In</strong></label>
+                        <input type="number" class="input w-full border mt-1" id="editQtyIn">
+                    </div>
                 </div>
 
                 <!-- RIGHT COLUMN: OUT INVENTORY -->
@@ -466,16 +455,25 @@
 
                     <div class="mb-3">
                         <label class="block">Bal - BGOC</label>
-                        <input type="number" class="input w-full border mt-1" readonly>
+                        <input type="number" class="input w-full border mt-1" id="editBalanceBgoc" readonly>
                     </div>
 
                     <div class="mb-3">
                         <label class="block">Date Out</label>
-                        <input type="date" class="input w-full border mt-1">
+                        <input type="date" class="input w-full border mt-1" id="editDateOut">
                     </div>
                     <div class="mb-3">
+                        <label class="block">Remarks</label>
+                        <input type="text" class="input w-full border mt-1" id="editRemarksOut">
+                    </div>
+                    <div class="flex items-center py-3 border-b border-gray-200">
+                        <h2 class="font-medium text-base mr-auto">Sites</h2>
+                    </div>
+
+
+                    <div class="mb-3">
                         <label class="block">Client</label>
-                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editClientOut">
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border select2" id="editClientOut">
                         <option selected value="">Select an option</option>
                         @foreach ($clientcompany as $clientcomp)
                             <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
@@ -483,50 +481,32 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="block">Remarks</label>
-                        <input type="text" class="input w-full border mt-1">
+                        <label class="block">Site</label>
+                        <select class="input w-full border mt-2 select2" id="editBillboardOut">
+                            <option selected value="">Select an option</option>
+                            @foreach ($billboards as $billboard)
+                                <option 
+                                    value="{{ $billboard->id }}" 
+                                    data-type="{{ $billboard->type }}" 
+                                    data-size="{{ $billboard->size }}">
+                                    {{ $billboard->site_number }} - {{ $billboard->name }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
-                    <div class="flex items-center py-3 border-b border-gray-200">
-                        <h2 class="font-medium text-base mr-auto">Sites</h2>
+                    <div class="mb-3">
+                        <label class="block">Type</label>
+                        <input type="text" class="input w-full border mt-1" id="editTypeOut" readonly>
                     </div>
-
-                    <div id="siteOutEditContainer">
-                        <div class="siteOutEdit">
-                            <div class="mb-3">
-                                <label class="block">Site</label>
-                                <select class="input w-full border mt-2 select2" id="inputBillboardOutEdit" name="sites_out_edit[]">
-                                    <option selected value="">Select an option</option>
-                                    @foreach ($billboards as $billboard)
-                                        <option 
-                                            value="{{ $billboard->id }}" 
-                                            data-type="{{ $billboard->type }}" 
-                                            data-size="{{ $billboard->size }}">
-                                            {{ $billboard->site_number }} - {{ $billboard->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="block">Type</label>
-                                <input type="text" class="input w-full border mt-1" name="types_out_edit[]" readonly>
-                            </div>
-                            <div class="mb-3">
-                                <label class="block">Size</label>
-                                <input type="text" class="input w-full border mt-1" name="sizes_out_edit[]" readonly>
-                            </div>
-                            <div class="mb-3">
-                                <label class="block"><strong>Quantity Out</strong></label>
-                                <input type="number" class="input w-full border mt-1" name="qtys_out_edit[]">
-                            </div>
-                            <div class="mb-3">
-                                <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteOutEdit(this)">
-                                    Remove
-                                </a>
-                            </div>
-                        </div>
+                    <div class="mb-3">
+                        <label class="block">Size</label>
+                        <input type="text" class="input w-full border mt-1" id="editSizeOut" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="block"><strong>Quantity Out</strong></label>
+                        <input type="number" class="input w-full border mt-1" id="editQtyOut">
                     </div>
 
-                    <button type="button" onclick="siteOutEditAdd()" class="bg-blue-600 text-white px-4 py-2 rounded">Add Site</button>
                     
                 </div>
             </div>
@@ -541,7 +521,7 @@
 <!-- END: Inventory Edit Modal -->
 
 <!-- BEGIN: Inventory Delete Modal -->
-<div class="modal" id="contractorDeleteModal">
+<div class="modal" id="inventoryDeleteModal">
     <div class="modal__content">
         <div class="p-5 text-center"> <i data-feather="x-circle" class="w-16 h-16 text-theme-6 mx-auto mt-3"></i>
             <div class="text-3xl mt-5">Are you sure?</div>
@@ -549,7 +529,7 @@
         </div>
         <div class="px-5 pb-8 text-center">
             <button type="button" data-dismiss="modal" class="button w-24 border text-gray-700 dark:border-dark-5 dark:text-gray-300 mr-1">Cancel</button>
-            <button type="button" class="button w-24 bg-theme-6 text-white" id="contractorDeleteButton">Delete</button>
+            <button type="button" class="button w-24 bg-theme-6 text-white" id="inventoryDeleteButton">Delete</button>
         </div>
     </div>
 </div>
@@ -687,104 +667,6 @@
         updateTotalOut();
     }
 
-    // Add In Site (Edit)
-    function siteInEditAdd() {
-        let html = `
-            <div class="siteInEdit">
-                <div class="mb-3">
-                    <label class="block">Site</label>
-                    <select class="input w-full border mt-2 select2" name="sites_in_edit[]">
-                        <option selected value="">Select an option</option>
-                        @foreach ($billboards as $billboard)
-                            <option 
-                                value="{{ $billboard->id }}" 
-                                data-type="{{ $billboard->type }}" 
-                                data-size="{{ $billboard->size }}">
-                                {{ $billboard->site_number }} - {{ $billboard->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="block">Type</label>
-                    <input type="text" class="input w-full border mt-1" name="types_in_edit[]" readonly>
-                </div>
-                <div class="mb-3">
-                    <label class="block">Size</label>
-                    <input type="text" class="input w-full border mt-1" name="sizes_in_edit[]" readonly>
-                </div>
-                <div class="mb-3">
-                    <label class="block"><strong>Quantity In</strong></label>
-                    <input type="number" class="input w-full border mt-1" name="qtys_in_edit[]">
-                </div>
-                <div class="mb-3">
-                    <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteInEdit(this)">
-                        Remove
-                    </a>
-                </div>
-            </div>`;
-        
-        $("#siteInEditContainer").append(html);
-
-        // Re-init select2
-        $("#siteInEditContainer .select2").select2({
-            width: '100%'
-        });
-    }
-
-    function removeSiteInEdit(el) {
-        el.closest(".siteInEdit").remove();
-    }
-
-    // Add Out Site (Edit)
-    function siteOutEditAdd() {
-        let html = `
-            <div class="siteOutEdit">
-                <div class="mb-3">
-                    <label class="block">Site</label>
-                    <select class="input w-full border mt-2 select2" name="sites_out_edit[]">
-                        <option selected value="">Select an option</option>
-                        @foreach ($billboards as $billboard)
-                            <option 
-                                value="{{ $billboard->id }}" 
-                                data-type="{{ $billboard->type }}" 
-                                data-size="{{ $billboard->size }}">
-                                {{ $billboard->site_number }} - {{ $billboard->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="block">Type</label>
-                    <input type="text" class="input w-full border mt-1" name="types_out_edit[]" readonly>
-                </div>
-                <div class="mb-3">
-                    <label class="block">Size</label>
-                    <input type="text" class="input w-full border mt-1" name="sizes_out_edit[]" readonly>
-                </div>
-                <div class="mb-3">
-                    <label class="block"><strong>Quantity Out</strong></label>
-                    <input type="number" class="input w-full border mt-1" name="qtys_out_edit[]">
-                </div>
-                <div class="mb-3">
-                    <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteOutEdit(this)">
-                        Remove
-                    </a>
-                </div>
-            </div>`;
-
-        $("#siteOutEditContainer").append(html);
-
-        // Re-init select2
-        $("#siteOutEditContainer .select2").select2({
-            width: '100%'
-        });
-    }
-
-    function removeSiteOutEdit(el) {
-        el.closest(".siteOutEdit").remove();
-    }
-
     // Handle auto-fill Type & Size for ADD modal
     $(document).on('change', '#siteInContainer .select2, #siteOutContainer .select2', function() {
         let selected = $(this).find(':selected');
@@ -795,17 +677,6 @@
         let row = $(this).closest('.siteIn, .siteOut');
         row.find('input[name="types_in[]"], input[name="types_out[]"]').val(type);
         row.find('input[name="sizes_in[]"], input[name="sizes_out[]"]').val(size);
-    });
-
-    // Handle auto-fill Type & Size for EDIT modal
-    $(document).on('change', '#siteInEditContainer .select2, #siteOutEditContainer .select2', function() {
-        let selected = $(this).find(':selected');
-        let type = selected.data('type') || '';
-        let size = selected.data('size') || '';
-
-        let row = $(this).closest('.siteInEdit, .siteOutEdit');
-        row.find('input[name="types_in_edit[]"], input[name="types_out_edit[]"]').val(type);
-        row.find('input[name="sizes_in_edit[]"], input[name="sizes_out_edit[]"]').val(size);
     });
 
     // Function to calculate total In
@@ -837,78 +708,56 @@
         updateTotalOut();
     });
 
-    function openInventoryEditModal(inventoryId) {
-    $.get(`/stock-inventory/${inventoryId}/edit`, function(res) {
-        const inventory = res.inventory;
+    // // Function to update total IN for edit modal
+    // function updateTotalInEdit() {
+    //     let val = parseInt(document.getElementById("editQtyIn").value) || 0;
+    //     document.getElementById("editBalanceContractor").value = val;
+    // }
 
-        // Set main fields
-        $('#editContractorName').val(inventory.contractor_pic).trigger('change');
-        $('#editClientIn').val(inventory.client_in).trigger('change');
-        $('#editClientOut').val(inventory.client_out).trigger('change');
-        $('#siteInEditContainer').empty();
-        $('#siteOutEditContainer').empty();
+    // // Function to update total OUT for edit modal
+    // function updateTotalOutEdit() {
+    //     let val = parseInt(document.getElementById("editQtyOut").value) || 0;
+    //     document.getElementById("editBalanceBgoc").value = val;
+    // }
 
-        // Add IN sites
-        res.sites_in.forEach(site => {
-            const row = `
-                <div class="siteInEdit">
-                    <div class="mb-3">
-                        <label>Site</label>
-                        <select class="input w-full border mt-2 select2" name="sites_in_edit[]">
-                            <option value="${site.billboard_id}" selected>${site.billboard.site_number} - ${site.billboard.name}</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label>Type</label>
-                        <input type="text" class="input w-full border mt-1" name="types_in_edit[]" value="${site.type}" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label>Size</label>
-                        <input type="text" class="input w-full border mt-1" name="sizes_in_edit[]" value="${site.billboard.size}" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label>Quantity</label>
-                        <input type="number" class="input w-full border mt-1" name="qtys_in_edit[]" value="${site.quantity}">
-                    </div>
-                    <div class="mb-3">
-                        <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteInEdit(this)">Remove</a>
-                    </div>
-                </div>`;
-            $('#siteInEditContainer').append(row);
+    // // Attach events when typing in Quantity fields
+    // document.getElementById("editQtyIn").addEventListener("input", updateTotalInEdit);
+    // document.getElementById("editQtyOut").addEventListener("input", updateTotalOutEdit);
+
+    // // Initialize totals when modal opens
+    // function initEditTotals() {
+    //     updateTotalInEdit();
+    //     updateTotalOutEdit();
+    // }
+
+    // Update total IN
+    function updateTotalInEdit() {
+        let total = 0;
+        document.querySelectorAll('.editQtyIn').forEach(input => {
+            total += parseInt(input.value) || 0;
         });
+        document.getElementById("editBalanceContractor").value = total;
+    }
 
-        // Add OUT sites
-        res.sites_out.forEach(site => {
-            const row = `
-                <div class="siteOutEdit">
-                    <div class="mb-3">
-                        <label>Site</label>
-                        <select class="input w-full border mt-2 select2" name="sites_out_edit[]">
-                            <option value="${site.billboard_id}" selected>${site.billboard.site_number} - ${site.billboard.name}</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label>Type</label>
-                        <input type="text" class="input w-full border mt-1" name="types_out_edit[]" value="${site.type}" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label>Size</label>
-                        <input type="text" class="input w-full border mt-1" name="sizes_out_edit[]" value="${site.billboard.size}" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label>Quantity</label>
-                        <input type="number" class="input w-full border mt-1" name="qtys_out_edit[]" value="${site.quantity}">
-                    </div>
-                    <div class="mb-3">
-                        <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteOutEdit(this)">Remove</a>
-                    </div>
-                </div>`;
-            $('#siteOutEditContainer').append(row);
+    // Update total OUT
+    function updateTotalOutEdit() {
+        let total = 0;
+        document.querySelectorAll('.editQtyOut').forEach(input => {
+            total += parseInt(input.value) || 0;
         });
+        document.getElementById("editBalanceBgoc").value = total;
+    }
 
-        $('#inventoryEditModal').addClass('flex').removeClass('hidden');
-    });
-}
+    // Attach events
+    document.querySelectorAll('.editQtyIn').forEach(input => input.addEventListener("input", updateTotalInEdit));
+    document.querySelectorAll('.editQtyOut').forEach(input => input.addEventListener("input", updateTotalOutEdit));
+
+    // Initialize totals on modal open
+    function initEditTotals() {
+        updateTotalInEdit();
+        updateTotalOutEdit();
+    }
+
 
 
 
@@ -918,11 +767,12 @@
         var filterClientCompany;
         var inventoryId;
         var lastClickedLink;
+        var currentTransactionId = null;
 
         // Listen to below buttons
         document.getElementById("filterClientButton").addEventListener("click", filterClientButton);
         document.getElementById("inventoryAddButton").addEventListener("click", inventoryAddButton);
-        document.getElementById("contractorDeleteButton").addEventListener("click", contractorDeleteButton);
+        document.getElementById("inventoryDeleteButton").addEventListener("click", inventoryDeleteButton);
 
         // When "filterClientButton" button is clicked, initiate initClientCompanyDatatable
         function filterClientButton() {
@@ -933,26 +783,6 @@
         // When page first loads, load table
         filterClientButton();
 
-        
-
-        // When any submit button is clicked
-        // (function() {
-        //     var inventory_table = $('#inventory_table')[0].altEditor;
-
-        //     $(document).on("click", "#inventoryAddButton", function (e) {
-        //         e.preventDefault();
-        //         inventoryAddButton();
-        //     });
-
-            // document.getElementById('inventoryEditButton').addEventListener('click', function(e) {
-            //     // Prevent the default form submission behavior
-            //     e.preventDefault();
-
-            //     // Edit client
-            //     editContractor();
-            // });
-        // })();
-
         // Initialize Select2 with search
         $('.select2').select2({
             placeholder: "Select an option",
@@ -960,9 +790,23 @@
             width: '100%'
         });
 
+        // ✅ IMPROVED MODAL FUNCTIONS
+        // Function to properly show modal
+        // function showModal(modalId) {
+        //     $(modalId).removeClass('hidden').addClass('flex').css('display', 'flex');
+        // }
+
+        // Function to properly hide modal
+        // function hideModal(modalId) {
+        //     $(modalId).removeClass('flex').addClass('hidden').css('display', 'none');
+        //     // Reset the current transaction ID when closing
+        //     if (modalId === '#inventoryEditModal') {
+        //         currentTransactionId = null;
+        //     }
+        // }
+
         // Open modal
         function openAltEditorModal(element) {
-            console.log('disini pak');
             cash(element).modal('show');
         }
 
@@ -1100,185 +944,6 @@
             });
         }
 
-        // // Setup the contractors datatable
-        // function initStockInventoryDatatable() {
-        //     const dt = new Date();
-        //     const formattedDate = `${dt.getFullYear()}${(dt.getMonth() + 1).toString().padStart(2, '0')}${dt.getDate().toString().padStart(2, '0')}`;
-        //     const formattedTime = `${dt.getHours()}:${dt.getMinutes()}:${dt.getSeconds()}`;
-        //     const $fileName = `Stock_Inventory_List_${formattedDate}_${formattedTime}`;
-
-        //     const table = $('#inventory_table').DataTable({
-        //         altEditor: true, // Enable altEditor
-        //         destroy: true,
-        //         debug: true,
-        //         processing: true,
-        //         searching: true,
-        //         serverSide: true,
-        //         ordering: true,
-        //         order: [
-        //             [0, 'desc']
-        //         ],
-        //         pagingType: 'full_numbers',
-        //         pageLength: 25,
-        //         aLengthMenu: [
-        //             [25, 50, 75, -1],
-        //             [25, 50, 75, "All"]
-        //         ],
-        //         iDisplayLength: 25,
-        //         ajax: {
-        //             url: "{{ route('stockInventory.list') }}",
-        //             dataType: "json",
-        //             type: "POST",
-        //             data: function(d) {
-        //                 d._token = $('meta[name="csrf-token"]').attr('content');
-        //                 d.company = filterClientCompany;
-        //                 return d;
-        //             },
-        //             dataSrc: function(json) {
-        //                 json.recordsTotal = json.recordsTotal;
-        //                 json.recordsFiltered = json.recordsFiltered;
-        //                 return json.data;
-        //             }
-        //         },
-        //         dom: "lBfrtip",
-        //         buttons: [{
-        //                 extend: "csv",
-        //                 className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
-        //                 title: $fileName,
-        //                 exportOptions: {
-        //                     columns: ":not(.dt-exclude-export)"
-        //                 },
-        //                 init: function(api, node, config) {
-        //                     $(node).removeClass('dt-button');
-        //                     $(node).removeClass('buttons-html5');
-        //                 },
-        //             },
-        //             {
-        //                 extend: "excel",
-        //                 className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
-        //                 title: $fileName,
-        //                 exportOptions: {
-        //                     columns: ":not(.dt-exclude-export)"
-        //                 },
-        //                 init: function(api, node, config) {
-        //                     $(node).removeClass('dt-button');
-        //                     $(node).removeClass('buttons-html5');
-        //                 },
-        //             },
-        //             {
-        //                 extend: "print",
-        //                 className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
-        //                 title: $fileName,
-        //                 // including printing image
-        //                 exportOptions: {
-        //                     stripHtml: false,
-        //                 },
-        //                 init: function(api, node, config) {
-        //                     $(node).removeClass('dt-button');
-        //                     $(node).removeClass('buttons-html5');
-        //                 },
-        //             },
-        //         ],
-        //         columns: [
-        //             {
-        //                 data: null,
-        //                 name: 'no',
-        //                 orderable: false,
-        //                 searchable: false,
-        //                 render: function (data, type, row, meta) {
-        //                     return meta.row + meta.settings._iDisplayStart + 1;
-        //                 }
-        //             },
-        //             { data: "contractor", name: "contractor" },          // Contractor
-        //             { data: "client_in_name", name: "client_in_name" },  // Client In
-        //             { data: "billboard_in_site", name: "billboard_in_site" }, // Site
-        //             // { data: "billboard_in_type", name: "billboard_in_type" }, // Type
-        //             // { data: "billboard_in_size", name: "billboard_in_size" }, // Size In
-        //             { data: "quantity_in", name: "quantity_in" },        // Quantity In
-        //             { data: "remarks_in", name: "remarks_in" },          // Remarks In
-        //             { data: "date_in", name: "date_in" },                // Date In
-        //             { data: "balance_contractor", name: "balance_contractor" }, // Bal Contractor
-        //             { data: "balance_bgoc", name: "balance_bgoc" },      // Bal BGOC
-        //             { data: "date_out", name: "date_out" },              // Date Out
-        //             { data: "quantity_out", name: "quantity_out" },      // Quantity Out
-        //             // { data: "billboard_out_size", name: "billboard_out_size" }, // Size Out
-        //             // { data: "billboard_out_size", name: "billboard_out_type" }, // type Out
-        //             { data: "billboard_out_site", name: "billboard_out_site" }, // Site Out
-        //             { data: "client_out_name", name: "client_out_name" }, // Client Out
-        //             { data: "remarks_out", name: "remarks_out" },        // Remarks Out
-        //             {
-        //                 data: "id",
-        //                 orderable: false,
-        //                 render: function(data) {
-        //                     return `
-        //                         <div class="flex items-center justify-center space-x-3">
-        //                             <a href="javascript:;" class="text-theme-6" 
-        //                             data-toggle="modal" data-target="#contractorDeleteModal" 
-        //                             id="delete-${data}" title="Delete">
-        //                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" 
-        //                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        //                                     <polyline points="3 6 5 6 21 6"></polyline>
-        //                                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4
-        //                                         a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-        //                                     <line x1="10" y1="11" x2="10" y2="17"></line>
-        //                                     <line x1="14" y1="11" x2="14" y2="17"></line>
-        //                                 </svg>
-        //                             </a>
-        //                         </div>`;
-        //                 }
-        //             },
-        //         ],
-
-        //     });
-
-        //     // Add classes to the "dt-buttons" div
-        //     var dtButtonsDiv = document.querySelector(".dt-buttons");
-        //     if (dtButtonsDiv) {
-        //         dtButtonsDiv.classList.add("mt-2");
-        //     }
-
-        //     // Update styling for the filter input
-        //     var filterDiv = document.getElementById("inventory_table_filter");
-        //     if (filterDiv) {
-        //         filterDiv.style.float = "right";
-        //         filterDiv.classList.remove('dataTables_filter');
-
-        //         var inputElement = filterDiv.querySelector("label input");
-        //         if (inputElement) {
-        //             inputElement.classList.add("input", "border", "mt-2", "ml-2", "mr-1", "mb-5");
-        //         }
-        //     }
-
-        //     // Update styling for the info and paginate elements
-        //     var infoDiv = document.getElementById("inventory_table_info");
-        //     var paginateDiv = document.getElementById("inventory_table_paginate");
-
-        //     if (infoDiv) {
-        //         infoDiv.style.float = "left";
-        //         infoDiv.classList.add("mt-5");
-        //     }
-
-        //     if (paginateDiv) {
-        //         paginateDiv.style.float = "right";
-        //         paginateDiv.classList.add("mt-5");
-        //     }
-
-        //     // Update styling for the "client_users_table_length" div and its select element
-        //     var existingDiv = document.getElementById("inventory_table_length");
-        //     if (existingDiv) {
-        //         existingDiv.classList.remove('dataTables_length');
-        //         existingDiv.classList.add('mt-2', 'mb-1');
-
-        //         var existingSelect = existingDiv.querySelector('select');
-        //         if (existingSelect) {
-        //             existingSelect.className = 'input sm:w-auto border';
-        //         }
-        //     }
-
-        //     // Open modal to edit client
-        //     inventoryEditModal();
-        // };
-
         // stock inventory datatable
         $('#inventory_table').DataTable({
             processing: true,
@@ -1312,11 +977,70 @@
                 { data: 'balance_contractor', name: 'stock_inventories.balance_contractor' }, // Bal - Contractor
                 { data: 'balance_bgoc', name: 'stock_inventories.balance_bgoc' }, // Bal - BGOC
                 { data: 'date_out', name: 'transactions_out.transaction_date' }, // Date Out
-                { data: 'remarks_out', name: 'transactions_out.remarks' }, // Remarks Out
                 { data: 'quantity_out', name: 'transactions_out.quantity' }, // Quantity Out
                 { data: 'site_out', name: 'site_out.name' }, // Site Out
-                { data: 'client_out', name: 'client_companies.name' }, // Client Out
-                { data: 'action', name: 'action', orderable: false, searchable: false } // Action
+                { data: 'client_out_name', name: 'client_companies.name' }, // Client Out
+                { data: 'remarks_out', name: 'transactions_out.remarks' }, // Remarks Out
+                {
+                    data: null,
+                    orderable: false,
+                    render: function(data, type, row) {
+                        // Decide whether IN or OUT
+                        let transactionId = row.transaction_in_id ? row.transaction_in_id : row.transaction_out_id;
+                        let typeLabel = row.transaction_in_id ? 'IN' : 'OUT';
+
+                        return `
+                            <div class="flex items-center justify-center space-x-3">
+                                <!-- Edit Button -->
+                                <a href="javascript:;" 
+                                    class="button w-24 inline-block mr-2 mb-2 bg-theme-1 text-white edit-inventory" 
+                                    data-id="${transactionId}"
+                                data-contractor-id="${row.contractor_id || ''}"
+                                data-contractor-name="${row.contractor || ''}"
+                                data-balance_contractor="${row.balance_contractor || 0}"
+                                data-balance_bgoc="${row.balance_bgoc || 0}"
+                                
+                                data-date_in="${row.date_in || ''}"
+                                data-client_in_id="${row.client_in_id || ''}"
+                                data-site_in_id="${row.site_in_id || ''}"
+                                data-type_in="${row.type_in || ''}"
+                                data-size_in="${row.size_in || ''}"
+                                data-quantity_in="${row.quantity_in || ''}"
+                                data-remarks_in="${row.remarks_in || ''}"
+                                
+                                data-date_out="${row.date_out || ''}"
+                                data-client_out_id="${row.client_out_id || ''}"
+                                data-site_out_id="${row.site_out_id || ''}"
+                                data-type_out="${row.type_out || ''}"
+                                data-size_out="${row.size_out || ''}"
+                                data-quantity_out="${row.quantity_out || ''}"
+                                data-remarks_out="${row.remarks_out || ''}"
+                                
+                                data-stock_inventory_id="${row.stock_inventory_id}">
+                                    Edit
+                                </a>
+                                
+                                <a href="javascript:;" class="text-theme-6" 
+                                data-toggle="modal" 
+                                data-transaction-id="${transactionId}" 
+                                data-transaction-type="${typeLabel}"
+                                data-target="#inventoryDeleteModal" 
+                                id="delete-${transactionId}" 
+                                title="Delete ${typeLabel} Transaction">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" 
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4
+                                            a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                                    </svg>
+                                </a>
+                            </div>
+                        `;
+                    }
+                },
+
             ],
             order: [[0, 'asc']], // sort by No.
             
@@ -1324,158 +1048,321 @@
             drawCallback: function(settings) {
                 let api = this.api();
                 let rows = api.rows({ page: 'current' }).nodes();
-                let lastContractor = null;
-                let lastBalanceContractor = null;
-                let lastBalanceBgoc = null;
-                let groupStart = 0;
 
-                api.column(1, { page: 'current' }).data().each(function(contractor, i) {
-                    let balanceContractor = api.cell(i, 7).data();
-                    let balanceBgoc = api.cell(i, 8).data();
+                let lastStockId = null;
+                let groupStart = null;
 
-                    if (contractor !== lastContractor || balanceContractor !== lastBalanceContractor || balanceBgoc !== lastBalanceBgoc) {
-                        if (i > groupStart) {
-                            let rowCount = i - groupStart;
+                api.rows({ page: 'current' }).every(function(rowIdx) {
+                    let data = this.data();
+                    let stockId = data.stock_inventory_id; // ✅ use stock inventory id, not row id
+
+                    if (stockId !== lastStockId) {
+                        // Finish previous group
+                        if (groupStart !== null) {
+                            let rowCount = rowIdx - groupStart;
+
+                            // Apply rowspan to the groupStart row
                             $('td:eq(1)', rows[groupStart]).attr('rowspan', rowCount);
                             $('td:eq(7)', rows[groupStart]).attr('rowspan', rowCount);
                             $('td:eq(8)', rows[groupStart]).attr('rowspan', rowCount);
 
-                            // hide duplicate cells instead of removing
-                            for (let j = groupStart + 1; j < i; j++) {
-                                $('td:eq(1)', rows[j]).css('display', 'none');
-                                $('td:eq(7)', rows[j]).css('display', 'none');
-                                $('td:eq(8)', rows[j]).css('display', 'none');
+                            // Hide duplicates
+                            for (let j = groupStart + 1; j < rowIdx; j++) {
+                                $('td:eq(1)', rows[j]).hide();
+                                $('td:eq(7)', rows[j]).hide();
+                                $('td:eq(8)', rows[j]).hide();
                             }
                         }
-                        groupStart = i;
-                        lastContractor = contractor;
-                        lastBalanceContractor = balanceContractor;
-                        lastBalanceBgoc = balanceBgoc;
+
+                        // Start new group
+                        groupStart = rowIdx;
+                        lastStockId = stockId;
                     }
                 });
 
-                // handle last group
-                let totalRows = api.rows({ page: 'current' }).data().length;
-                if (groupStart < totalRows) {
-                    let rowCount = totalRows - groupStart;
+                // Handle last group
+                if (groupStart !== null) {
+                    let rowCount = rows.length - groupStart;
+
                     $('td:eq(1)', rows[groupStart]).attr('rowspan', rowCount);
                     $('td:eq(7)', rows[groupStart]).attr('rowspan', rowCount);
                     $('td:eq(8)', rows[groupStart]).attr('rowspan', rowCount);
 
-                    for (let j = groupStart + 1; j < totalRows; j++) {
-                        $('td:eq(1)', rows[j]).css('display', 'none');
-                        $('td:eq(7)', rows[j]).css('display', 'none');
-                        $('td:eq(8)', rows[j]).css('display', 'none');
+                    for (let j = groupStart + 1; j < rows.length; j++) {
+                        $('td:eq(1)', rows[j]).hide();
+                        $('td:eq(7)', rows[j]).hide();
+                        $('td:eq(8)', rows[j]).hide();
                     }
                 }
             }
 
         });
 
+        // // Optional: close when clicking outside modal box
+        // $(document).on('click', '#inventoryEditModal', function (e) {
+        //     if ($(e.target).is('#inventoryEditModal')) {
+        //         $(this).removeClass('flex').addClass('hidden');
+        //     }
+        // });
 
-        // Open modal to edit client
-        function inventoryEditModal() {
-            $(document).off('click', "#inventory_table tbody tr td:not(:last-child)");
+        // $('#inventory_table').off('click', '.edit-inventory').on('click', '.edit-inventory', function () {
+        //     let btn = $(this);
 
-            $(document).on('click', "#inventory_table tbody tr td:not(:last-child)", function (e) {
-                const $row = $(this).closest('tr');
-                const rowData = $('#inventory_table').DataTable().row($row).data();
+        //     let currentTransactionId = btn.data('id');
 
-                if (!rowData) return;
+        //     console.log('Edit button data:', {
+        //         id: btn.data('id'),
+        //         contractor_id: btn.data('contractor-id'),
+        //         site_in_id: btn.data('site_in_id'),
+        //         site_out_id: btn.data('site_out_id'),
+        //         client_in_id: btn.data('client_in_id'),
+        //         client_out_id: btn.data('client_out_id')
+        //     }); // Debug log
+            
+        //     // Contractor & balances
+        //     $('#editContractorName').val(btn.data('contractor-id')); // Use contractor ID, not name
+        //     $('#editBalanceContractor').val(btn.data('balance_contractor'));
+        //     $('#editBalanceBgoc').val(btn.data('balance_bgoc'));
 
-                // Optional: grab ID from last column (if needed)
-                const btn = $row.find('td:last-child a[id^="delete-"]');
-                if (btn.length) {
-                    inventoryId = btn.attr('id').split('-')[1];
+        //     // Date In / Out
+        //     $('#editDateIn').val(btn.data('date_in'));
+        //     $('#editDateOut').val(btn.data('date_out'));
+
+        //     // Remarks
+        //     $('#editRemarksIn').val(btn.data('remarks_in'));
+        //     $('#editRemarksOut').val(btn.data('remarks_out'));
+
+        //     // Client & Site IN
+        //     let clientInId = btn.data('client_in_id');
+        //     let siteInId = btn.data('site_in_id');
+            
+        //     if (clientInId) {
+        //         $('#editClientIn').val(clientInId).trigger('change');
+        //     }
+            
+        //     if (siteInId) {
+        //         $('#editBillboardIn').val(siteInId).trigger('change');
+                
+        //         // Set type, size, and quantity for IN
+        //         $('#editTypeIn').val(btn.data('type_in') || '');
+        //         $('#editSizeIn').val(btn.data('size_in') || '');
+        //         $('#editQtyIn').val(btn.data('quantity_in') || '');
+        //     }
+
+        //     // Client & Site OUT
+        //     let clientOutId = btn.data('client_out_id');
+        //     let siteOutId = btn.data('site_out_id');
+            
+        //     if (clientOutId) {
+        //         $('#editClientOut').val(clientOutId).trigger('change');
+        //     }
+            
+        //     if (siteOutId) {
+        //         $('#editBillboardOut').val(siteOutId).trigger('change');
+                
+        //         // Set type, size, and quantity for OUT
+        //         $('#editTypeOut').val(btn.data('type_out') || '');
+        //         $('#editSizeOut').val(btn.data('size_out') || '');
+        //         $('#editQtyOut').val(btn.data('quantity_out') || '');
+        //     }
+
+        //     // Open modal
+        //     openAltEditorModal("#inventoryEditModal");
+        // });
+
+        // ✅ FIXED EDIT BUTTON CLICK HANDLER
+        $('#inventory_table').off('click', '.edit-inventory').on('click', '.edit-inventory', function () {
+            let btn = $(this);
+
+            // ✅ ASSIGN TO GLOBAL VARIABLE
+            currentTransactionId = btn.data('id');
+            
+            // Contractor & balances
+            $('#editContractorName').val(btn.data('contractor-id'));
+            $('#editBalanceContractor').val(btn.data('balance_contractor'));
+            $('#editBalanceBgoc').val(btn.data('balance_bgoc'));
+
+            function formatDateForInput(dateStr) {
+                if (!dateStr) return '';
+                // assuming dateStr is "DD/MM/YY" like "08/08/25"
+                const parts = dateStr.split('/');
+                if (parts.length !== 3) return '';
+                const day = parts[0].padStart(2,'0');
+                const month = parts[1].padStart(2,'0');
+                const year = '20' + parts[2]; // convert "25" => "2025"
+                return `${year}-${month}-${day}`;
+            }
+
+            // When opening modal
+            $('#editDateIn').val(formatDateForInput(btn.data('date_in')));
+            $('#editDateOut').val(formatDateForInput(btn.data('date_out')));
+
+            // Remarks
+            $('#editRemarksIn').val(btn.data('remarks_in'));
+            $('#editRemarksOut').val(btn.data('remarks_out'));
+
+            // Client & Site IN
+            let clientInId = btn.data('client_in_id');
+            let siteInId = btn.data('site_in_id');
+            
+            if (clientInId) {
+                $('#editClientIn').val(clientInId).trigger('change');
+            } else {
+                $('#editClientIn').val('').trigger('change');
+            }
+            
+            if (siteInId) {
+                $('#editBillboardIn').val(siteInId).trigger('change');
+                $('#editTypeIn').val(btn.data('type_in') || '');
+                $('#editSizeIn').val(btn.data('size_in') || '');
+                $('#editQtyIn').val(btn.data('quantity_in') || '');
+            } else {
+                $('#editBillboardIn').val('').trigger('change');
+                $('#editTypeIn').val('');
+                $('#editSizeIn').val('');
+                $('#editQtyIn').val('');
+            }
+
+            // Client & Site OUT
+            let clientOutId = btn.data('client_out_id');
+            let siteOutId = btn.data('site_out_id');
+            
+            if (clientOutId) {
+                $('#editClientOut').val(clientOutId).trigger('change');
+            } else {
+                $('#editClientOut').val('').trigger('change');
+            }
+            
+            if (siteOutId) {
+                $('#editBillboardOut').val(siteOutId).trigger('change');
+                $('#editTypeOut').val(btn.data('type_out') || '');
+                $('#editSizeOut').val(btn.data('size_out') || '');
+                $('#editQtyOut').val(btn.data('quantity_out') || '');
+            } else {
+                $('#editBillboardOut').val('').trigger('change');
+                $('#editTypeOut').val('');
+                $('#editSizeOut').val('');
+                $('#editQtyOut').val('');
+            }
+
+            // ✅ USE THE IMPROVED MODAL FUNCTION
+            openAltEditorModal("#inventoryEditModal");
+        });
+
+        // Add auto-fill functionality for edit modal site selections
+        $(document).on('change', '#editBillboardIn', function() {
+            let selected = $(this).find(':selected');
+            let type = selected.data('type') || '';
+            let size = selected.data('size') || '';
+            $('#editTypeIn').val(type);
+            $('#editSizeIn').val(size);
+        });
+
+        $(document).on('change', '#editBillboardOut', function() {
+            let selected = $(this).find(':selected');
+            let type = selected.data('type') || '';
+            let size = selected.data('size') || '';
+            $('#editTypeOut').val(type);
+            $('#editSizeOut').val(size);
+        });
+
+
+
+
+
+
+        // ✅ FIXED FORM SUBMISSION HANDLER
+        $('#inventoryEditForm').off('submit').on('submit', function(e) {
+            e.preventDefault();
+            
+            console.log('Form submission - currentTransactionId:', currentTransactionId);
+            
+            if (!currentTransactionId) {
+                alert('No transaction selected for editing');   
+                return;
+            }
+
+            let formData = {
+                _token: $('meta[name="csrf-token"]').attr('content'),
+                transaction_id: currentTransactionId,
+                contractor_id: $('#editContractorName').val(),
+                date_in: $('#editDateIn').val(),
+                date_out: $('#editDateOut').val(),
+                remarks_in: $('#editRemarksIn').val(),
+                remarks_out: $('#editRemarksOut').val(),
+                client_in: $('#editClientIn').val(),
+                site_in: $('#editBillboardIn').val(),
+                type_in: $('#editTypeIn').val(),
+                size_in: $('#editSizeIn').val(),
+                qty_in: $('#editQtyIn').val(),
+                client_out: $('#editClientOut').val(),
+                site_out: $('#editBillboardOut').val(),
+                type_out: $('#editTypeOut').val(),
+                size_out: $('#editSizeOut').val(),
+                qty_out: $('#editQtyOut').val(),
+                balance_contractor: $('#editBalanceContractor').val(),
+                balance_bgoc: $('#editBalanceBgoc').val()
+            };
+
+            $.ajax({
+                url: "{{ route('stockInventory.edit') }}",
+                type: "POST",
+                data: formData,
+                success: function(response) {
+                    closeAltEditorModal('#inventoryEditModal');
+                    window.showSubmitToast("Successfully updated.", "#91C714");
+                    $('#inventory_table').DataTable().ajax.reload();
+
+                    // ✅ Reset form inputs after submission
+                    // Reset form
+                    $('#inventoryEditModal input[type="text"], #inventoryEditModal input[type="number"], #inventoryEditModal input[type="date"]').val('');
+                    $('#inventoryEditModal select').val('').trigger('change');
+
+                    // If you have multiple qty fields, reset them too
+                    // $('#editQtyIn').val(0);
+                    // $('#editQtyOut').val(0);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Update error:', xhr.responseText);
+                    
+                    let errorMessage = "Update failed!";
+                    try {
+                        let response = JSON.parse(xhr.responseText);
+                        if (response.error) {
+                            errorMessage = "Error: " + response.error;
+                        } else if (response.message) {
+                            errorMessage = "Error: " + response.message;
+                        }
+                    } catch (e) {
+                        console.error('Could not parse error response');
+                    }
+                    
+                    window.showSubmitToast(errorMessage, "#D32929");
                 }
-
-                // Populate modal fields
-                populateInventoryEditModal(rowData);
-
-                // Open modal
-                openAltEditorModal("#inventoryEditModal");
             });
-        }
+        });
 
-        function populateInventoryEditModal(data) {
-            // Contractor
-            $('#editContractorName').val(data.contractor_id);
 
-            // Client In / Out
-            $('#editClientIn').val(data.client_in_id);
-            $('#editClientOut').val(data.client_out_id);
 
-            // Dates & Remarks
-            $('#inventoryEditModal input[name="date_in"]').val(data.date_in);
-            $('#inventoryEditModal input[name="date_out"]').val(data.date_out);
-            $('#inventoryEditModal input[name="remarks_in"]').val(data.remarks_in);
-            $('#inventoryEditModal input[name="remarks_out"]').val(data.remarks_out);
 
-            // Clear existing site rows
-            $('#siteInEditContainer').empty();
-            $('#siteOutEditContainer').empty();
 
-            // Populate In Sites
-            (data.sites_in || []).forEach(site => {
-                const row = `
-                <div class="siteInEdit">
-                    <div class="mb-3">
-                        <label class="block">Site</label>
-                        <select class="input w-full border mt-2 select2" name="sites_in_edit[]">
-                            <option value="${site.id}" selected>${site.site_number} - ${site.name}</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="block">Type</label>
-                        <input type="text" class="input w-full border mt-1" name="types_in_edit[]" value="${site.type}" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label class="block">Size</label>
-                        <input type="text" class="input w-full border mt-1" name="sizes_in_edit[]" value="${site.size}" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label class="block"><strong>Quantity In</strong></label>
-                        <input type="number" class="input w-full border mt-1" name="qtys_in_edit[]" value="${site.qty}">
-                    </div>
-                    <div class="mb-3">
-                        <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteInEdit(this)">Remove</a>
-                    </div>
-                </div>`;
-                $('#siteInEditContainer').append(row);
-            });
 
-            // Populate Out Sites
-            (data.sites_out || []).forEach(site => {
-                const row = `
-                <div class="siteOutEdit">
-                    <div class="mb-3">
-                        <label class="block">Site</label>
-                        <select class="input w-full border mt-2 select2" name="sites_out_edit[]">
-                            <option value="${site.id}" selected>${site.site_number} - ${site.name}</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="block">Type</label>
-                        <input type="text" class="input w-full border mt-1" name="types_out_edit[]" value="${site.type}" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label class="block">Size</label>
-                        <input type="text" class="input w-full border mt-1" name="sizes_out_edit[]" value="${site.size}" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label class="block"><strong>Quantity Out</strong></label>
-                        <input type="number" class="input w-full border mt-1" name="qtys_out_edit[]" value="${site.qty}">
-                    </div>
-                    <div class="mb-3">
-                        <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteOutEdit(this)">Remove</a>
-                    </div>
-                </div>`;
-                $('#siteOutEditContainer').append(row);
-            });
 
-            // Reinitialize Select2
-            $('.select2').select2();
-        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         var filterClientCompany;
@@ -1497,7 +1384,7 @@
         })();
 
         // Delete Client Company
-        function contractorDeleteButton() {
+        function inventoryDeleteButton() {
             var id = lastClickedLink.split("-")[1];
 
             $.ajax({
@@ -1509,7 +1396,7 @@
                 },
                 success: function (response) {
                     // Close modal after successfully deleted
-                    var element = "#contractorDeleteModal";
+                    var element = "#inventoryDeleteModal";
                     closeAltEditorModal(element);
 
                     // Show successful toast
