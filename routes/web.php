@@ -105,8 +105,10 @@ Route::group(['middleware' => ['auth']], function () {
     // Stock Inventory
     Route::get('/inventory', [StockInventoryController::class, 'index'])->name('stockInventory.index');
     Route::post('/inventory/list', [StockInventoryController::class, 'list'])->name('stockInventory.list');
+    Route::post('/stock-inventory/transactions/list', [StockInventoryController::class, 'transactionsList'])->name('stockInventory.transactions.list');
     Route::post('/inventory/create', [StockInventoryController::class, 'create'])->name('stockInventory.create');
     Route::post('/inventory/edit', [StockInventoryController::class, 'edit'])->name('stockInventory.edit');
+    Route::get('/inventory/{transaction}/edit', [StockInventoryController::class, 'editData']);
     Route::post('/inventory/delete', [StockInventoryController::class, 'delete'])->name('stockInventory.delete');
 
 

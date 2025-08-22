@@ -314,169 +314,6 @@
 </div>
 <!-- END: Service Request Reject Modal -->
 
-<!-- BEGIN: Inventory Add Modal -->
-<div class="modal items-center justify-center" id="inventoryAddModal">
-    <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-7xl p-6">
-        
-        <!-- Modal Header -->
-        <div class="flex items-center justify-between border-b pb-3 mb-4">
-            <h2 class="text-lg font-semibold">Add Stock Inventory</h2>
-            <!-- <button type="button" onclick="closeInventoryModal()">✖</button> -->
-        </div>
-        <form id="addStockInventoryForm">
-            <div class="mb-4">
-                <label class="block font-medium">Contractor</label>
-                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputContractorName" required>
-                        <option selected value="">Select an option</option>
-                        @foreach ($contractors as $contractor)
-                            <option value="{{ $contractor->id }}">{{ $contractor->name }}</option>
-                        @endforeach
-                        </select>
-            </div>
-            <div class="grid grid-cols-2 gap-8">
-                
-                <!-- LEFT COLUMN: IN INVENTORY -->
-                <div class="bg-orange-50 p-4 rounded-lg">
-                    <h3 class="font-bold text-orange-600 mb-3">In Inventory</h3>
-
-                    <div class="mb-3">
-                        <label class="block">Balance - Contractor</label>
-                        <input type="number" class="input w-full border mt-1" id="balContractor" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label class="block">Date In</label>
-                        <input type="date" class="input w-full border mt-1" id="inputDateIn">
-                    </div>
-                    <div class="mb-3">
-                        <label class="block">Client</label>
-                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputClientIn">
-                        <option selected value="">Select an option</option>
-                        @foreach ($clientcompany as $clientcomp)
-                            <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
-                        @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="block">Remarks</label>
-                        <input type="text" class="input w-full border mt-1" id="inputRemarksIn">
-                    </div>
-                    <div class="flex items-center sm:py-3 border-gray-200 dark:border-dark-5">
-                        <h2 class="font-medium text-base mr-auto">Add Sites</h2>
-                    </div>
-                    <div id="siteInContainer">
-                        <div class="siteIn">
-                            <div class="mb-3">
-                                <label class="block">Site</label>
-                                <select class="input w-full border mt-2 select2" id="inputBillboardIn" name="sites_in[]">
-                                    <option selected value="">Select an option</option>
-                                    @foreach ($billboards as $billboard)
-                                        <option 
-                                            value="{{ $billboard->id }}" 
-                                            data-type="{{ $billboard->type }}" 
-                                            data-size="{{ $billboard->size }}">
-                                            {{ $billboard->site_number }} - {{ $billboard->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="block">Type</label>
-                                <input type="text" class="input w-full border mt-1" name="types_in[]" readonly>
-                            </div>
-                            <div class="mb-3">
-                                <label class="block">Size</label>
-                                <input type="text" class="input w-full border mt-1" name="sizes_in[]" readonly>
-                            </div>
-                            <div class="mb-3">
-                                <label class="block"><strong>Quantity In</strong></label>
-                                <input type="number" class="input w-full border mt-1" name="qtys_in[]">
-                            </div>
-                            <div class="mb-3">
-                                <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteIn(this)">
-                                    Remove
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="button" onclick="siteInAdd()" class="bg-blue-600 text-white px-4 py-2 rounded">Add Site</button>
-                </div>
-
-                <!-- RIGHT COLUMN: OUT INVENTORY -->
-                <div class="bg-green-50 p-4 rounded-lg">
-                    <h3 class="font-bold text-green-600 mb-3">Out Inventory</h3>
-
-                    <div class="mb-3">
-                        <label class="block">Bal - BGOC</label>
-                        <input type="number" class="input w-full border mt-1" id="balBgoc" readonly>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="block">Date Out</label>
-                        <input type="date" class="input w-full border mt-1" id="inputDateOut">
-                    </div>
-                    <div class="mb-3">
-                        <label class="block">Client</label>
-                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputClientOut">
-                        <option selected value="">Select an option</option>
-                        @foreach ($clientcompany as $clientcomp)
-                            <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
-                        @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="block">Remarks</label>
-                        <input type="text" class="input w-full border mt-1" id="inputRemarksOut">
-                    </div>
-                    <div class="flex items-center sm:py-3 border-gray-200 dark:border-dark-5">
-                        <h2 class="font-medium text-base mr-auto">Add Sites</h2>
-                    </div>
-                    <div id="siteOutContainer">
-                        <div class="siteOut">
-                            <div class="mb-3">
-                                <label class="block">Site</label>
-                                <select class="input w-full border mt-2 select2" id="inputBillboardOut" name="sites_out[]">
-                                    <option selected value="">Select an option</option>
-                                    @foreach ($billboards as $billboard)
-                                        <option 
-                                            value="{{ $billboard->id }}" 
-                                            data-type="{{ $billboard->type }}" 
-                                            data-size="{{ $billboard->size }}">
-                                            {{ $billboard->site_number }} - {{ $billboard->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="block">Type</label>
-                                <input type="text" class="input w-full border mt-1" name="types_out[]" readonly>
-                            </div>
-                            <div class="mb-3">
-                                <label class="block">Size</label>
-                                <input type="text" class="input w-full border mt-1" name="sizes_out[]" readonly>
-                            </div>
-                            <div class="mb-3">
-                                <label class="block"><strong>Quantity Out</strong></label>
-                                <input type="number" class="input w-full border mt-1" name="qtys_out[]">
-                            </div>
-                            <div class="mb-3">
-                                <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteOut(this)">
-                                    Remove
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="button" onclick="siteOutAdd()" class="bg-blue-600 text-white px-4 py-2 rounded">Add Site</button>
-                </div>
-            </div>
-
-            <!-- Footer -->
-            <div class="mt-6 text-right">
-                <button type="submit" id="inventoryAddButton" class="bg-blue-600 text-white px-4 py-2 rounded">Submit</button>
-            </div>
-        </form>
-    </div>
-</div>
-<!-- END: Inventory Add Modal -->
 @endsection('modal_content')
 
 @section('script')
@@ -1042,6 +879,7 @@
                         data: "id",
                         render: function(data, type, row) {
                             var a = "{{ route('billboard.detail', ['id'=>':data'] )}}".replace(':data', data);
+                            var inventoryUrl = "{{ route('stockInventory.index', ['billboard'=>':id'] )}}".replace(':id', data);
                             let element = 
                                 `<div class="flex flex-row">
                                     <a href="javascript:;" id="detail-` + data + `"
@@ -1050,8 +888,9 @@
                                     </a>
 
                                     <!-- Inventory Button -->
-                                    <a class="button w-24 inline-block mr-2 mb-2 bg-theme-1 text-white" href="javascript:;" data-toggle="modal" data-target="#inventoryAddModal" id="delete-billboard-` + data + `">
-                                        Inventory
+                                    <a href="${inventoryUrl}" 
+                                    class="button w-24 inline-block mr-2 mb-2 bg-theme-1 text-white">
+                                    Inventory
                                     </a>
                                 </div>`;
 
@@ -1095,16 +934,6 @@
                         }
                     },
                 ],
-                // createdRow: function(row, data, dataIndex) {
-                //     $(row).attr('data-id', data.id);
-                //     $(row).attr('data-type', data.type);
-                //     $(row).attr('data-size', data.size);
-                //     $(row).attr('data-lighting', data.lighting);
-                //     $(row).attr('data-state_id', data.state_id);
-                //     $(row).attr('data-district_id', data.district_id);
-                //     $(row).attr('data-location_id', data.location_id);
-                //     $(row).attr('data-prefix', data.prefix);
-                // },
                 createdRow: function(row, data) {
                     $(row)
                         .attr('data-prefix', data.prefix)

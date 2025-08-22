@@ -10,17 +10,20 @@
 
 @section('app_content')
 <style>
-    #inventory_table {
+    #inventory_table, #inventory_trxn_table {
         border-collapse: collapse !important; /* merge borders */
     }
 
     #inventory_table th,
-    #inventory_table td {
+    #inventory_table td,
+    #inventory_trxn_table th,
+    #inventory_trxn_table td {
         border: 1px solid #ddd !important; /* light gray border */
         padding: 6px 10px;
     }
 
-    #inventory_table thead th {
+    #inventory_table thead th,
+    #inventory_trxn_table thead th {
         border-bottom: 2px solid #bbb !important;
     }
 </style>
@@ -39,7 +42,16 @@
                 <!-- BEGIN: Filter -->
                 <form class="xl:flex sm:mr-auto">
                     <div class="sm:flex items-center sm:mr-4">
-                        <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Company Name</label>
+                        <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Contractor</label>
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="fliterClient">
+                        <option selected value="">Select an option</option>
+                        @foreach ($contractors as $contractor)
+                            <option value="{{ $contractor->id }}">{{ $contractor->name }} - {{ $contractor->company_name }}</option>
+                        @endforeach
+                        </select>
+                    </div>
+                    <div class="sm:flex items-center sm:mr-4">
+                        <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Client</label>
                         <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="fliterClient">
                         <option selected value="">Select an option</option>
                         @foreach ($clientcompany as $clientcomp)
@@ -77,8 +89,8 @@
                             <!-- stock inventory IN section -->
                             <th class="bg-orange-500 text-white">Client</th>
                             <th class="bg-orange-500 text-white">Site</th>
-                            <!-- <th class="bg-orange-500 text-white">Type</th> -->
-                            <!-- <th class="bg-orange-500 text-white">Size</th> -->
+                            <th class="bg-orange-500 text-white">Type</th>
+                            <th class="bg-orange-500 text-white">Size</th>
                             <th class="bg-orange-500 text-white">Quantity</th>
                             <th class="bg-orange-500 text-white">Remarks</th>
                             <th class="bg-orange-500 text-white">Date In</th>
@@ -87,8 +99,8 @@
                             <th class="bg-yellow-400 text-black">Bal - BGOC</th>
                             <th class="bg-green-600 text-white">Date Out</th>
                             <th class="bg-green-600 text-white">Quantity</th>
-                            <!-- <th class="bg-green-600 text-white">Size</th> -->
-                            <!-- <th class="bg-green-600 text-white">Type</th> -->
+                            <th class="bg-green-600 text-white">Size</th>
+                            <th class="bg-green-600 text-white">Type</th>
                             <th class="bg-green-600 text-white">Site</th>
                             <th class="bg-green-600 text-white">Client</th>
                             <th class="bg-green-600 text-white">Remarks</th>
@@ -141,53 +153,6 @@
                             <th class="bg-green-600 text-white">Type</th>
                             <th class="bg-green-600 text-white">Site</th>
                             <th class="bg-green-600 text-white">Client</th>
-                            <th class="bg-green-600 text-white">Remarks</th>
-                            <th width="10%">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-
-                    </tbody>
-                </table>
-            </div>
-            <!-- END: Stock Inventory List -->
-        <!-- </div> -->
-        <!-- END: Client -->
-    <!-- </div> -->
-</div>
-
-<div class="intro-y flex flex-col sm:flex-row items-center mt-8">
-    <h2 class="text-lg font-medium mr-auto">
-        Stock Inventory History
-    </h2>
-</div>
-
-<div class="intro-y box p-5 mt-5">
-    <!-- <div class="pos col-span-12 lg:col-span-4"> -->
-        <!-- BEGIN: Client -->
-        <!-- <div> -->
-
-            <!-- BEGIN: Stock Inventory List -->
-            <div class="overflow-x-auto scrollbar-hidden">
-                <table class="table table-report mt-5" id="inventory_history_table">
-                    <thead>
-                        <tr class="bg-theme-1 text-white">
-                            <th width="5%">No.</th>
-                            <th class="bg-orange-500 text-white">Contractor</th>
-                            <th class="bg-orange-500 text-white">Client</th>
-                            <th class="bg-orange-500 text-white">Type</th>
-                            <th class="bg-orange-500 text-white">Site</th>
-                            <th class="bg-orange-500 text-white">Remarks</th>
-                            <th class="bg-orange-500 text-white">Size</th>
-                            <th class="bg-orange-500 text-white">Quantity</th>
-                            <th class="bg-orange-500 text-white">Date In</th>
-                            <th class="bg-yellow-400 text-black">Bal - Contractor</th>
-                            <th class="bg-yellow-400 text-black">Bal - BGOC</th>
-                            <th class="bg-green-600 text-white">Date Out</th>
-                            <th class="bg-green-600 text-white">Quantity</th>
-                            <th class="bg-green-600 text-white">Size</th>
-                            <th class="bg-green-600 text-white">Client</th>
-                            <th class="bg-green-600 text-white">Site</th>
                             <th class="bg-green-600 text-white">Remarks</th>
                         </tr>
                     </thead>
@@ -767,7 +732,9 @@
         var filterClientCompany;
         var inventoryId;
         var lastClickedLink;
-        var currentTransactionId = null;
+        let transactionInId = null; 
+        let transactionOutId = null; 
+        let stockInventoryId = null;
 
         // Listen to below buttons
         document.getElementById("filterClientButton").addEventListener("click", filterClientButton);
@@ -823,8 +790,8 @@
             let date_out = $("#inputDateOut").val();
             let remarks_in = $("#inputRemarksIn").val();
             let remarks_out = $("#inputRemarksOut").val();
-            let bal_contractor = $("#balContractor").val();
-            let bal_bgoc = $("#balBgoc").val();
+            let balance_contractor = $("#balContractor").val();
+            let balance_bgoc = $("#balBgoc").val();
 
             // Gather site IN rows
             let sites_in = [];
@@ -871,8 +838,8 @@
                     remarks_out: remarks_out,
                     sites_in: sites_in,   // ✅ contains client + site info
                     sites_out: sites_out, // ✅ contains client + site info
-                    bal_contractor: bal_contractor,
-                    bal_bgoc: bal_bgoc
+                    balance_contractor: balance_contractor,
+                    balance_bgoc: balance_bgoc
                 }),
                 contentType: "application/json",   // 👈 send JSON
                 dataType: "json",
@@ -953,13 +920,76 @@
                 type: "POST",
                 data: function (d) {
                     d._token = "{{ csrf_token() }}";
-                    // add extra filters if needed
                     d.company = filterClientCompany;
                     return d;
+                },
+                dataSrc: function(json) {
+                    let newData = [];
+
+                    json.data.forEach(row => {
+                        // Split IN data into arrays
+                        let inClients = row.client_in_name ? row.client_in_name.split(',') : [];
+                        let inSites = row.site_in ? row.site_in.split(',') : [];
+                        let inDates = row.date_in ? row.date_in.split(',') : [];
+                        let inRemarks = row.remarks_in ? row.remarks_in.split(',') : [];
+                        let inQty = row.quantity_in ? row.quantity_in.split(',') : [];
+
+                        // Split OUT data into arrays
+                        let outClients = row.client_out_name ? row.client_out_name.split(',') : [];
+                        let outSites = row.site_out ? row.site_out.split(',') : [];
+                        let outDates = row.date_out ? row.date_out.split(',') : [];
+                        let outRemarks = row.remarks_out ? row.remarks_out.split(',') : [];
+                        let outQty = row.quantity_out ? row.quantity_out.split(',') : [];
+
+                        // Max number of rows needed
+                        let rowCount = Math.max(inDates.length, outDates.length, 1);
+
+                        for (let i = 0; i < rowCount; i++) {
+                            newData.push({
+                                contractor: row.contractor,
+                                balance_contractor: row.balance_contractor,
+                                balance_bgoc: row.balance_bgoc,
+
+                                // IN columns
+                                client_in_name: inClients[i] || '',
+                                site_in: inSites[i] || '',
+                                date_in: inDates[i] || '',
+                                remarks_in: inRemarks[i] || '',
+                                quantity_in: inQty[i] || '',
+                                billboard_type_in: row.billboard_type_in || '',
+                                billboard_size_in: row.billboard_size_in || '',
+
+                                // OUT columns
+                                client_out_name: outClients[i] || '',
+                                site_out: outSites[i] || '',
+                                date_out: outDates[i] || '',
+                                remarks_out: outRemarks[i] || '',
+                                quantity_out: outQty[i] || '',
+                                billboard_type_out: row.billboard_type_out || '',
+                                billboard_size_out: row.billboard_size_out || '',
+
+                                stock_inventory_id: row.stock_inventory_id,
+                                transaction_in_id: row.transaction_in_id,
+                                transaction_out_id: row.transaction_out_id,
+                                contractor_id: row.contractor_id,
+                                client_in_id: row.client_in_id,
+                                client_out_id: row.client_out_id,
+                                site_in_id: row.site_in_id,
+                                site_out_id: row.site_out_id,
+                                type_in: row.type_in,
+                                size_in: row.size_in,
+                                type_out: row.type_out,
+                                size_out: row.size_out
+                            });
+                        }
+                    });
+
+                    return newData;
                 }
+
             },
             columns: [
-                {
+                { 
                     data: null,
                     name: 'no',
                     orderable: false,
@@ -968,65 +998,46 @@
                         return meta.row + meta.settings._iDisplayStart + 1;
                     }
                 },
-                { data: 'contractor', name: 'contractors.name' }, // Contractor
-                { data: 'client_in_name', name: 'client_companies.name' }, // Client
-                { data: 'site_in', name: 'site_in.name' }, // Site
-                { data: 'quantity_in', name: 'transactions_in.quantity' }, // Quantity In
-                { data: 'remarks_in', name: 'transactions_in.remarks' }, // Remarks In
-                { data: 'date_in', name: 'transactions_in.transaction_date' }, // Date In
-                { data: 'balance_contractor', name: 'stock_inventories.balance_contractor' }, // Bal - Contractor
-                { data: 'balance_bgoc', name: 'stock_inventories.balance_bgoc' }, // Bal - BGOC
-                { data: 'date_out', name: 'transactions_out.transaction_date' }, // Date Out
-                { data: 'quantity_out', name: 'transactions_out.quantity' }, // Quantity Out
-                { data: 'site_out', name: 'site_out.name' }, // Site Out
-                { data: 'client_out_name', name: 'client_companies.name' }, // Client Out
-                { data: 'remarks_out', name: 'transactions_out.remarks' }, // Remarks Out
+                { data: 'contractor', name: 'contractors.name' },
+                { data: 'client_in_name', name: 'client_companies.name' },
+                { data: 'site_in', name: 'site_in.name' },
+                { data: 'billboard_type_in', name: 'billboards.type' },
+                { data: 'billboard_size_in', name: 'billboards.size' },
+                { data: 'quantity_in', name: 'transactions_in.quantity' },
+                { data: 'remarks_in', name: 'transactions_in.remarks' },
+                { data: 'date_in', name: 'transactions_in.transaction_date' },
+                { data: 'balance_contractor', name: 'stock_inventories.balance_contractor' },
+                { data: 'balance_bgoc', name: 'stock_inventories.balance_bgoc' },
+                { data: 'date_out', name: 'transactions_out.transaction_date' },
+                { data: 'quantity_out', name: 'transactions_out.quantity' },
+                { data: 'billboard_size_out', name: 'billboards.size' },
+                { data: 'billboard_type_out', name: 'billboards.type' },
+                { data: 'site_out', name: 'site_out.name' },
+                { data: 'client_out_name', name: 'client_companies.name' },
+                { data: 'remarks_out', name: 'transactions_out.remarks' },
                 {
                     data: null,
                     orderable: false,
                     render: function(data, type, row) {
-                        // Decide whether IN or OUT
                         let transactionId = row.transaction_in_id ? row.transaction_in_id : row.transaction_out_id;
                         let typeLabel = row.transaction_in_id ? 'IN' : 'OUT';
 
                         return `
                             <div class="flex items-center justify-center space-x-3">
-                                <!-- Edit Button -->
-                                <a href="javascript:;" 
-                                    class="button w-24 inline-block mr-2 mb-2 bg-theme-1 text-white edit-inventory" 
-                                    data-id="${transactionId}"
-                                data-contractor-id="${row.contractor_id || ''}"
-                                data-contractor-name="${row.contractor || ''}"
-                                data-balance_contractor="${row.balance_contractor || 0}"
-                                data-balance_bgoc="${row.balance_bgoc || 0}"
-                                
-                                data-date_in="${row.date_in || ''}"
-                                data-client_in_id="${row.client_in_id || ''}"
-                                data-site_in_id="${row.site_in_id || ''}"
-                                data-type_in="${row.type_in || ''}"
-                                data-size_in="${row.size_in || ''}"
-                                data-quantity_in="${row.quantity_in || ''}"
-                                data-remarks_in="${row.remarks_in || ''}"
-                                
-                                data-date_out="${row.date_out || ''}"
-                                data-client_out_id="${row.client_out_id || ''}"
-                                data-site_out_id="${row.site_out_id || ''}"
-                                data-type_out="${row.type_out || ''}"
-                                data-size_out="${row.size_out || ''}"
-                                data-quantity_out="${row.quantity_out || ''}"
-                                data-remarks_out="${row.remarks_out || ''}"
-                                
-                                data-stock_inventory_id="${row.stock_inventory_id}">
-                                    Edit
+                                <a href="javascript:;"
+                                class="button w-24 inline-block mr-2 mb-2 bg-theme-1 text-white edit-inventory"
+                                data-transaction-in-id="${row.transaction_in_id || ''}"
+                                data-transaction-out-id="${row.transaction_out_id || ''}"
+                                data-stock-inventory-id="${row.stock_inventory_id}">
+                                Edit
                                 </a>
-                                
                                 <a href="javascript:;" class="text-theme-6" 
-                                data-toggle="modal" 
-                                data-transaction-id="${transactionId}" 
-                                data-transaction-type="${typeLabel}"
-                                data-target="#inventoryDeleteModal" 
-                                id="delete-${transactionId}" 
-                                title="Delete ${typeLabel} Transaction">
+                                    data-toggle="modal" 
+                                    data-transaction-id="${transactionId}" 
+                                    data-transaction-type="${typeLabel}"
+                                    data-target="#inventoryDeleteModal" 
+                                    id="delete-${transactionId}" 
+                                    title="Delete ${typeLabel} Transaction">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" 
                                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <polyline points="3 6 5 6 21 6"></polyline>
@@ -1040,10 +1051,9 @@
                         `;
                     }
                 },
-
             ],
-            order: [[0, 'asc']], // sort by No.
-            
+            order: [[0, 'asc']],
+
             // 👇 This is where we merge Contractor + Bal-Contractor + Bal-BGOC
             drawCallback: function(settings) {
                 let api = this.api();
@@ -1063,14 +1073,14 @@
 
                             // Apply rowspan to the groupStart row
                             $('td:eq(1)', rows[groupStart]).attr('rowspan', rowCount);
-                            $('td:eq(7)', rows[groupStart]).attr('rowspan', rowCount);
-                            $('td:eq(8)', rows[groupStart]).attr('rowspan', rowCount);
+                            $('td:eq(9)', rows[groupStart]).attr('rowspan', rowCount);
+                            $('td:eq(10)', rows[groupStart]).attr('rowspan', rowCount);
 
                             // Hide duplicates
                             for (let j = groupStart + 1; j < rowIdx; j++) {
                                 $('td:eq(1)', rows[j]).hide();
-                                $('td:eq(7)', rows[j]).hide();
-                                $('td:eq(8)', rows[j]).hide();
+                                $('td:eq(9)', rows[j]).hide();
+                                $('td:eq(10)', rows[j]).hide();
                             }
                         }
 
@@ -1095,8 +1105,170 @@
                     }
                 }
             }
-
         });
+
+        // stock inventory transaction datatable
+        $('#inventory_trxn_table').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: "{{ route('stockInventory.transactions.list') }}",
+                type: "POST",
+                data: function (d) {
+                    d._token = "{{ csrf_token() }}";
+                    d.company = filterClientCompany;
+                    return d;
+                },
+                dataSrc: function(json) {
+                    let newData = [];
+
+                    json.data.forEach(row => {
+                        // Split IN data into arrays
+                        let inClients = row.client_in_name ? row.client_in_name.split(',') : [];
+                        let inSites = row.site_in ? row.site_in.split(',') : [];
+                        let inDates = row.date_in ? row.date_in.split(',') : [];
+                        let inRemarks = row.remarks_in ? row.remarks_in.split(',') : [];
+                        let inQty = row.quantity_in ? row.quantity_in.split(',') : [];
+
+                        // Split OUT data into arrays
+                        let outClients = row.client_out_name ? row.client_out_name.split(',') : [];
+                        let outSites = row.site_out ? row.site_out.split(',') : [];
+                        let outDates = row.date_out ? row.date_out.split(',') : [];
+                        let outRemarks = row.remarks_out ? row.remarks_out.split(',') : [];
+                        let outQty = row.quantity_out ? row.quantity_out.split(',') : [];
+
+                        // Max number of rows needed
+                        let rowCount = Math.max(inDates.length, outDates.length, 1);
+
+                        for (let i = 0; i < rowCount; i++) {
+                            newData.push({
+                                contractor: row.contractor,
+                                balance_contractor: row.balance_contractor,
+                                balance_bgoc: row.balance_bgoc,
+
+                                // IN columns
+                                client_in_name: inClients[i] || '',
+                                site_in: inSites[i] || '',
+                                date_in: inDates[i] || '',
+                                remarks_in: inRemarks[i] || '',
+                                quantity_in: inQty[i] || '',
+                                billboard_type_in: row.billboard_type_in || '',
+                                billboard_size_in: row.billboard_size_in || '',
+
+                                // OUT columns
+                                client_out_name: outClients[i] || '',
+                                site_out: outSites[i] || '',
+                                date_out: outDates[i] || '',
+                                remarks_out: outRemarks[i] || '',
+                                quantity_out: outQty[i] || '',
+                                billboard_type_out: row.billboard_type_out || '',
+                                billboard_size_out: row.billboard_size_out || '',
+
+                                stock_inventory_id: row.stock_inventory_id,
+                                transaction_in_id: row.transaction_in_id,
+                                transaction_out_id: row.transaction_out_id,
+                                contractor_id: row.contractor_id,
+                                client_in_id: row.client_in_id,
+                                client_out_id: row.client_out_id,
+                                site_in_id: row.site_in_id,
+                                site_out_id: row.site_out_id,
+                                type_in: row.type_in,
+                                size_in: row.size_in,
+                                type_out: row.type_out,
+                                size_out: row.size_out
+                            });
+                        }
+                    });
+
+                    return newData;
+                }
+
+            },
+            columns: [
+                { 
+                    data: null,
+                    name: 'no',
+                    orderable: false,
+                    searchable: false,
+                    render: function (data, type, row, meta) {
+                        return meta.row + meta.settings._iDisplayStart + 1;
+                    }
+                },
+                { data: 'contractor', name: 'contractors.name' },
+                { data: 'client_in_name', name: 'client_companies.name' },
+                { data: 'site_in', name: 'site_in.name' },
+                { data: 'billboard_type_in', name: 'billboards.type' },
+                { data: 'billboard_size_in', name: 'billboards.size' },
+                { data: 'quantity_in', name: 'transactions_in.quantity' },
+                { data: 'remarks_in', name: 'transactions_in.remarks' },
+                { data: 'date_in', name: 'transactions_in.transaction_date' },
+                { data: 'balance_contractor', name: 'stock_inventories.balance_contractor' },
+                { data: 'balance_bgoc', name: 'stock_inventories.balance_bgoc' },
+                { data: 'date_out', name: 'transactions_out.transaction_date' },
+                { data: 'quantity_out', name: 'transactions_out.quantity' },
+                { data: 'site_out', name: 'site_out.name' },
+                { data: 'billboard_type_out', name: 'billboards.type' },
+                { data: 'billboard_size_out', name: 'billboards.size' },
+                { data: 'client_out_name', name: 'client_companies.name' },
+                { data: 'remarks_out', name: 'transactions_out.remarks' },
+            ],
+            order: [[0, 'asc']],
+
+            // 👇 This is where we merge Contractor + Bal-Contractor + Bal-BGOC
+            drawCallback: function(settings) {
+                let api = this.api();
+                let rows = api.rows({ page: 'current' }).nodes();
+
+                let lastStockId = null;
+                let groupStart = null;
+
+                api.rows({ page: 'current' }).every(function(rowIdx) {
+                    let data = this.data();
+                    let stockId = data.stock_inventory_id; // ✅ use stock inventory id, not row id
+
+                    if (stockId !== lastStockId) {
+                        // Finish previous group
+                        if (groupStart !== null) {
+                            let rowCount = rowIdx - groupStart;
+
+                            // Apply rowspan to the groupStart row
+                            $('td:eq(1)', rows[groupStart]).attr('rowspan', rowCount);
+                            $('td:eq(9)', rows[groupStart]).attr('rowspan', rowCount);
+                            $('td:eq(10)', rows[groupStart]).attr('rowspan', rowCount);
+
+                            // Hide duplicates
+                            for (let j = groupStart + 1; j < rowIdx; j++) {
+                                $('td:eq(1)', rows[j]).hide();
+                                $('td:eq(9)', rows[j]).hide();
+                                $('td:eq(10)', rows[j]).hide();
+                            }
+                        }
+
+                        // Start new group
+                        groupStart = rowIdx;
+                        lastStockId = stockId;
+                    }
+                });
+
+                // Handle last group
+                if (groupStart !== null) {
+                    let rowCount = rows.length - groupStart;
+
+                    $('td:eq(1)', rows[groupStart]).attr('rowspan', rowCount);
+                    $('td:eq(7)', rows[groupStart]).attr('rowspan', rowCount);
+                    $('td:eq(8)', rows[groupStart]).attr('rowspan', rowCount);
+
+                    for (let j = groupStart + 1; j < rows.length; j++) {
+                        $('td:eq(1)', rows[j]).hide();
+                        $('td:eq(7)', rows[j]).hide();
+                        $('td:eq(8)', rows[j]).hide();
+                    }
+                }
+            }
+        });
+
+
+
 
         // // Optional: close when clicking outside modal box
         // $(document).on('click', '#inventoryEditModal', function (e) {
@@ -1170,101 +1342,113 @@
         //     openAltEditorModal("#inventoryEditModal");
         // });
 
-        // ✅ FIXED EDIT BUTTON CLICK HANDLER
-        $('#inventory_table').off('click', '.edit-inventory').on('click', '.edit-inventory', function () {
-            let btn = $(this);
+        // $(document).on('click', '.edit-inventory', function () {
+        //     let transactionId = $(this).data('transaction-in-id');
 
-            // ✅ ASSIGN TO GLOBAL VARIABLE
-            currentTransactionId = btn.data('id');
-            
-            // Contractor & balances
-            $('#editContractorName').val(btn.data('contractor-id'));
-            $('#editBalanceContractor').val(btn.data('balance_contractor'));
-            $('#editBalanceBgoc').val(btn.data('balance_bgoc'));
+        //     $.get(`/inventory/${transactionId}/edit`, function (data) {
+        //         // Populate modal fields
+        //         $('#editContractorId').val(data.contractor_id);
+        //         $('#editContractorName').val(data.contractor_name);
+        //         $('#editBalanceContractor').val(data.balance_contractor);
+        //         $('#editBalanceBgoc').val(data.balance_bgoc);
 
-            function formatDateForInput(dateStr) {
-                if (!dateStr) return '';
-                // assuming dateStr is "DD/MM/YY" like "08/08/25"
-                const parts = dateStr.split('/');
-                if (parts.length !== 3) return '';
-                const day = parts[0].padStart(2,'0');
-                const month = parts[1].padStart(2,'0');
-                const year = '20' + parts[2]; // convert "25" => "2025"
-                return `${year}-${month}-${day}`;
-            }
+        //         $('#editDateIn').val(data.date_in);
+        //         $('#editClientIn').val(data.client_in_id);
+        //         $('#editSiteIn').val(data.site_in_id);
+        //         $('#editTypeIn').val(data.type_in);
+        //         $('#editSizeIn').val(data.size_in);
+        //         $('#editQuantityIn').val(data.quantity_in);
+        //         $('#editRemarksIn').val(data.remarks_in);
 
-            // When opening modal
-            $('#editDateIn').val(formatDateForInput(btn.data('date_in')));
-            $('#editDateOut').val(formatDateForInput(btn.data('date_out')));
+        //         $('#editDateOut').val(data.date_out);
+        //         $('#editClientOut').val(data.client_out_id);
+        //         $('#editSiteOut').val(data.site_out_id);
+        //         $('#editTypeOut').val(data.type_out);
+        //         $('#editSizeOut').val(data.size_out);
+        //         $('#editQuantityOut').val(data.quantity_out);
+        //         $('#editRemarksOut').val(data.remarks_out);
 
-            // Remarks
-            $('#editRemarksIn').val(btn.data('remarks_in'));
-            $('#editRemarksOut').val(btn.data('remarks_out'));
+        //         // Show modal
+        //         $('#inventoryEditModal').modal('show');
+        //     });
+        // });
 
-            // Client & Site IN
-            let clientInId = btn.data('client_in_id');
-            let siteInId = btn.data('site_in_id');
-            
-            if (clientInId) {
-                $('#editClientIn').val(clientInId).trigger('change');
-            } else {
-                $('#editClientIn').val('').trigger('change');
-            }
-            
-            if (siteInId) {
-                $('#editBillboardIn').val(siteInId).trigger('change');
-                $('#editTypeIn').val(btn.data('type_in') || '');
-                $('#editSizeIn').val(btn.data('size_in') || '');
-                $('#editQtyIn').val(btn.data('quantity_in') || '');
-            } else {
-                $('#editBillboardIn').val('').trigger('change');
-                $('#editTypeIn').val('');
-                $('#editSizeIn').val('');
-                $('#editQtyIn').val('');
-            }
+        $(document).on('click', '.edit-inventory', function () {
+            stockInventoryId = $(this).data('stock-inventory-id');
+            transactionInId  = $(this).data('transaction-in-id') || null;
+            transactionOutId = $(this).data('transaction-out-id') || null;
 
-            // Client & Site OUT
-            let clientOutId = btn.data('client_out_id');
-            let siteOutId = btn.data('site_out_id');
-            
-            if (clientOutId) {
-                $('#editClientOut').val(clientOutId).trigger('change');
-            } else {
-                $('#editClientOut').val('').trigger('change');
-            }
-            
-            if (siteOutId) {
-                $('#editBillboardOut').val(siteOutId).trigger('change');
-                $('#editTypeOut').val(btn.data('type_out') || '');
-                $('#editSizeOut').val(btn.data('size_out') || '');
-                $('#editQtyOut').val(btn.data('quantity_out') || '');
-            } else {
-                $('#editBillboardOut').val('').trigger('change');
-                $('#editTypeOut').val('');
-                $('#editSizeOut').val('');
-                $('#editQtyOut').val('');
-            }
+            $.get(`/inventory/${stockInventoryId}/edit`, {
+                transaction_in_id: transactionInId,
+                transaction_out_id: transactionOutId
+            }, function (data) {
+                // Contractor & balances (take from IN if exists, otherwise OUT)
+                let source = data.in || data.out;
+                if (source) {
+                    $('#editContractorName').val(source.contractor_name || '');
+                    $('#editBalanceContractor').val(source.balance_contractor || 0);
+                    $('#editBalanceBgoc').val(source.balance_bgoc || 0);
+                }
 
-            // ✅ USE THE IMPROVED MODAL FUNCTION
-            openAltEditorModal("#inventoryEditModal");
+                // ✅ Format helper for date inputs
+                function formatDateForInput(dateStr) {
+                    if (!dateStr) return '';
+                    const parts = dateStr.split('/');
+                    if (parts.length !== 3) return '';
+                    const day = parts[0].padStart(2, '0');
+                    const month = parts[1].padStart(2, '0');
+                    const year = '20' + parts[2]; // "25" → "2025"
+                    return `${year}-${month}-${day}`;
+                }
+
+                // Populate IN fields
+                if (data.in) {
+                    $('#editDateIn').val(data.in.transaction_date || '');
+                    $('#editClientIn').val(data.in.client_id).trigger('change');
+                    $('#editBillboardIn').val(data.in.billboard_id).trigger('change');
+                    $('#editTypeIn').val(data.in.type || '');
+                    $('#editSizeIn').val(data.in.size || '');
+                    $('#editQtyIn').val(data.in.quantity || '');
+                    $('#editRemarksIn').val(data.in.remarks || '');
+                } else {
+                    $('#editDateIn, #editClientIn, #editBillboardIn, #editTypeIn, #editSizeIn, #editQtyIn, #editRemarksIn')
+                        .val('')
+                        .trigger('change');
+                }
+
+                // Populate OUT fields
+                if (data.out) {
+                    $('#editDateOut').val(data.out.transaction_date || '');
+                    $('#editClientOut').val(data.out.client_id).trigger('change');
+                    $('#editBillboardOut').val(data.out.billboard_id).trigger('change');
+                    $('#editTypeOut').val(data.out.type || '');
+                    $('#editSizeOut').val(data.out.size || '');
+                    $('#editQtyOut').val(data.out.quantity || '');
+                    $('#editRemarksOut').val(data.out.remarks || '');
+                } else {
+                    $('#editDateOut, #editClientOut, #editBillboardOut, #editTypeOut, #editSizeOut, #editQtyOut, #editRemarksOut')
+                        .val('')
+                        .trigger('change');
+                }
+
+                // ✅ Open modal
+                openAltEditorModal("#inventoryEditModal");
+            });
         });
 
-        // Add auto-fill functionality for edit modal site selections
+        // Auto-fill billboard size/type on change
         $(document).on('change', '#editBillboardIn', function() {
             let selected = $(this).find(':selected');
-            let type = selected.data('type') || '';
-            let size = selected.data('size') || '';
-            $('#editTypeIn').val(type);
-            $('#editSizeIn').val(size);
+            $('#editTypeIn').val(selected.data('type') || '');
+            $('#editSizeIn').val(selected.data('size') || '');
         });
 
         $(document).on('change', '#editBillboardOut', function() {
             let selected = $(this).find(':selected');
-            let type = selected.data('type') || '';
-            let size = selected.data('size') || '';
-            $('#editTypeOut').val(type);
-            $('#editSizeOut').val(size);
+            $('#editTypeOut').val(selected.data('type') || '');
+            $('#editSizeOut').val(selected.data('size') || '');
         });
+
 
 
 
@@ -1274,17 +1458,18 @@
         // ✅ FIXED FORM SUBMISSION HANDLER
         $('#inventoryEditForm').off('submit').on('submit', function(e) {
             e.preventDefault();
-            
-            console.log('Form submission - currentTransactionId:', currentTransactionId);
-            
-            if (!currentTransactionId) {
-                alert('No transaction selected for editing');   
+
+            if (!transactionInId && !transactionOutId) {
+                alert('No transaction selected for editing');
                 return;
             }
 
             let formData = {
                 _token: $('meta[name="csrf-token"]').attr('content'),
-                transaction_id: currentTransactionId,
+                stock_inventory_id: stockInventoryId,
+                transaction_in_id: transactionInId,
+                transaction_out_id: transactionOutId,
+
                 contractor_id: $('#editContractorName').val(),
                 date_in: $('#editDateIn').val(),
                 date_out: $('#editDateOut').val(),
@@ -1312,35 +1497,15 @@
                     closeAltEditorModal('#inventoryEditModal');
                     window.showSubmitToast("Successfully updated.", "#91C714");
                     $('#inventory_table').DataTable().ajax.reload();
-
-                    // ✅ Reset form inputs after submission
-                    // Reset form
-                    $('#inventoryEditModal input[type="text"], #inventoryEditModal input[type="number"], #inventoryEditModal input[type="date"]').val('');
-                    $('#inventoryEditModal select').val('').trigger('change');
-
-                    // If you have multiple qty fields, reset them too
-                    // $('#editQtyIn').val(0);
-                    // $('#editQtyOut').val(0);
                 },
-                error: function(xhr, status, error) {
+                error: function(xhr) {
                     console.error('Update error:', xhr.responseText);
-                    
-                    let errorMessage = "Update failed!";
-                    try {
-                        let response = JSON.parse(xhr.responseText);
-                        if (response.error) {
-                            errorMessage = "Error: " + response.error;
-                        } else if (response.message) {
-                            errorMessage = "Error: " + response.message;
-                        }
-                    } catch (e) {
-                        console.error('Could not parse error response');
-                    }
-                    
-                    window.showSubmitToast(errorMessage, "#D32929");
+                    window.showSubmitToast("Update failed!", "#D32929");
                 }
             });
         });
+
+
 
 
 

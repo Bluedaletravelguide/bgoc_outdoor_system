@@ -43,4 +43,16 @@ class StockInventoryTransaction extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    public function contractor()
+    {
+        return $this->hasOneThrough(
+            Contractor::class,
+            StockInventory::class,
+            'id',                 // Foreign key on stock_inventories
+            'id',                 // Foreign key on contractors
+            'stock_inventory_id', // Local key on transactions
+            'contractor_id'       // Local key on stock_inventories
+        );
+    }
 }
