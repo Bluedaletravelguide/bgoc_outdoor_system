@@ -31,6 +31,21 @@ class BillboardSeeder extends Seeder
             ->join('states', 'districts.state_id', '=', 'states.id')
             ->pluck('states.prefix', 'locations.id')
             ->toArray();
+        
+        $bgocAsClient = [
+            [
+                'company_prefix' => 'BGOC',
+                'name' => 'Bluedale Group of Companies',
+                'address' => $faker->address,
+                'phone' => $faker->phoneNumber,
+                'status' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+
+        ];
+
+        DB::table('client_companies')->insert($bgocAsClient);
 
         // Create 10 client companies
         for ($i = 1; $i <= 10; $i++) {

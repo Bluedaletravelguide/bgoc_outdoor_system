@@ -14,6 +14,7 @@ class StockInventoryTransaction extends Model
 
     protected $fillable = [
         'stock_inventory_id',
+        'from_contractor_id',
         'billboard_id',
         'client_id',
         'type',

@@ -10,20 +10,17 @@
 
 @section('app_content')
 <style>
-    #inventory_table, #inventory_trxn_table {
+    #inventory_table {
         border-collapse: collapse !important; /* merge borders */
     }
 
     #inventory_table th,
-    #inventory_table td,
-    #inventory_trxn_table th,
-    #inventory_trxn_table td {
+    #inventory_table td {
         border: 1px solid #ddd !important; /* light gray border */
         padding: 6px 10px;
     }
 
-    #inventory_table thead th,
-    #inventory_trxn_table thead th {
+    #inventory_table thead th {
         border-bottom: 2px solid #bbb !important;
     }
 </style>
@@ -96,7 +93,6 @@
                             <th class="bg-orange-500 text-white">Date In</th>
                             <th class="bg-yellow-400 text-black">Bal - Contractor</th>
                             <!-- stock inventory OUT section -->
-                            <th class="bg-yellow-400 text-black">Bal - BGOC</th>
                             <th class="bg-green-600 text-white">Date Out</th>
                             <th class="bg-green-600 text-white">Quantity</th>
                             <th class="bg-green-600 text-white">Size</th>
@@ -104,7 +100,7 @@
                             <th class="bg-green-600 text-white">Site</th>
                             <th class="bg-green-600 text-white">Client</th>
                             <th class="bg-green-600 text-white">Remarks</th>
-                            <th width="10%">Action</th>
+                            <!-- <th width="10%">Action</th> -->
                         </tr>
                     </thead>
                     <tbody>
@@ -116,55 +112,6 @@
         </div>
         <!-- END: Client -->
     </div>
-</div>
-
-<div class="intro-y flex flex-col sm:flex-row items-center mt-8">
-    <h2 class="text-lg font-medium mr-auto">
-        Stock Inventory Transactions
-    </h2>
-</div>
-
-<div class="intro-y box p-5 mt-5">
-    <!-- <div class="pos col-span-12 lg:col-span-4"> -->
-        <!-- BEGIN: Client -->
-        <!-- <div> -->
-
-            <!-- BEGIN: Stock Inventory List -->
-            <div class="overflow-x-auto scrollbar-hidden">
-                <table class="table table-report mt-5" id="inventory_trxn_table">
-                    <thead>
-                        <tr class="bg-theme-1 text-white">
-                            <th width="5%">No.</th>
-                            <th class="bg-orange-500 text-white">Contractor</th>
-                            <!-- stock inventory IN section -->
-                            <th class="bg-orange-500 text-white">Client</th>
-                            <th class="bg-orange-500 text-white">Site</th>
-                            <th class="bg-orange-500 text-white">Type</th>
-                            <th class="bg-orange-500 text-white">Size</th>
-                            <th class="bg-orange-500 text-white">Quantity</th>
-                            <th class="bg-orange-500 text-white">Remarks</th>
-                            <th class="bg-orange-500 text-white">Date In</th>
-                            <th class="bg-yellow-400 text-black">Bal - Contractor</th>
-                            <!-- stock inventory OUT section -->
-                            <th class="bg-yellow-400 text-black">Bal - BGOC</th>
-                            <th class="bg-green-600 text-white">Date Out</th>
-                            <th class="bg-green-600 text-white">Quantity</th>
-                            <th class="bg-green-600 text-white">Size</th>
-                            <th class="bg-green-600 text-white">Type</th>
-                            <th class="bg-green-600 text-white">Site</th>
-                            <th class="bg-green-600 text-white">Client</th>
-                            <th class="bg-green-600 text-white">Remarks</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-
-                    </tbody>
-                </table>
-            </div>
-            <!-- END: Stock Inventory List -->
-        <!-- </div> -->
-        <!-- END: Client -->
-    <!-- </div> -->
 </div>
 @endsection('app_content')
 
@@ -948,7 +895,7 @@
                             newData.push({
                                 contractor: row.contractor,
                                 balance_contractor: row.balance_contractor,
-                                balance_bgoc: row.balance_bgoc,
+                                // balance_bgoc: row.balance_bgoc,
 
                                 // IN columns
                                 client_in_name: inClients[i] || '',
@@ -1007,7 +954,7 @@
                 { data: 'remarks_in', name: 'transactions_in.remarks' },
                 { data: 'date_in', name: 'transactions_in.transaction_date' },
                 { data: 'balance_contractor', name: 'stock_inventories.balance_contractor' },
-                { data: 'balance_bgoc', name: 'stock_inventories.balance_bgoc' },
+                // { data: 'balance_bgoc', name: 'stock_inventories.balance_bgoc' },
                 { data: 'date_out', name: 'transactions_out.transaction_date' },
                 { data: 'quantity_out', name: 'transactions_out.quantity' },
                 { data: 'billboard_size_out', name: 'billboards.size' },
@@ -1015,42 +962,42 @@
                 { data: 'site_out', name: 'site_out.name' },
                 { data: 'client_out_name', name: 'client_companies.name' },
                 { data: 'remarks_out', name: 'transactions_out.remarks' },
-                {
-                    data: null,
-                    orderable: false,
-                    render: function(data, type, row) {
-                        let transactionId = row.transaction_in_id ? row.transaction_in_id : row.transaction_out_id;
-                        let typeLabel = row.transaction_in_id ? 'IN' : 'OUT';
+                // {
+                //     data: null,
+                //     orderable: false,
+                //     render: function(data, type, row) {
+                //         let transactionId = row.transaction_in_id ? row.transaction_in_id : row.transaction_out_id;
+                //         let typeLabel = row.transaction_in_id ? 'IN' : 'OUT';
 
-                        return `
-                            <div class="flex items-center justify-center space-x-3">
-                                <a href="javascript:;"
-                                class="button w-24 inline-block mr-2 mb-2 bg-theme-1 text-white edit-inventory"
-                                data-transaction-in-id="${row.transaction_in_id || ''}"
-                                data-transaction-out-id="${row.transaction_out_id || ''}"
-                                data-stock-inventory-id="${row.stock_inventory_id}">
-                                Edit
-                                </a>
-                                <a href="javascript:;" class="text-theme-6" 
-                                    data-toggle="modal" 
-                                    data-transaction-id="${transactionId}" 
-                                    data-transaction-type="${typeLabel}"
-                                    data-target="#inventoryDeleteModal" 
-                                    id="delete-${transactionId}" 
-                                    title="Delete ${typeLabel} Transaction">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" 
-                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <polyline points="3 6 5 6 21 6"></polyline>
-                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4
-                                            a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                                        <line x1="10" y1="11" x2="10" y2="17"></line>
-                                        <line x1="14" y1="11" x2="14" y2="17"></line>
-                                    </svg>
-                                </a>
-                            </div>
-                        `;
-                    }
-                },
+                //         return `
+                //             <div class="flex items-center justify-center space-x-3">
+                //                 <a href="javascript:;"
+                //                 class="button w-24 inline-block mr-2 mb-2 bg-theme-1 text-white edit-inventory"
+                //                 data-transaction-in-id="${row.transaction_in_id || ''}"
+                //                 data-transaction-out-id="${row.transaction_out_id || ''}"
+                //                 data-stock-inventory-id="${row.stock_inventory_id}">
+                //                 Edit
+                //                 </a>
+                //                 <a href="javascript:;" class="text-theme-6" 
+                //                     data-toggle="modal" 
+                //                     data-transaction-id="${transactionId}" 
+                //                     data-transaction-type="${typeLabel}"
+                //                     data-target="#inventoryDeleteModal" 
+                //                     id="delete-${transactionId}" 
+                //                     title="Delete ${typeLabel} Transaction">
+                //                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" 
+                //                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                //                         <polyline points="3 6 5 6 21 6"></polyline>
+                //                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4
+                //                             a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                //                         <line x1="10" y1="11" x2="10" y2="17"></line>
+                //                         <line x1="14" y1="11" x2="14" y2="17"></line>
+                //                     </svg>
+                //                 </a>
+                //             </div>
+                //         `;
+                //     }
+                // },
             ],
             order: [[0, 'asc']],
 
@@ -1074,13 +1021,11 @@
                             // Apply rowspan to the groupStart row
                             $('td:eq(1)', rows[groupStart]).attr('rowspan', rowCount);
                             $('td:eq(9)', rows[groupStart]).attr('rowspan', rowCount);
-                            $('td:eq(10)', rows[groupStart]).attr('rowspan', rowCount);
 
                             // Hide duplicates
                             for (let j = groupStart + 1; j < rowIdx; j++) {
                                 $('td:eq(1)', rows[j]).hide();
                                 $('td:eq(9)', rows[j]).hide();
-                                $('td:eq(10)', rows[j]).hide();
                             }
                         }
 
@@ -1095,173 +1040,11 @@
                     let rowCount = rows.length - groupStart;
 
                     $('td:eq(1)', rows[groupStart]).attr('rowspan', rowCount);
-                    $('td:eq(7)', rows[groupStart]).attr('rowspan', rowCount);
-                    $('td:eq(8)', rows[groupStart]).attr('rowspan', rowCount);
+                    $('td:eq(9)', rows[groupStart]).attr('rowspan', rowCount);
 
                     for (let j = groupStart + 1; j < rows.length; j++) {
                         $('td:eq(1)', rows[j]).hide();
-                        $('td:eq(7)', rows[j]).hide();
-                        $('td:eq(8)', rows[j]).hide();
-                    }
-                }
-            }
-        });
-
-        // stock inventory transaction datatable
-        $('#inventory_trxn_table').DataTable({
-            processing: true,
-            serverSide: true,
-            ajax: {
-                url: "{{ route('stockInventory.transactions.list') }}",
-                type: "POST",
-                data: function (d) {
-                    d._token = "{{ csrf_token() }}";
-                    d.company = filterClientCompany;
-                    return d;
-                },
-                dataSrc: function(json) {
-                    let newData = [];
-
-                    json.data.forEach(row => {
-                        // Split IN data into arrays
-                        let inClients = row.client_in_name ? row.client_in_name.split(',') : [];
-                        let inSites = row.site_in ? row.site_in.split(',') : [];
-                        let inDates = row.date_in ? row.date_in.split(',') : [];
-                        let inRemarks = row.remarks_in ? row.remarks_in.split(',') : [];
-                        let inQty = row.quantity_in ? row.quantity_in.split(',') : [];
-
-                        // Split OUT data into arrays
-                        let outClients = row.client_out_name ? row.client_out_name.split(',') : [];
-                        let outSites = row.site_out ? row.site_out.split(',') : [];
-                        let outDates = row.date_out ? row.date_out.split(',') : [];
-                        let outRemarks = row.remarks_out ? row.remarks_out.split(',') : [];
-                        let outQty = row.quantity_out ? row.quantity_out.split(',') : [];
-
-                        // Max number of rows needed
-                        let rowCount = Math.max(inDates.length, outDates.length, 1);
-
-                        for (let i = 0; i < rowCount; i++) {
-                            newData.push({
-                                contractor: row.contractor,
-                                balance_contractor: row.balance_contractor,
-                                balance_bgoc: row.balance_bgoc,
-
-                                // IN columns
-                                client_in_name: inClients[i] || '',
-                                site_in: inSites[i] || '',
-                                date_in: inDates[i] || '',
-                                remarks_in: inRemarks[i] || '',
-                                quantity_in: inQty[i] || '',
-                                billboard_type_in: row.billboard_type_in || '',
-                                billboard_size_in: row.billboard_size_in || '',
-
-                                // OUT columns
-                                client_out_name: outClients[i] || '',
-                                site_out: outSites[i] || '',
-                                date_out: outDates[i] || '',
-                                remarks_out: outRemarks[i] || '',
-                                quantity_out: outQty[i] || '',
-                                billboard_type_out: row.billboard_type_out || '',
-                                billboard_size_out: row.billboard_size_out || '',
-
-                                stock_inventory_id: row.stock_inventory_id,
-                                transaction_in_id: row.transaction_in_id,
-                                transaction_out_id: row.transaction_out_id,
-                                contractor_id: row.contractor_id,
-                                client_in_id: row.client_in_id,
-                                client_out_id: row.client_out_id,
-                                site_in_id: row.site_in_id,
-                                site_out_id: row.site_out_id,
-                                type_in: row.type_in,
-                                size_in: row.size_in,
-                                type_out: row.type_out,
-                                size_out: row.size_out
-                            });
-                        }
-                    });
-
-                    return newData;
-                }
-
-            },
-            columns: [
-                { 
-                    data: null,
-                    name: 'no',
-                    orderable: false,
-                    searchable: false,
-                    render: function (data, type, row, meta) {
-                        return meta.row + meta.settings._iDisplayStart + 1;
-                    }
-                },
-                { data: 'contractor', name: 'contractors.name' },
-                { data: 'client_in_name', name: 'client_companies.name' },
-                { data: 'site_in', name: 'site_in.name' },
-                { data: 'billboard_type_in', name: 'billboards.type' },
-                { data: 'billboard_size_in', name: 'billboards.size' },
-                { data: 'quantity_in', name: 'transactions_in.quantity' },
-                { data: 'remarks_in', name: 'transactions_in.remarks' },
-                { data: 'date_in', name: 'transactions_in.transaction_date' },
-                { data: 'balance_contractor', name: 'stock_inventories.balance_contractor' },
-                { data: 'balance_bgoc', name: 'stock_inventories.balance_bgoc' },
-                { data: 'date_out', name: 'transactions_out.transaction_date' },
-                { data: 'quantity_out', name: 'transactions_out.quantity' },
-                { data: 'site_out', name: 'site_out.name' },
-                { data: 'billboard_type_out', name: 'billboards.type' },
-                { data: 'billboard_size_out', name: 'billboards.size' },
-                { data: 'client_out_name', name: 'client_companies.name' },
-                { data: 'remarks_out', name: 'transactions_out.remarks' },
-            ],
-            order: [[0, 'asc']],
-
-            // 👇 This is where we merge Contractor + Bal-Contractor + Bal-BGOC
-            drawCallback: function(settings) {
-                let api = this.api();
-                let rows = api.rows({ page: 'current' }).nodes();
-
-                let lastStockId = null;
-                let groupStart = null;
-
-                api.rows({ page: 'current' }).every(function(rowIdx) {
-                    let data = this.data();
-                    let stockId = data.stock_inventory_id; // ✅ use stock inventory id, not row id
-
-                    if (stockId !== lastStockId) {
-                        // Finish previous group
-                        if (groupStart !== null) {
-                            let rowCount = rowIdx - groupStart;
-
-                            // Apply rowspan to the groupStart row
-                            $('td:eq(1)', rows[groupStart]).attr('rowspan', rowCount);
-                            $('td:eq(9)', rows[groupStart]).attr('rowspan', rowCount);
-                            $('td:eq(10)', rows[groupStart]).attr('rowspan', rowCount);
-
-                            // Hide duplicates
-                            for (let j = groupStart + 1; j < rowIdx; j++) {
-                                $('td:eq(1)', rows[j]).hide();
-                                $('td:eq(9)', rows[j]).hide();
-                                $('td:eq(10)', rows[j]).hide();
-                            }
-                        }
-
-                        // Start new group
-                        groupStart = rowIdx;
-                        lastStockId = stockId;
-                    }
-                });
-
-                // Handle last group
-                if (groupStart !== null) {
-                    let rowCount = rows.length - groupStart;
-
-                    $('td:eq(1)', rows[groupStart]).attr('rowspan', rowCount);
-                    $('td:eq(7)', rows[groupStart]).attr('rowspan', rowCount);
-                    $('td:eq(8)', rows[groupStart]).attr('rowspan', rowCount);
-
-                    for (let j = groupStart + 1; j < rows.length; j++) {
-                        $('td:eq(1)', rows[j]).hide();
-                        $('td:eq(7)', rows[j]).hide();
-                        $('td:eq(8)', rows[j]).hide();
+                        $('td:eq(9)', rows[j]).hide();
                     }
                 }
             }

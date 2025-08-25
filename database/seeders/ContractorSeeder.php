@@ -12,6 +12,11 @@ class ContractorSeeder extends Seeder
     {
         $data = [
             [
+                'company_name' => 'Bluedale Group Of Companies',
+                'name' => 'BGOC',
+                'phone' => '+60122200622'
+            ],
+            [
                 'company_name' => 'Mahamad Advertising',
                 'name' => 'Arun',
                 'phone' => fake()->phoneNumber(), // random phone
