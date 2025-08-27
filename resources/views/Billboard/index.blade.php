@@ -896,13 +896,13 @@
                                 `<div class="flex flex-row">
                                     <a href="javascript:;" id="detail-` + data + `"
                                         class="button w-24 inline-block mr-2 mb-2 bg-theme-9 text-white" data-toggle="button" onclick="window.open('${a}')" >
-                                        Details
+                                        Site location
                                     </a>
 
-                                    <!-- Inventory Button -->
+                                    <!-- Map Button -->
                                     <a href="${inventoryUrl}" 
                                     class="button w-24 inline-block mr-2 mb-2 bg-theme-1 text-white">
-                                    Inventory
+                                    Map
                                     </a>
                                 </div>`;
 

@@ -59,7 +59,7 @@
                                 </div> -->
                             </div>
                             <div class="text-3xl font-bold leading-8 mt-6">{{ $billboard_booking_total }}</div>
-                            <div class="text-base text-gray-600 mt-1">Total Bookings</div>
+                            <div class="text-base text-gray-600 mt-1">Total Monthly Ongoing</div>
                         </div>
                     </div>
                 </div>
@@ -73,7 +73,7 @@
                                 </div> -->
                             </div>
                             <div class="text-3xl font-bold leading-8 mt-6">{{ $billboard_booking_active }}</div>
-                            <div class="text-base text-gray-600 mt-1">Total Active Bookings</div>
+                            <div class="text-base text-gray-600 mt-1">Total Active Monthly Ongoing</div>
                         </div>
                     </div>
                 </div>

@@ -71,6 +71,7 @@ class StockInventoryController extends Controller
     {
         $limit = $request->input('length');
         $start = $request->input('start');
+        $search = $request->input('search.value');
 
         // Subquery for IN transactions aggregated per stock_inventory
         $inSub = DB::table('stock_inventory_transactions as t_in')
@@ -80,6 +81,7 @@ class StockInventoryController extends Controller
                 DB::raw("GROUP_CONCAT(quantity SEPARATOR ',') as quantity_in"),
                 DB::raw("GROUP_CONCAT(remarks SEPARATOR ', ') as remarks_in"),
                 DB::raw("GROUP_CONCAT(transaction_date SEPARATOR ',') as date_in"),
+                DB::raw('GROUP_CONCAT(DISTINCT client_companies.id) as client_in_ids'),
                 DB::raw("GROUP_CONCAT(client_companies.name SEPARATOR ',') as client_in_name"),
                 DB::raw("GROUP_CONCAT(CONCAT(billboards.site_number, ' - ', locations.name) SEPARATOR ',') as site_in"),
                 DB::raw("GROUP_CONCAT(billboards.type SEPARATOR ',') as billboard_type_in"),
@@ -100,6 +102,7 @@ class StockInventoryController extends Controller
                 DB::raw("GROUP_CONCAT(quantity SEPARATOR ',') as quantity_out"),
                 DB::raw("GROUP_CONCAT(remarks SEPARATOR ', ') as remarks_out"),
                 DB::raw("GROUP_CONCAT(transaction_date SEPARATOR ',') as date_out"),
+                DB::raw('GROUP_CONCAT(DISTINCT client_companies.id) as client_out_ids'),
                 DB::raw("GROUP_CONCAT(client_companies.name SEPARATOR ',') as client_out_name"),
                 DB::raw("GROUP_CONCAT(CONCAT(billboards.site_number, ' - ', locations.name) SEPARATOR ',') as site_out"),
                 DB::raw("GROUP_CONCAT(billboards.type SEPARATOR ',') as billboard_type_out"),
@@ -111,6 +114,15 @@ class StockInventoryController extends Controller
             ->leftJoin('locations', 'locations.id', '=', 'billboards.location_id')
             ->where('t_out.type', 'out')
             ->groupBy('t_out.stock_inventory_id');
+
+        // 🔎 Apply date filter INSIDE subqueries so it works for all transactions
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $startDate = $request->start_date;
+            $endDate   = $request->end_date;
+
+            $inSub->whereBetween('t_in.transaction_date', [$startDate, $endDate]);
+            $outSub->whereBetween('t_out.transaction_date', [$startDate, $endDate]);
+        }
 
         $query = StockInventory::select(
             'stock_inventories.*',
@@ -142,6 +154,31 @@ class StockInventoryController extends Controller
         })
         ->leftJoin('contractors', 'contractors.id', '=', 'stock_inventories.contractor_id')
         ->orderBy('stock_inventories.id', 'asc');
+
+        // 🔎 Apply Filters
+        if ($request->filled('contractor_id')) {
+            $query->where('stock_inventories.contractor_id', $request->contractor_id);
+        }
+
+        if ($request->filled('client_id')) {
+            $query->where(function ($q) use ($request) {
+                $q->whereRaw('FIND_IN_SET(?, in_agg.client_in_ids)', [$request->client_id])
+                ->orWhereRaw('FIND_IN_SET(?, out_agg.client_out_ids)', [$request->client_id]);
+            });
+        }
+
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('contractors.name', 'like', "%{$search}%")
+                ->orWhere('contractors.company_name', 'like', "%{$search}%")
+                ->orWhere('in_agg.client_in_name', 'like', "%{$search}%")
+                ->orWhere('out_agg.client_out_name', 'like', "%{$search}%")
+                ->orWhere('in_agg.site_in', 'like', "%{$search}%")
+                ->orWhere('out_agg.site_out', 'like', "%{$search}%")
+                ->orWhere('in_agg.remarks_in', 'like', "%{$search}%")
+                ->orWhere('out_agg.remarks_out', 'like', "%{$search}%");
+            });
+        }
 
         $totalData = $query->count();
 
@@ -281,115 +318,525 @@ class StockInventoryController extends Controller
 
 
 
+    // ORIGINAL CODE YA
+    // public function create(Request $request)
+    // {
+    //     // 1️⃣ Validation
+    //     $validated = Validator::make($request->all(), [
+    //         'contractor_id'         => 'required|exists:contractors,id',
+    //         'from_contractor_id'    => 'nullable|exists:contractors,id',
+    //         'remarks_in'            => 'nullable|string',
+    //         'remarks_out'           => 'nullable|string',
+    //         'balance_contractor'    => 'nullable|integer',
+    //         'balance_bgoc'          => 'nullable|integer',
+    //         'sites_in'              => 'nullable|array',
+    //         'sites_in.*.id'         => 'nullable|exists:billboards,id',
+    //         'sites_in.*.qty'        => 'nullable|integer|min:0',
+    //         'sites_in.*.client_id'  => 'nullable|exists:client_companies,id',
+    //         'date_in'               => 'nullable|date',
+    //         'date_out'              => 'nullable|date',
+    //         'sites_out'             => 'nullable|array',
+    //         'sites_out.*.id'        => 'nullable|exists:billboards,id',
+    //         'sites_out.*.qty'       => 'nullable|integer|min:0',
+    //         'sites_out.*.client_id' => 'nullable|exists:client_companies,id',
+    //     ])->validate();
 
+    //     logger('masokkkk: ' , $validated);
+
+    //     try {
+
+    //         // 🔹 Check contractor balance first
+    //         $inventoryCheck = StockInventory::where('contractor_id', $validated['contractor_id'])->first();
+    //         if ($inventoryCheck && ($inventoryCheck->balance_contractor ?? 0) <= 0) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'This contractor has no balance. Cannot proceed.',
+    //             ], 422); // 👈 This will trigger error handling in your frontend
+    //         }
+
+    //         // 2️⃣ Wrap in DB transaction
+    //         $inventory = DB::transaction(function() use ($validated) {
+
+    //             // Find existing inventory or create new
+    //             $inventory = StockInventory::firstOrNew(
+    //                 ['contractor_id' => $validated['contractor_id']]
+    //             );
+
+    //             $inventory->balance_contractor = $inventory->balance_contractor ?? 0;
+    //             $inventory->balance_bgoc       = $inventory->balance_bgoc ?? 0;
+    //             $inventory->save();
+
+    //             $userId = auth()->id() ?? 1;
+
+    //             // 3️⃣ Handle IN transactions
+    //             if (!empty($validated['sites_in'])) {
+    //                 foreach ($validated['sites_in'] as $site) {
+    //                     $qty = $site['qty'] ?? 0;
+    //                     $inventory->balance_contractor += $qty;
+
+    //                     // subtract from bgoc only if available
+    //                     if (($inventory->balance_bgoc ?? 0) > 0) {
+    //                         $inventory->balance_bgoc -= $qty;
+    //                         if ($inventory->balance_bgoc < 0) {
+    //                             $inventory->balance_bgoc = 0;
+    //                         }
+    //                     }
+
+    //                     $inventory->save();
+
+    //                     $inventory->transactions()->create([
+    //                         'billboard_id'     => $site['id'] ?? null,
+    //                         'client_id'        => $site['client_id'] ?? null,
+    //                         'from_contractor_id' => $validated['contractor_id'],
+    //                         'type'             => 'in',
+    //                         'quantity'         => $qty,
+    //                         'transaction_date' => isset($validated['date_in'])
+    //                                                 ? Carbon::parse($validated['date_in'])->format('Y-m-d H:i:s')
+    //                                                 : now(),
+    //                         'remarks'          => $validated['remarks_in'] ?? null,
+    //                         'created_by'       => $userId,
+    //                     ]);
+    //                 }
+    //             } 
+
+    //             // 4️⃣ Handle OUT transactions
+    //             if (!empty($validated['sites_out'])) {
+    //                 foreach ($validated['sites_out'] as $site) {
+    //                     $qty = $site['qty'] ?? 0;
+
+    //                     // update contractor's own balances
+    //                     $inventory->balance_bgoc += $qty;
+    //                     if (($inventory->balance_contractor ?? 0) > 0) {
+    //                         $inventory->balance_contractor -= $qty;
+    //                         if ($inventory->balance_contractor < 0) {
+    //                             $inventory->balance_contractor = 0;
+    //                         }
+    //                     }
+    //                     $inventory->save();
+
+    //                     // 🔹 Also update BGOC contractor inventory (id=1)
+    //                     $bgocInventory = StockInventory::firstOrNew(['contractor_id' => 1]);
+    //                     $bgocInventory->balance_contractor = $bgocInventory->balance_contractor ?? 0;
+    //                     $bgocInventory->balance_contractor += $qty;
+    //                     $bgocInventory->save();
+
+    //                     $bgocInventory->transactions()->create([
+    //                         'billboard_id'     => $site['id'] ?? null,
+    //                         'client_id'        => $site['client_id'] ?? null,
+    //                         'from_contractor_id' => $validated['contractor_id'],
+    //                         'type'             => 'out',
+    //                         'quantity'         => $qty,
+    //                         'transaction_date' => isset($validated['date_out'])
+    //                                                 ? Carbon::parse($validated['date_out'])->format('Y-m-d H:i:s')
+    //                                                 : now(),
+    //                         'remarks'          => $validated['remarks_out'] ?? null,
+    //                         'created_by'       => $userId,
+    //                     ]);
+    //                 }
+    //             } 
+
+    //             return $inventory;
+    //         });
+
+    //         // 5️⃣ Return response
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Inventory saved successfully.',
+    //             'data'    => $inventory->load('transactions'),
+    //         ]);
+
+    //     } catch (\Exception $e) {
+    //         return response()->json(['error' => $e->getMessage()], 422);
+    //     }
+    // }
+
+    // MODIFIED CODE FOR CONTRACTOR - CONTRACTOR TRANSFER 1.0
+    // public function create(Request $request)
+    // {
+    //     // 1️⃣ Validation
+    //     $validated = Validator::make($request->all(), [
+    //         'contractor_id'         => 'required|exists:contractors,id',   // target contractor
+    //         'from_contractor_id'    => 'nullable|exists:contractors,id',   // source contractor
+    //         'remarks_in'            => 'nullable|string',
+    //         'remarks_out'           => 'nullable|string',
+    //         'balance_contractor'    => 'nullable|integer',
+    //         'balance_bgoc'          => 'nullable|integer',
+    //         'sites_in'              => 'nullable|array',
+    //         'sites_in.*.id'         => 'nullable|exists:billboards,id',
+    //         'sites_in.*.qty'        => 'nullable|integer|min:0',
+    //         'sites_in.*.client_id'  => 'nullable|exists:client_companies,id',
+    //         'sites_in.*.client_type'  => 'nullable|string|in:contractor,client',
+    //         'date_in'               => 'nullable|date',
+    //         'date_out'              => 'nullable|date',
+    //         'sites_out'             => 'nullable|array',
+    //         'sites_out.*.id'        => 'nullable|exists:billboards,id',
+    //         'sites_out.*.qty'       => 'nullable|integer|min:0',
+    //         'sites_out.*.client_id' => 'nullable|exists:client_companies,id',
+    //         'sites_out.*.client_type' => 'nullable|string|in:contractor,client',
+    //     ])->validate();
+
+    //     logger('masok sini: ' , $validated);
+
+    //     try {
+    //         $userId = auth()->id() ?? 1;
+
+    //         $inventory = DB::transaction(function() use ($validated, $userId) {
+
+    //             // 🔹 Transfer mode (contractor → contractor)
+    //             if (!empty($validated['from_contractor_id'])) {
+    //                 $from = StockInventory::firstOrNew(['contractor_id' => $validated['from_contractor_id']]);
+    //                 $from->balance_contractor = $from->balance_contractor ?? 0;
+    //                 $from->save();
+
+    //                 $to = StockInventory::firstOrNew(['contractor_id' => $validated['contractor_id']]);
+    //                 $to->balance_contractor = $to->balance_contractor ?? 0;
+    //                 $to->save();
+
+    //                 foreach ($validated['sites_in'] ?? [] as $site) {
+    //                     $qty = $site['qty'] ?? 0;
+
+    //                     if ($from->balance_contractor < $qty) {
+    //                         throw new \Exception("Contractor ID {$from->contractor_id} does not have enough balance.");
+    //                     }
+
+    //                     // deduct from source
+    //                     $from->balance_contractor -= $qty;
+    //                     $from->save();
+
+    //                     $from->transactions()->create([
+    //                         'billboard_id'       => $site['id'] ?? null,
+    //                         'client_id'          => $site['client_id'] ?? null,
+    //                         'from_contractor_id' => $from->contractor_id,
+    //                         'type'               => 'out',
+    //                         'quantity'           => $qty,
+    //                         'transaction_date'   => $validated['date_out'] ?? now(),
+    //                         'remarks'            => $validated['remarks_out'] ?? null,
+    //                         'created_by'         => $userId,
+    //                     ]);
+
+    //                     // add to target
+    //                     $to->balance_contractor += $qty;
+    //                     $to->save();
+
+    //                     $to->transactions()->create([
+    //                         'billboard_id'       => $site['id'] ?? null,
+    //                         'client_id'          => $site['client_id'] ?? null,
+    //                         'from_contractor_id' => $from->contractor_id,
+    //                         'type'               => 'in',
+    //                         'quantity'           => $qty,
+    //                         'transaction_date'   => $validated['date_in'] ?? now(),
+    //                         'remarks'            => $validated['remarks_in'] ?? null,
+    //                         'created_by'         => $userId,
+    //                     ]);
+    //                 }
+
+    //                 return $to;
+    //             }
+
+    //             // 🔹 Default BGOC mode
+    //             $inventory = StockInventory::firstOrNew(['contractor_id' => $validated['contractor_id']]);
+    //             $inventory->balance_contractor = $inventory->balance_contractor ?? 0;
+    //             $inventory->balance_bgoc       = $inventory->balance_bgoc ?? 0;
+    //             $inventory->save();
+
+    //             // Normal IN logic
+    //             if (!empty($validated['sites_in'])) {
+    //                 foreach ($validated['sites_in'] as $site) {
+    //                     $qty = $site['qty'] ?? 0;
+    //                     $inventory->balance_contractor += $qty;
+
+    //                     if (($inventory->balance_bgoc ?? 0) > 0) {
+    //                         $inventory->balance_bgoc -= $qty;
+    //                         if ($inventory->balance_bgoc < 0) $inventory->balance_bgoc = 0;
+    //                     }
+    //                     $inventory->save();
+
+    //                     $inventory->transactions()->create([
+    //                         'billboard_id'       => $site['id'] ?? null,
+    //                         'client_id'          => $site['client_id'] ?? null,
+    //                         'from_contractor_id' => $validated['contractor_id'],
+    //                         'type'               => 'in',
+    //                         'quantity'           => $qty,
+    //                         'transaction_date'   => $validated['date_in'] ?? now(),
+    //                         'remarks'            => $validated['remarks_in'] ?? null,
+    //                         'created_by'         => $userId,
+    //                     ]);
+    //                 }
+    //             }
+
+    //             // Normal OUT logic
+    //             if (!empty($validated['sites_out'])) {
+    //                 foreach ($validated['sites_out'] as $site) {
+    //                     $qty = $site['qty'] ?? 0;
+
+    //                     $inventory->balance_bgoc += $qty;
+    //                     if (($inventory->balance_contractor ?? 0) > 0) {
+    //                         $inventory->balance_contractor -= $qty;
+    //                         if ($inventory->balance_contractor < 0) $inventory->balance_contractor = 0;
+    //                     }
+    //                     $inventory->save();
+
+    //                     $bgocInventory = StockInventory::firstOrNew(['contractor_id' => 1]);
+    //                     $bgocInventory->balance_contractor = $bgocInventory->balance_contractor ?? 0;
+    //                     $bgocInventory->balance_contractor += $qty;
+    //                     $bgocInventory->save();
+
+    //                     $bgocInventory->transactions()->create([
+    //                         'billboard_id'       => $site['id'] ?? null,
+    //                         'client_id'          => $site['client_id'] ?? null,
+    //                         'from_contractor_id' => $validated['contractor_id'],
+    //                         'type'               => 'out',
+    //                         'quantity'           => $qty,
+    //                         'transaction_date'   => $validated['date_out'] ?? now(),
+    //                         'remarks'            => $validated['remarks_out'] ?? null,
+    //                         'created_by'         => $userId,
+    //                     ]);
+    //                 }
+    //             }
+
+    //             return $inventory;
+    //         });
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Inventory saved successfully.',
+    //             'data'    => $inventory->load('transactions'),
+    //         ]);
+
+    //     } catch (\Exception $e) {
+    //         return response()->json(['error' => $e->getMessage()], 422);
+    //     }
+    // }
+
+    // MODIFIED CODE FOR CONTRACTOR - CONTRACTOR TRANSFER 2.0
     public function create(Request $request)
     {
-        // 1️⃣ Validation
-        $validated = Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
+            // Top-level contractor is the SOURCE in transfer mode
             'contractor_id'         => 'required|exists:contractors,id',
             'from_contractor_id'    => 'nullable|exists:contractors,id',
+
             'remarks_in'            => 'nullable|string',
             'remarks_out'           => 'nullable|string',
             'balance_contractor'    => 'nullable|integer',
             'balance_bgoc'          => 'nullable|integer',
-            'sites_in'              => 'nullable|array',
-            'sites_in.*.id'         => 'nullable|exists:billboards,id',
-            'sites_in.*.qty'        => 'nullable|integer|min:0',
-            'sites_in.*.client_id'  => 'nullable|exists:client_companies,id',
+
             'date_in'               => 'nullable|date',
             'date_out'              => 'nullable|date',
-            'sites_out'             => 'nullable|array',
-            'sites_out.*.id'        => 'nullable|exists:billboards,id',
-            'sites_out.*.qty'       => 'nullable|integer|min:0',
-            'sites_out.*.client_id' => 'nullable|exists:client_companies,id',
-        ])->validate();
+
+            'sites_in'                      => 'nullable|array',
+            'sites_in.*.id'                 => 'nullable|exists:billboards,id',
+            'sites_in.*.qty'                => 'nullable|integer|min:0',
+            'sites_in.*.client_id'          => 'nullable|integer', // can be client OR contractor id (decide by client_type)
+            'sites_in.*.client_type'        => 'nullable|string|in:contractor,client',
+
+            'sites_out'                     => 'nullable|array',
+            'sites_out.*.id'                => 'nullable|exists:billboards,id',
+            'sites_out.*.qty'               => 'nullable|integer|min:0',
+            'sites_out.*.client_id'         => 'nullable|integer',
+            'sites_out.*.client_type'       => 'nullable|string|in:contractor,client',
+        ]);
+
+        // Optional: conditional existence checks depending on client_type
+        $validator->after(function ($v) use ($request) {
+            foreach (($request->input('sites_in') ?? []) as $i => $row) {
+                if (($row['client_type'] ?? null) === 'contractor') {
+                    if (!\App\Models\Contractor::whereKey($row['client_id'] ?? null)->exists()) {
+                        $v->errors()->add("sites_in.$i.client_id", 'Selected contractor does not exist.');
+                    }
+                } elseif (($row['client_type'] ?? null) === 'client') {
+                    if (!\App\Models\ClientCompany::whereKey($row['client_id'] ?? null)->exists()) {
+                        $v->errors()->add("sites_in.$i.client_id", 'Selected client does not exist.');
+                    }
+                }
+            }
+            foreach (($request->input('sites_out') ?? []) as $i => $row) {
+                if (($row['client_type'] ?? null) === 'contractor') {
+                    if (!\App\Models\Contractor::whereKey($row['client_id'] ?? null)->exists()) {
+                        $v->errors()->add("sites_out.$i.client_id", 'Selected contractor does not exist.');
+                    }
+                } elseif (($row['client_type'] ?? null) === 'client') {
+                    if (!\App\Models\ClientCompany::whereKey($row['client_id'] ?? null)->exists()) {
+                        $v->errors()->add("sites_out.$i.client_id", 'Selected client does not exist.');
+                    }
+                }
+            }
+        });
+
+        $validated = $validator->validate();
+        logger('masok sini: ', $validated);
 
         try {
-            // 2️⃣ Wrap in DB transaction
-            $inventory = DB::transaction(function() use ($validated) {
+            $userId = auth()->id() ?? 1;
 
-                // Find existing inventory or create new
-                $inventory = StockInventory::firstOrNew(
-                    ['contractor_id' => $validated['contractor_id']]
-                );
+            $inventory = DB::transaction(function () use ($validated, $userId) {
+                $sourceId = (int)$validated['contractor_id'];
 
+                // Detect contractor-to-contractor transfer in either list
+                $isContractorTransfer =
+                    collect($validated['sites_in'] ?? [])->contains(fn ($r) => ($r['client_type'] ?? null) === 'contractor' && !empty($r['client_id'])) ||
+                    collect($validated['sites_out'] ?? [])->contains(fn ($r) => ($r['client_type'] ?? null) === 'contractor' && !empty($r['client_id']));
+
+                $returnInventory = null;
+
+                if ($isContractorTransfer) {
+                    // Source contractor inventory (e.g., Waqas)
+                    $from = \App\Models\StockInventory::firstOrNew(['contractor_id' => $sourceId]);
+                    $from->balance_contractor = $from->balance_contractor ?? 0;
+                    $from->balance_bgoc       = $from->balance_bgoc ?? 0;
+                    $from->save();
+
+                    // Helper to move qty from source to a target contractor
+                    $transferToContractor = function (array $row) use (&$from, $validated, $userId, $sourceId, &$returnInventory) {
+                        $qty = (int)($row['qty'] ?? 0);
+                        if ($qty <= 0) return;
+
+                        $targetId = (int)($row['client_id'] ?? 0);
+                        if ($targetId <= 0) return;
+
+                        if ($from->balance_contractor < $qty) {
+                            throw new \Exception("Insufficient balance for contractor ID {$sourceId}.");
+                        }
+
+                        // Target contractor inventory (e.g., Arun)
+                        $to = \App\Models\StockInventory::firstOrNew(['contractor_id' => $targetId]);
+                        $to->balance_contractor = $to->balance_contractor ?? 0;
+                        $to->balance_bgoc       = $to->balance_bgoc ?? 0;
+                        $to->save();
+
+                        // 1) Debit source
+                        $from->balance_contractor -= $qty;
+                        $from->save();
+                        $from->transactions()->create([
+                            'billboard_id'       => $row['id'] ?? null,
+                            'client_id'          => $targetId ?? null,
+                            'from_contractor_id' => $sourceId,
+                            'type'               => 'out',
+                            'quantity'           => $qty,
+                            'transaction_date'   => !empty($validated['date_out'])
+                                                    ? \Carbon\Carbon::parse($validated['date_out'])->format('Y-m-d H:i:s')
+                                                    : now(),
+                            'remarks'            => $validated['remarks_out'] ?? ($validated['remarks_in'] ?? null),
+                            'created_by'         => $userId,
+                        ]);
+
+                        // 2) Credit target
+                        $to->balance_contractor += $qty;
+                        $to->save();
+                        $to->transactions()->create([
+                            'billboard_id'       => $row['id'] ?? null,
+                            'client_id'          => $targetId ?? null,
+                            'from_contractor_id' => $sourceId,
+                            'type'               => 'in',
+                            'quantity'           => $qty,
+                            'transaction_date'   => !empty($validated['date_in'])
+                                                    ? \Carbon\Carbon::parse($validated['date_in'])->format('Y-m-d H:i:s')
+                                                    : now(),
+                            'remarks'            => $validated['remarks_in'] ?? null,
+                            'created_by'         => $userId,
+                        ]);
+
+                        // so the response can include the latest target inventory updated
+                        $returnInventory = $to;
+                    };
+
+                    // Process any contractor-target rows in sites_in (your sample uses this)
+                    foreach ($validated['sites_in'] ?? [] as $row) {
+                        if (($row['client_type'] ?? null) === 'contractor' && !empty($row['client_id'])) {
+                            $transferToContractor($row);
+                        }
+                    }
+
+                    // Also support contractor-target rows in sites_out (mirrored behavior)
+                    foreach ($validated['sites_out'] ?? [] as $row) {
+                        if (($row['client_type'] ?? null) === 'contractor' && !empty($row['client_id'])) {
+                            $transferToContractor($row);
+                        }
+                    }
+
+                    // Return the last updated target inventory so UI can show recipient’s IN record
+                    return $returnInventory ?? $from;
+                }
+
+                // -------------------------
+                // Default (BGOC) mode below
+                // -------------------------
+                $inventory = \App\Models\StockInventory::firstOrNew(['contractor_id' => $sourceId]);
                 $inventory->balance_contractor = $inventory->balance_contractor ?? 0;
                 $inventory->balance_bgoc       = $inventory->balance_bgoc ?? 0;
                 $inventory->save();
 
-                $userId = auth()->id() ?? 1;
-
-                // 3️⃣ Handle IN transactions
-                if (!empty($validated['sites_in'])) {
-                    foreach ($validated['sites_in'] as $site) {
-                        $qty = $site['qty'] ?? 0;
-                        $inventory->balance_contractor += $qty;
-
-                        // subtract from bgoc only if available
-                        if (($inventory->balance_bgoc ?? 0) > 0) {
-                            $inventory->balance_bgoc -= $qty;
-                            if ($inventory->balance_bgoc < 0) {
-                                $inventory->balance_bgoc = 0;
-                            }
-                        }
-
-                        $inventory->save();
-
-                        $inventory->transactions()->create([
-                            'billboard_id'     => $site['id'],
-                            'client_id'        => $site['client_id'] ?? null,
-                            'from_contractor_id' => $validated['contractor_id'],
-                            'type'             => 'in',
-                            'quantity'         => $qty,
-                            'transaction_date' => isset($validated['date_in'])
-                                                    ? Carbon::parse($validated['date_in'])->format('Y-m-d H:i:s')
-                                                    : now(),
-                            'remarks'          => $validated['remarks_in'] ?? null,
-                            'created_by'       => $userId,
-                        ]);
+                // IN (from BGOC/client to contractor)
+                foreach ($validated['sites_in'] ?? [] as $site) {
+                    if (($site['client_type'] ?? 'client') === 'contractor') {
+                        // already handled in transfer-block (won't reach here),
+                        // but keep guard for safety.
+                        continue;
                     }
+
+                    $qty = (int)($site['qty'] ?? 0);
+                    if ($qty <= 0) continue;
+
+                    $inventory->balance_contractor += $qty;
+
+                    if (($inventory->balance_bgoc ?? 0) > 0) {
+                        $inventory->balance_bgoc -= $qty;
+                        if ($inventory->balance_bgoc < 0) $inventory->balance_bgoc = 0;
+                    }
+                    $inventory->save();
+
+                    $inventory->transactions()->create([
+                        'billboard_id'       => $site['id'] ?? null,
+                        'client_id'          => $site['client_id'] ?? null,
+                        'from_contractor_id' => $sourceId,
+                        'type'               => 'in',
+                        'quantity'           => $qty,
+                        'transaction_date'   => !empty($validated['date_in'])
+                                                ? \Carbon\Carbon::parse($validated['date_in'])->format('Y-m-d H:i:s')
+                                                : now(),
+                        'remarks'            => $validated['remarks_in'] ?? null,
+                        'created_by'         => $userId,
+                    ]);
                 }
 
-                // 4️⃣ Handle OUT transactions
-                if (!empty($validated['sites_out'])) {
-                    foreach ($validated['sites_out'] as $site) {
-                        $qty = $site['qty'] ?? 0;
-
-                        // update contractor's own balances
-                        $inventory->balance_bgoc += $qty;
-                        if (($inventory->balance_contractor ?? 0) > 0) {
-                            $inventory->balance_contractor -= $qty;
-                            if ($inventory->balance_contractor < 0) {
-                                $inventory->balance_contractor = 0;
-                            }
-                        }
-                        $inventory->save();
-
-                        // 🔹 Also update BGOC contractor inventory (id=1)
-                        $bgocInventory = StockInventory::firstOrNew(['contractor_id' => 1]);
-                        $bgocInventory->balance_contractor = $bgocInventory->balance_contractor ?? 0;
-                        $bgocInventory->balance_contractor += $qty;
-                        $bgocInventory->save();
-
-                        $bgocInventory->transactions()->create([
-                            'billboard_id'     => $site['id'],
-                            'client_id'        => $site['client_id'] ?? null,
-                            'from_contractor_id' => $validated['contractor_id'],
-                            'type'             => 'out',
-                            'quantity'         => $qty,
-                            'transaction_date' => isset($validated['date_out'])
-                                                    ? Carbon::parse($validated['date_out'])->format('Y-m-d H:i:s')
-                                                    : now(),
-                            'remarks'          => $validated['remarks_out'] ?? null,
-                            'created_by'       => $userId,
-                        ]);
+                // OUT (to BGOC/client)
+                foreach ($validated['sites_out'] ?? [] as $site) {
+                    if (($site['client_type'] ?? 'client') === 'contractor') {
+                        // already handled in transfer-block (won't reach here),
+                        // but keep guard for safety.
+                        continue;
                     }
+
+                    $qty = (int)($site['qty'] ?? 0);
+                    if ($qty <= 0) continue;
+
+                    $inventory->balance_bgoc += $qty;
+                    $inventory->balance_contractor = max(0, ($inventory->balance_contractor ?? 0) - $qty);
+                    $inventory->save();
+
+                    // Update BGOC contractor (id = 1) stock if that is your convention
+                    $bgocInventory = \App\Models\StockInventory::firstOrNew(['contractor_id' => 1]);
+                    $bgocInventory->balance_contractor = $bgocInventory->balance_contractor ?? 0;
+                    $bgocInventory->balance_contractor += $qty;
+                    $bgocInventory->save();
+
+                    $bgocInventory->transactions()->create([
+                        'billboard_id'       => $site['id'] ?? null,
+                        'client_id'          => $site['client_id'] ?? null,
+                        'from_contractor_id' => $sourceId,
+                        'type'               => 'out',
+                        'quantity'           => $qty,
+                        'transaction_date'   => !empty($validated['date_out'])
+                                                ? \Carbon\Carbon::parse($validated['date_out'])->format('Y-m-d H:i:s')
+                                                : now(),
+                        'remarks'            => $validated['remarks_out'] ?? null,
+                        'created_by'         => $userId,
+                    ]);
                 }
 
                 return $inventory;
             });
 
-            // 5️⃣ Return response
             return response()->json([
                 'success' => true,
                 'message' => 'Inventory saved successfully.',
@@ -400,6 +847,48 @@ class StockInventoryController extends Controller
             return response()->json(['error' => $e->getMessage()], 422);
         }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public function edit(Request $request)
     {
@@ -575,14 +1064,6 @@ class StockInventoryController extends Controller
             return response()->json(['error' => $e->getMessage()], 422);
         }
     }
-
-
-
-
-
-
-
-
 
     /**
      * Delete stock inventory.

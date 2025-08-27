@@ -30,17 +30,18 @@
     </h2>
 </div>
 
+<!-- stock inventory filter -->
 <div class="intro-y box p-5 mt-5">
     <div class="pos col-span-12 lg:col-span-4">
-        <!-- BEGIN: Client -->
+        <!-- BEGIN: Stock -->
         <div>
-            <!-- BEGIN: Filter & Add Client -->
+            <!-- BEGIN: Filter & Add Stock -->
             <div class="flex flex-col sm:flex-row sm:items-end xl:items-start">
                 <!-- BEGIN: Filter -->
                 <form class="xl:flex sm:mr-auto">
                     <div class="sm:flex items-center sm:mr-4">
                         <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Contractor</label>
-                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="fliterClient">
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterStockContractor">
                         <option selected value="">Select an option</option>
                         @foreach ($contractors as $contractor)
                             <option value="{{ $contractor->id }}">{{ $contractor->name }} - {{ $contractor->company_name }}</option>
@@ -49,16 +50,16 @@
                     </div>
                     <div class="sm:flex items-center sm:mr-4">
                         <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Client</label>
-                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="fliterClient">
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterStockClient">
                         <option selected value="">Select an option</option>
                         @foreach ($clientcompany as $clientcomp)
                             <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
                         @endforeach
                         </select>
                     </div>
-                    <div class="mt-2 xl:mt-0">
+                    <!-- <div class="mt-2 xl:mt-0">
                         <button type="button" class="button w-full sm:w-16 bg-theme-32 text-white" id="filterClientButton">Filter</button>
-                    </div>
+                    </div> -->
                 </form>
                 <!-- END: Filter -->
 
@@ -74,6 +75,29 @@
                 </div>
                 <!-- END: Add Stock Inventory -->
             </div>
+            <!-- Monthly Ongoing Date Filter -->
+            <div class="flex flex-col sm:flex-row sm:items-end xl:items-start mb-2 mt-2">
+                <form class="xl:flex flex-wrap items-end">
+                    <div class="row sm:flex items-center sm:mr-4">
+                        <label class="w-24 text-gray-700">Start Date</label>
+                        <input type="date" id="filterStockStartDate" class="input border w-48" />
+                    </div>
+
+                    <div class="row sm:flex items-center sm:mr-4">
+                        <label class="w-24 text-gray-700">End Date</label>
+                        <input type="date" id="filterStockEndDate" class="input border w-48" />
+                    </div>
+                    <!-- <div class="row sm:flex items-center sm:mr-4">
+                        <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Year</label>
+                        <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="filterStockInventoryYear">
+                            @for ($y = 2023; $y <= now()->year + 2; $y++)
+                                <option value="{{ $y }}" {{ $y == now()->year ? 'selected' : '' }}>{{ $y }}</option>
+                            @endfor
+                        </select>
+                    </div> -->
+                </form>
+            </div>
+            <!-- Filter End -->
             <!-- END: Filter & Add Stock Inventory -->
 
             <!-- BEGIN: Stock Inventory List -->
@@ -139,7 +163,7 @@
                 
                 <!-- LEFT COLUMN: IN INVENTORY -->
                 <div class="bg-orange-50 p-4 rounded-lg">
-                    <h3 class="font-bold text-orange-600 mb-3">In Inventory</h3>
+                    <h3 class="font-bold text-orange-600 mb-3">Stock In Inventory</h3>
 
                     <div class="mb-3">
                         <label class="block">Balance - Contractor</label>
@@ -160,12 +184,28 @@
                     <div id="siteInContainer">
                         <div class="siteIn">
                             <div class="mb-3">
-                                <label class="block">Client</label>
+                                <label class="block">Client/Contractor</label>
                                 <select class="input w-full border mt-2 select2" name="clients_in[]">
                                 <option selected value="">Select an option</option>
-                                @foreach ($clientcompany as $clientcomp)
+                                <!-- @foreach ($clientcompany as $clientcomp)
                                     <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
                                 @endforeach
+                                </select> -->
+                                    <optgroup label="Clients">
+                                        @foreach ($clientcompany as $clientcomp)
+                                            <option value="client-{{ $clientcomp->id }}">
+                                                {{ $clientcomp->name }}
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+
+                                    <optgroup label="Contractors">
+                                        @foreach ($contractors as $contractor)
+                                            <option value="contractor-{{ $contractor->id }}">
+                                                {{ $contractor->name }}
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
                                 </select>
                             </div>
                             <div class="mb-3">
@@ -206,7 +246,7 @@
 
                 <!-- RIGHT COLUMN: OUT INVENTORY -->
                 <div class="bg-green-50 p-4 rounded-lg">
-                    <h3 class="font-bold text-green-600 mb-3">Out Inventory</h3>
+                    <h3 class="font-bold text-green-600 mb-3">Stock Out Inventory</h3>
 
                     <div class="mb-3">
                         <label class="block">Bal - BGOC</label>
@@ -228,12 +268,27 @@
                     <div id="siteOutContainer">
                         <div class="siteOut">
                             <div class="mb-3">
-                                <label class="block">Client</label>
+                                <label class="block">Client/Contractor</label>
                                 <select class="input w-full border mt-2 select2" name="clients_out[]">
                                 <option selected value="">Select an option</option>
-                                @foreach ($clientcompany as $clientcomp)
+                                <!-- @foreach ($clientcompany as $clientcomp)
                                     <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
-                                @endforeach
+                                @endforeach -->
+                                    <optgroup label="Clients">
+                                        @foreach ($clientcompany as $clientcomp)
+                                            <option value="client-{{ $clientcomp->id }}">
+                                                {{ $clientcomp->name }}
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+
+                                    <optgroup label="Contractors">
+                                        @foreach ($contractors as $contractor)
+                                            <option value="contractor-{{ $contractor->id }}">
+                                                {{ $contractor->name }}
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
                                 </select>
                             </div>
                             <div class="mb-3">
@@ -275,7 +330,7 @@
 
             <!-- Footer -->
             <div class="mt-6 text-right">
-                <button type="submit" id="inventoryAddButton" class="bg-blue-600 text-white px-4 py-2 rounded">Submit</button>
+                <button type="button" id="inventoryAddButton" class="bg-blue-600 text-white px-4 py-2 rounded">Submit</button>
             </div>
         </form>
     </div>
@@ -306,7 +361,7 @@
                 
                 <!-- LEFT COLUMN: IN INVENTORY -->
                 <div class="bg-orange-50 p-4 rounded-lg">
-                    <h3 class="font-bold text-orange-600 mb-3">In Inventory</h3>
+                    <h3 class="font-bold text-orange-600 mb-3">Stock In Inventory</h3>
 
                     <div class="mb-3">
                         <label class="block">Bal - Contractor</label>
@@ -363,7 +418,7 @@
 
                 <!-- RIGHT COLUMN: OUT INVENTORY -->
                 <div class="bg-green-50 p-4 rounded-lg">
-                    <h3 class="font-bold text-green-600 mb-3">Out Inventory</h3>
+                    <h3 class="font-bold text-green-600 mb-3">Stock Out Inventory</h3>
 
                     <div class="mb-3">
                         <label class="block">Bal - BGOC</label>
@@ -456,17 +511,51 @@
 
 <script>
 
+    const startDateInput = document.getElementById("filterStockStartDate");
+    const endDateInput   = document.getElementById("filterStockEndDate");
+
+    // When start date changes, set it as min for end date
+    startDateInput.addEventListener("change", function () {
+        endDateInput.min = this.value;
+
+        // If end date is before start date, reset it
+        if (endDateInput.value && endDateInput.value < this.value) {
+            endDateInput.value = this.value;
+        }
+    });
+
+    // When end date changes, set it as max for start date
+    endDateInput.addEventListener("change", function () {
+        startDateInput.max = this.value;
+
+        // If start date is after end date, reset it
+        if (startDateInput.value && startDateInput.value > this.value) {
+            startDateInput.value = this.value;
+        }
+    });
+
     // Add site to In Inventory
     function siteInAdd() {
         let html = `
             <br><div class="siteIn">
                 <div class="mb-3">
-                    <label class="block">Client</label>
+                    <label class="block">Client/Contractor</label>
                     <select class="input w-full border mt-2 select2" name="clients_in[]">
-                    <option selected value="">Select an option</option>
-                    @foreach ($clientcompany as $clientcomp)
-                        <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
-                    @endforeach
+                        <option selected value="">Select an option</option>
+                        <optgroup label="Clients">
+                            @foreach ($clientcompany as $clientcomp)
+                                <option value="client-{{ $clientcomp->id }}">
+                                    {{ $clientcomp->name }}
+                                </option>
+                            @endforeach
+                        </optgroup>
+                        <optgroup label="Contractors">
+                            @foreach ($contractors as $contractor)
+                                <option value="contractor-{{ $contractor->id }}">
+                                    {{ $contractor->name }}
+                                </option>
+                            @endforeach
+                        </optgroup>
                     </select>
                 </div>
                 <div class="mb-3">
@@ -523,12 +612,23 @@
         let html = `
             <br><div class="siteOut">
                 <div class="mb-3">
-                    <label class="block">Client</label>
+                    <label class="block">Client/Contractor</label>
                     <select class="input w-full border mt-2 select2" name="clients_out[]">
-                    <option selected value="">Select an option</option>
-                    @foreach ($clientcompany as $clientcomp)
-                        <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
-                    @endforeach
+                        <option selected value="">Select an option</option>
+                        <optgroup label="Clients">
+                            @foreach ($clientcompany as $clientcomp)
+                                <option value="client-{{ $clientcomp->id }}">
+                                    {{ $clientcomp->name }}
+                                </option>
+                            @endforeach
+                        </optgroup>
+                        <optgroup label="Contractors">
+                            @foreach ($contractors as $contractor)
+                                <option value="contractor-{{ $contractor->id }}">
+                                    {{ $contractor->name }}
+                                </option>
+                            @endforeach
+                        </optgroup>
                     </select>
                 </div>
                 <div class="mb-3">
@@ -684,24 +784,27 @@
         let stockInventoryId = null;
 
         // Listen to below buttons
-        document.getElementById("filterClientButton").addEventListener("click", filterClientButton);
-        document.getElementById("inventoryAddButton").addEventListener("click", inventoryAddButton);
         document.getElementById("inventoryDeleteButton").addEventListener("click", inventoryDeleteButton);
 
         // When "filterClientButton" button is clicked, initiate initClientCompanyDatatable
-        function filterClientButton() {
-            filterClientCompany = document.getElementById("fliterClient").value;
-            // initStockInventoryDatatable(filterClientCompany);
-        };
+        // function filterClientButton() {
+        //     filterClientCompany = document.getElementById("fliterClient").value;
+        //     // initStockInventoryDatatable(filterClientCompany);
+        // };
 
         // When page first loads, load table
-        filterClientButton();
+        // filterClientButton();
 
         // Initialize Select2 with search
         $('.select2').select2({
             placeholder: "Select an option",
             allowClear: true,
             width: '100%'
+        });
+
+        $('#inventoryAddButton').on('click', function (e) {
+            e.preventDefault();
+            inventoryAddButton();
         });
 
         // ✅ IMPROVED MODAL FUNCTIONS
@@ -729,6 +832,28 @@
             $(selector).addClass('hidden').removeClass('flex');
         }
 
+        function setupAutoFilter() {
+            const tableElement = $('#inventory_table');
+            const filterSelectors = '#filterStockContractor, #filterStockClient, #filterStockStartDate, #filterStockEndDate';
+            // const selectedYear = $('#filterBillboardBookingYear').val();
+
+            // Reload DataTable
+            if ($.fn.DataTable.isDataTable(tableElement)) {
+                const table = tableElement.DataTable();
+
+                $(filterSelectors).on('change', function () {
+                    // const selectedYear = $('#filterBillboardBookingYear').val();
+
+                    table.ajax.reload();
+                    // buildMonthlyJobTableHead(selectedYear);
+                    // loadMonthlyJobs();
+                    // initBillboardBookingDatatable()
+                });
+
+                $('#inventory_table').DataTable().ajax.reload();
+            }
+        }
+
         // Add New Inventory
         function inventoryAddButton() {
             // Gather basic fields
@@ -744,11 +869,21 @@
             let sites_in = [];
             $("#siteInContainer .siteIn").each(function () {
                 let siteId = $(this).find("select[name='sites_in[]']").val();
-                let clientId = $(this).find("select[name='clients_in[]']").val(); // attach client per site
-                if (!siteId) return; // skip empty
+                let rawVal = $(this).find("select[name='clients_in[]']").val();
+                if (!rawVal) return; // skip empty
+
+                let clientType = null, clientId = null;
+                if (rawVal.startsWith("client-")) {
+                    clientType = "client";
+                    clientId = rawVal.replace("client-", "");
+                } else if (rawVal.startsWith("contractor-")) {
+                    clientType = "contractor";
+                    clientId = rawVal.replace("contractor-", "");
+                }
 
                 sites_in.push({
-                    id: siteId,
+                    id: siteId || null,
+                    client_type: clientType || null,
                     client_id: clientId || null,
                     type: $(this).find("input[name='types_in[]']").val(),
                     size: $(this).find("input[name='sizes_in[]']").val(),
@@ -760,11 +895,21 @@
             let sites_out = [];
             $("#siteOutContainer .siteOut").each(function () {
                 let siteId = $(this).find("select[name='sites_out[]']").val();
-                let clientId = $(this).find("select[name='clients_out[]']").val(); // attach client per site
-                if (!siteId) return; // skip empty
+                let rawVal = $(this).find("select[name='clients_out[]']").val();
+                if (!rawVal) return; // skip empty
+
+                let clientType = null, clientId = null;
+                if (rawVal.startsWith("client-")) {
+                    clientType = "client";
+                    clientId = rawVal.replace("client-", "");
+                } else if (rawVal.startsWith("contractor-")) {
+                    clientType = "contractor";
+                    clientId = rawVal.replace("contractor-", "");
+                }
 
                 sites_out.push({
-                    id: siteId,
+                    id: siteId || null,
+                    client_type: clientType || null,
                     client_id: clientId || null,
                     type: $(this).find("input[name='types_out[]']").val(),
                     size: $(this).find("input[name='sizes_out[]']").val(),
@@ -804,13 +949,30 @@
                     $('#siteOutContainer').empty();
 
                     // Reload table
-                    $('#inventory_table').DataTable().ajax.reload();
+                    // $('#inventory_table').DataTable().ajax.reload();
+                    $('#inventory_table').DataTable().ajax.reload(null, false); 
                 },
                 error: function(xhr, status, error) {
-                    var response = JSON.parse(xhr.responseText);
-                    var error = "Error: " + response.error;
-                    window.showSubmitToast(error, "#D32929");
+                let message = "An unexpected error occurred.";
+
+                try {
+                    let response = JSON.parse(xhr.responseText);
+
+                    if (response.error) {
+                        message = response.error; // our custom error
+                    } else if (response.errors) {
+                        // Laravel validation errors (object of arrays)
+                        message = Object.values(response.errors).flat().join("\n");
+                    } else if (response.message) {
+                        message = response.message; // fallback for exceptions
+                    }
+                } catch (e) {
+                    message = xhr.responseText || message;
                 }
+
+                window.showSubmitToast(message, "#D32929");
+            }
+
             });
         }
 
@@ -867,7 +1029,10 @@
                 type: "POST",
                 data: function (d) {
                     d._token = "{{ csrf_token() }}";
-                    d.company = filterClientCompany;
+                    d.contractor_id = $('#filterStockContractor').val();
+                    d.client_id = $('#filterStockClient').val();
+                    d.start_date = $('#filterStockStartDate').val();
+                    d.end_date = $('#filterStockEndDate').val();
                     return d;
                 },
                 dataSrc: function(json) {
@@ -1288,6 +1453,8 @@
             });
         });
 
+        setupAutoFilter();
+
 
 
 
@@ -1316,13 +1483,13 @@
         var filterClientCompany;
 
         // When "filterClientButton" button is clicked, initiate filterClientCompany
-        function filterClientButton() {
-            filterClientCompany = document.getElementById("fliterClient").value;
-            // initStockInventoryDatatable(filterClientCompany);
-        };
+        // function filterClientButton() {
+        //     filterClientCompany = document.getElementById("fliterClient").value;
+        //     // initStockInventoryDatatable(filterClientCompany);
+        // };
 
         // When page first loads, load tables
-        filterClientButton();
+        // filterClientButton();
 
         // Store the ID of the last clicked modal when it's triggered
         (function() {
