@@ -2,7 +2,7 @@
 
 @section('title')
 <title>BGOC Outdoor System - Client Company</title>
-@endsection('title')
+@endsection
 
 @section('sidebar')
 @include('layouts.sidebar')
@@ -11,10 +11,12 @@
 @section('app_content')
 <div class="intro-y flex flex-col sm:flex-row items-center mt-8">
     <h2 class="text-lg font-medium mr-auto">
-        Client Company
+        Clients
     </h2>
 </div>
 
+
+<!-- filter and datatable -->
 <div class="intro-y box p-5 mt-5">
     <div class="pos col-span-12 lg:col-span-4">
         <!-- BEGIN: Client Company -->
@@ -23,7 +25,7 @@
             <div class="flex flex-col sm:flex-row sm:items-end xl:items-start">
                 <!-- BEGIN: Filter -->
                 <form class="xl:flex sm:mr-auto">
-                    <div class="sm:flex items-center sm:mr-4">
+                    <!-- <div class="sm:flex items-center sm:mr-4">
                         <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Company Status</label>
                         <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputContractStatus">
                             <option value="all">All</option>
@@ -33,7 +35,7 @@
                     </div>
                     <div class="mt-2 xl:mt-0">
                         <button type="button" class="button w-full sm:w-16 bg-theme-32 text-white" id="filterClientCompanyButton">Filter</button>
-                    </div>
+                    </div> -->
                 </form>
                 <!-- END: Filter -->
 
@@ -44,7 +46,7 @@
                             <line x1="12" y1="5" x2="12" y2="19"></line>
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                         </svg>
-                        Add New Client Company
+                        Add New Client
                     </a>
                 </div>
                 <!-- END: Add Client Company -->
@@ -56,13 +58,12 @@
                 <table class="table mt-5" id="client_company_table">
                     <thead>
                         <tr class="bg-theme-32 text-white">
+                            <th>PIC</th> <!-- for details-control -->
                             <th>No</th>
-                            <th>Company Prefix</th>
-                            <th>Company Name</th>
+                            <th>Client Prefix</th>
+                            <th>Client Name</th>
                             <th>Address</th>
                             <th>Phone No.</th>
-                            <!-- <th class="text-center dt-no-sort">Contract Status</th>
-                            <th>Contract Type</th> -->
                             <th class="dt-exclude-export dt-no-sort ">Actions</th>
                         </tr>
                     </thead>
@@ -76,28 +77,28 @@
         <!-- END: Client Company -->
     </div>
 </div>
-@endsection('app_content')
+@endsection
 
 @section('modal_content')
 <!-- BEGIN: Client Company Add Modal -->
 <div class="modal" id="clientCompanyAddModal">
     <div class="modal__content">
         <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
-            <h2 class="font-medium text-base mr-auto">Add Client Company</h2>
+            <h2 class="font-medium text-base mr-auto">Add Clients</h2>
         </div>
         <form>
             <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Company Prefix</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Company Prefix" id="clientCompanyAddPrefix" required>
+                    <label>Client Prefix</label>
+                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Client Prefix" id="clientCompanyAddPrefix" required>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Company Name</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Company Name" id="clientCompanyAddName" required>
+                    <label>Client Name</label>
+                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Client Name" id="clientCompanyAddName" required>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Company Address</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Company Address" id="clientCompanyAddAddress" required>
+                    <label>Client Address</label>
+                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Client Address" id="clientCompanyAddAddress" required>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
                     <label>Phone No.</label>
@@ -151,21 +152,21 @@
 <div class="modal" id="clientCompanyEditModal">
     <div class="modal__content">
         <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
-            <h2 class="font-medium text-base mr-auto">Edit Client Company</h2>
+            <h2 class="font-medium text-base mr-auto">Edit Clients</h2>
         </div>
-        <form>
+        <form id="clientCompanyEditForm">
             <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Company Prefix</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Company Prefix" id="clientCompanyEditPrefix" required>
+                    <label>Client Prefix</label>
+                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Client Prefix" id="clientCompanyEditPrefix" required>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Company Name</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Company Name" id="clientCompanyEditName" required>
+                    <label>Client Name</label>
+                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Client Name" id="clientCompanyEditName" required>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Company Address</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Company Address" id="clientCompanyEditAddress" required>
+                    <label>Client Address</label>
+                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Client Address" id="clientCompanyEditAddress" required>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
                     <label>Phone No.</label>
@@ -194,7 +195,96 @@
     </div>
 </div>
 <!-- END: Client Company Delete Modal -->
-@endsection('modal_content')
+
+
+
+
+<!-- BEGIN: PIC Add Modal -->
+<div class="modal" id="picAddModal">
+    <div class="modal__content">
+        <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
+            <h2 class="font-medium text-base mr-auto">Add PIC</h2>
+        </div>
+        <form>
+        @csrf
+        <input type="hidden" id="picAddCompanyId"> <!-- hidden field for company ID -->
+            <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
+                <div class="col-span-12 sm:col-span-12">
+                    <label>Designation</label>
+                    <input type="text"  title="Please enter client designation" placeholder="Enter a Designation" class="input w-full border mt-2 flex-1" id="picAddDesignation" required>
+                </div>
+                <div class="col-span-12 sm:col-span-12">
+                    <label>Client Name</label>
+                    <input type="text" placeholder="Enter a Client Name" class="input w-full border mt-2 flex-1" id="picAddName" required>
+                </div>
+                <div class="col-span-12 sm:col-span-12">
+                    <label>Email</label>
+                    <input type="text" placeholder="Enter a Client Email" class="input w-full border mt-2 flex-1" id="picAddEmail" required>
+                </div>
+                <div class="col-span-12 sm:col-span-12">
+                    <label>Contact No.</label>
+                    <input type="text"  title="Please enter contact number in correct format" placeholder="Enter a Contact Number" class="input w-full border mt-2 flex-1" id="picAddContact" required>
+                </div>
+            </div>
+            <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
+                <button type="submit" class="button w-50 bg-theme-1 text-white" id="picAddButton">Save Client</button>
+            </div>
+        </form>
+        
+    </div>
+</div>
+<!-- END: PIC Add Modal -->
+
+<!-- BEGIN: PIC Edit Modal -->
+<div class="modal" id="picEditModal">
+    <div class="modal__content">
+        <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
+            <h2 class="font-medium text-base mr-auto">Edit PIC</h2>
+        </div>
+        <form>
+            <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
+                <div class="col-span-12 sm:col-span-12">
+                    <label>Designation</label>
+                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Designation" id="picEditDesignation" required>
+                </div>
+                <div class="col-span-12 sm:col-span-12">
+                    <label>PIC Name</label>
+                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="PIC Name" id="picEditName" required>
+                </div>
+                <div class="col-span-12 sm:col-span-12">
+                    <label>Contact No.</label>
+                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Contact No" id="picEditContact" required>
+                </div>
+                <div class="col-span-12 sm:col-span-12">
+                    <label>Email</label>
+                    <input type="email" class="input w-full border mt-2 flex-1" placeholder="Email" id="picEditEmail" required>
+                </div>
+                
+            </div>
+
+            <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
+                <button type="submit" class="button w-20 bg-theme-1 text-white" id="picEditButton">Update</button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- END: PIC Edit Modal -->
+
+<!-- BEGIN: PIC Delete Modal -->
+<div class="modal" id="picDeleteModal">
+    <div class="modal__content">
+        <div class="p-5 text-center"> <i data-feather="x-circle" class="w-16 h-16 text-theme-6 mx-auto mt-3"></i>
+            <div class="text-3xl mt-5">Are you sure?</div>
+            <div class="text-gray-600 mt-2">Confirm deleting the PIC? This process cannot be undone.</div>
+        </div>
+        <div class="px-5 pb-8 text-center">
+            <button type="button" data-dismiss="modal" class="button w-24 border text-gray-700 dark:border-dark-5 dark:text-gray-300 mr-1">Cancel</button>
+            <button type="button" class="button w-24 bg-theme-6 text-white" id="picDeleteButton">Delete</button>
+        </div>
+    </div>
+</div>
+<!-- END: Client Delete Modal -->
+@endsection
 
 @section('script')
 <script>
@@ -255,43 +345,32 @@
 
     $(document).ready(function() {
         // Global variables
-        var filterClientCompanyStatus;
-        var filterContractType;
-        var originalCompanyId;
+        var filterClientCompanyStatus = null;
+        let originalCompanyId = null;
         var lastClickedLink;
 
         // Listen to below buttons
-        document.getElementById("filterClientCompanyButton").addEventListener("click", filterClientCompanyButton);
+        // document.getElementById("filterClientCompanyButton").addEventListener("click", filterClientCompanyButton);
         document.getElementById("addClientCompany").addEventListener("click", addClientCompany);
         document.getElementById("clientCompanyDeleteButton").addEventListener("click", clientCompanyDeleteButton);
 
         // When "filterClientCompanyButton" button is clicked, initiate initClientCompanyDatatable
-        function filterClientCompanyButton() {
-            filterClientCompanyStatus = document.getElementById("inputContractStatus").value;
-            // filterContractType = document.getElementById("inputContractType").value;
-            initClientCompanyDatatable(filterClientCompanyStatus, filterContractType);
-        };
+        // function filterClientCompanyButton() {
+        //     filterClientCompanyStatus = document.getElementById("inputContractStatus").value;
+        //     initClientCompanyDatatable();
+        // };
 
         // When page first loads, load table
-        filterClientCompanyButton();
+        // filterClientCompanyButton();
 
         // When any submit button is clicked
-        (function() {
-            var client_company_table = $('#client_company_table')[0].altEditor;
-
-            document.getElementById('addClientCompany').addEventListener('click', function(e) {
-                // Prevent the default form submission behavior
-                e.preventDefault();
-            });
-
-            document.getElementById('clientCompanyEditButton').addEventListener('click', function(e) {
-                // Prevent the default form submission behavior
-                e.preventDefault();
-
-                // Edit client company
-                editClientCompany();
-            });
-        })();
+        // (function () {
+        //     document.getElementById('addClientCompany').addEventListener('click', e => e.preventDefault());
+        //     document.getElementById('clientCompanyEditButton').addEventListener('click', e => {
+        //         e.preventDefault();
+        //         editClientCompany();
+        //     });
+        // })();
 
         // Open modal
         function openAltEditorModal(element) {
@@ -303,7 +382,6 @@
             cash(element).modal('hide');
         }
 
-        // Setup the client company datatable
         function initClientCompanyDatatable() {
             const dt = new Date();
             const formattedDate = `${dt.getFullYear()}${(dt.getMonth() + 1).toString().padStart(2, '0')}${dt.getDate().toString().padStart(2, '0')}`;
@@ -312,204 +390,220 @@
 
             const table = $('#client_company_table').DataTable({
                 destroy: true,
-                debug: true,
                 processing: true,
-                searching: true,
                 serverSide: true,
                 ordering: true,
-                order: [
-                    [0, 'desc']
-                ],
-                pagingType: 'full_numbers',
+                order: [[0, 'desc']],
                 pageLength: 25,
-                aLengthMenu: [
-                    [25, 50, 75, -1],
-                    [25, 50, 75, "All"]
-                ],
-                iDisplayLength: 25,
                 ajax: {
                     url: "{{ route('client-company.list') }}",
-                    dataType: "json",
                     type: "POST",
-                    data: function(d) {
+                    data: function (d) {
                         d._token = $('meta[name="csrf-token"]').attr('content');
                         d.status = filterClientCompanyStatus;
-                        d.type = filterContractType;
                         return d;
                     },
-                    dataSrc: function(json) {
-                        json.recordsTotal = json.recordsTotal;
-                        json.recordsFiltered = json.recordsFiltered;
+                    dataSrc: function (json) {
                         return json.data;
                     }
                 },
                 dom: "lBfrtip",
-                buttons: [{
+                buttons: [
+                    {
                         extend: "csv",
                         className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
                         title: $fileName,
-                        exportOptions: {
-                            columns: ":not(.dt-exclude-export)"
-                        },
-                        init: function(api, node, config) {
-                            $(node).removeClass('dt-button');
-                            $(node).removeClass('buttons-html5');
+                        exportOptions: { columns: ":not(.dt-exclude-export)" },
+                        init: function (api, node) {
+                            $(node).removeClass('dt-button buttons-html5');
                         },
                     },
                     {
                         extend: "excel",
                         className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
                         title: $fileName,
-                        exportOptions: {
-                            columns: ":not(.dt-exclude-export)"
-                        },
-                        init: function(api, node, config) {
-                            $(node).removeClass('dt-button');
-                            $(node).removeClass('buttons-html5');
+                        exportOptions: { columns: ":not(.dt-exclude-export)" },
+                        init: function (api, node) {
+                            $(node).removeClass('dt-button buttons-html5');
                         },
                     },
                     {
                         extend: "print",
                         className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
                         title: $fileName,
-                        // including printing image
-                        exportOptions: {
-                            columns: ":not(.dt-exclude-export)",
-                            stripHtml: false,
-                        },
-                        init: function(api, node, config) {
-                            $(node).removeClass('dt-button');
-                            $(node).removeClass('buttons-html5');
+                        exportOptions: { columns: ":not(.dt-exclude-export)", stripHtml: false },
+                        init: function (api, node) {
+                            $(node).removeClass('dt-button buttons-html5');
                         },
                     },
                 ],
-                columnDefs: [{
-                    targets: 'dt-no-sort',
-                    orderable: false
-                }],
+                columnDefs: [{ targets: 'dt-no-sort', orderable: false }],
                 columns: [
                     {
-                        data: null, // <-- important
+                        className: 'details-control',
+                        orderable: false,
+                        data: null,
+                        defaultContent: '',
+                        render: () => '<button class="bg-theme-1 text-white px-2 py-1 rounded">+</button>'
+                    },
+                    {
+                        data: null,
                         name: 'no',
                         orderable: false,
                         searchable: false,
-                        render: function (data, type, row, meta) {
-                            return meta.row + meta.settings._iDisplayStart + 1;
-                        }
+                        render: (data, type, row, meta) => meta.row + meta.settings._iDisplayStart + 1
                     },
-                    {
-                        data: "company_prefix",
-                    },
-                    {
-                        data: "name",
-                    },
-                    {
-                        data: "address",
-                    },
-                    {
-                        data: "phone",
-                    },
-                    // {
-                    //     data: "status",
-                    //     type: "readonly",
-                    //     render: function(data, type, row) {
-                    //         let element = ``
-                    //         if (data == 1){
-                    //             element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-9 text-white">ACTIVE</a>`;
-                    //         } else if (data == 0){
-                    //             element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-6 text-white">INACTIVE</a>`;
-                    //         }
-                            
-                    //         return element;
-                    //     }
-                    // },
-                    // {
-                    //     data: "project_status",
-                    //     render: function(data, type, row) {
-                    //         var element;
-
-                    //         if (data == "Active") {
-                    //             element = `<div class="cursor-pointer rounded-full bg-theme-9 px-2 py-1 text-xs font-medium text-center text-white">
-                    //                             Active
-                    //                         </div>`;
-                    //         } else {
-                    //             element = `<div class="cursor-pointer rounded-full bg-theme-13 px-2 py-1 text-xs font-medium text-center text-white">
-                    //                             Inactive
-                    //                         </div>`;
-                    //         }
-
-                    //         return element;
-                    //     }
-                    // },
-                    // {
-                    //     data: "project_type",
-                    // },
+                    { data: "company_prefix" },
+                    { data: "name" },
+                    { data: "address" },
+                    { data: "phone" },
                     {
                         data: "id",
-                        render: function(data, type, row) {
-                            let element = `
-                            <a class="flex items-center text-theme-6" href="javascript:;" data-toggle="modal" data-target="#clientCompanyDeleteModal" id="delete-` + data + `">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 w-4 h-4 mr-1">
-                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                    <line x1="10" y1="11" x2="10" y2="17"></line>
-                                    <line x1="14" y1="11" x2="14" y2="17"></line>
-                                </svg> 
-                            </a>`;
+                        render: (data) => `
+                            <div class="flex justify-center items-center gap-3">
+                                <!-- Edit Icon -->
+                                <a href="javascript:;" 
+                                class="client-company-edit flex items-center justify-center w-8 h-8 text-theme-9 rounded hover:bg-gray-100" 
+                                data-id="${data}" 
+                                title="Edit">
+                                    <svg xmlns="http://www.w3.org/2000/svg" 
+                                        class="w-5 h-5" 
+                                        fill="none" 
+                                        viewBox="0 0 24 24" 
+                                        stroke="currentColor">
+                                        <path d="M15.232 5.232l3.536 3.536M9 13h3l9-9a1.5 1.5 0 00-2.121-2.121l-9 9v3z"/>
+                                    </svg>
+                                </a>
 
-                            return element;
-                        }
-                    },
+                                <!-- Delete Icon -->
+                                <a href="javascript:;" 
+                                class="client-company-delete flex items-center justify-center w-8 h-8 text-theme-6 rounded hover:bg-gray-100" 
+                                data-id="${data}" 
+                                title="Delete">
+                                    <svg xmlns="http://www.w3.org/2000/svg" 
+                                        class="w-5 h-5" 
+                                        fill="none" 
+                                        viewBox="0 0 24 24" 
+                                        stroke="currentColor">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4
+                                                a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                                    </svg>
+                                </a>
+                            </div>
+                        `
+                    }
+
+
                 ],
+                initComplete: function () {
+                    // Safe styling adjustments (only run after table is built)
+                    const dtButtonsDiv = document.querySelector(".dt-buttons");
+                    if (dtButtonsDiv) dtButtonsDiv.classList.add("mt-2");
+
+                    const filterDiv = document.getElementById("client_company_table_filter");
+                    if (filterDiv) {
+                        filterDiv.style.float = "right";
+                        filterDiv.classList.remove('dataTables_filter');
+                        const inputElement = filterDiv.querySelector("label input");
+                        if (inputElement) inputElement.classList.add("input", "border", "mt-2", "ml-2", "mr-1", "mb-5");
+                    }
+
+                    const infoDiv = document.getElementById("client_company_table_info");
+                    if (infoDiv) {
+                        infoDiv.style.float = "left";
+                        infoDiv.classList.add("mt-5");
+                    }
+
+                    const paginateDiv = document.getElementById("client_company_table_paginate");
+                    if (paginateDiv) {
+                        paginateDiv.style.float = "right";
+                        paginateDiv.classList.add("mt-5");
+                    }
+
+                    const existingDiv = document.getElementById("client_company_table_length");
+                    if (existingDiv) {
+                        existingDiv.classList.remove('dataTables_length');
+                        existingDiv.classList.add('mt-2', 'mb-1');
+                        const existingSelect = existingDiv.querySelector('select');
+                        if (existingSelect) existingSelect.className = 'input sm:w-auto border';
+                    }
+                }
             });
 
-            // Add classes to the "dt-buttons" div
-            var dtButtonsDiv = document.querySelector(".dt-buttons");
-            if (dtButtonsDiv) {
-                dtButtonsDiv.classList.add("mt-2");
-            }
+            // Row expand/collapse for PICs
+            $('#client_company_table tbody').off('click', 'td.details-control').on('click', 'td.details-control', function () {
+                const tr = $(this).closest('tr');
+                const row = table.row(tr);
 
-            // Update styling for the filter input
-            var filterDiv = document.getElementById("client_company_table_filter");
-            if (filterDiv) {
-                filterDiv.style.float = "right";
-                filterDiv.classList.remove('dataTables_filter');
+                if (row.child.isShown()) {
+                    row.child.hide();
+                    tr.removeClass('shown');
+                    $(this).find("button").text("+");
+                } else {
+                    const companyId = row.data().id;
+                    $.ajax({
+                        url: "{{ route('client-company.pics') }}",
+                        type: "POST",
+                        data: {
+                            _token: $('meta[name="csrf-token"]').attr('content'),
+                            company_id: companyId
+                        },
+                        success: function (response) {
+                            // pass companyId to formatPICs
+                            row.child(formatPICs(response.pics, companyId)).show();
+                            tr.addClass('shown');
+                            $(tr).find("td.details-control button").text("-");
+                        }
+                    });
 
-                var inputElement = filterDiv.querySelector("label input");
-                if (inputElement) {
-                    inputElement.classList.add("input", "border", "mt-2", "ml-2", "mr-1", "mb-5");
                 }
-            }
+            });
 
-            // Update styling for the info and paginate elements
-            var infoDiv = document.getElementById("client_company_table_info");
-            var paginateDiv = document.getElementById("client_company_table_paginate");
+            // clientCompanyEditModal();
+        }
 
-            if (infoDiv) {
-                infoDiv.style.float = "left";
-                infoDiv.classList.add("mt-5");
-            }
+        function formatPICs(pics, companyId) {
+            if (!pics || pics.length === 0) return '<div class="p-2">No PICs available</div>';
 
-            if (paginateDiv) {
-                paginateDiv.style.float = "right";
-                paginateDiv.classList.add("mt-5");
-            }
+            let html = '<table class="table-auto w-full text-sm border mt-2"><div class="ml-3"><strong>PIC</strong></div>';
+            html += '<thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Action</th></tr></thead><tbody>';
 
-            // Update styling for the "client_company_table_length" div and its select element
-            var existingDiv = document.getElementById("client_company_table_length");
-            if (existingDiv) {
-                existingDiv.classList.remove('dataTables_length');
-                existingDiv.classList.add('mt-2', 'mb-1');
+            pics.forEach(pic => {
+                html += `<tr>
+                    <td>${pic.designation} ${pic.name}</td>
+                    <td>${pic.email}</td>
+                    <td>${pic.phone}</td>
+                    <td>
+                        <button class="edit-pic-btn bg-theme-1 text-white px-2 py-1 rounded"
+                            data-name="${pic.name}"
+                            data-phone="${pic.phone}"
+                            data-email="${pic.email}"
+                            data-designation="${pic.designation}"
+                            data-id="${pic.id}">Edit</button>
 
-                var existingSelect = existingDiv.querySelector('select');
-                if (existingSelect) {
-                    existingSelect.className = 'input sm:w-auto border';
-                }
-            }
+                        <button class="delete-pic-btn px-2 py-1 bg-theme-6 text-white rounded"
+                            data-id="${pic.id}">Delete</button>
+                    </td>
+                </tr>`;
+            });
 
-            // Open modal to edit client company
-            clientCompanyEditModal();
-        };
+            html += '</tbody></table>';
+
+                        // Add button to create new PIC
+            html += `
+                <div class="flex justify-end mb-2 mt-2">
+                    <button class="bg-theme-1 text-white px-5 py-1 rounded add-pic-btn" data-company-id="${companyId}">
+                        + Add PIC
+                    </button>
+                </div>
+            `;
+            return html;
+        }
+
+
 
         // Add New Client Company
         function addClientCompany() {
@@ -548,60 +642,231 @@
                 }
             });
         }
+        
 
+        $(document).off('click', '.client-company-edit').on('click', '.client-company-edit', function() {
+            const companyId = $(this).data('id');
+            originalCompanyId = companyId;
 
-        // Open modal to edit client company
-        function clientCompanyEditModal() {
-            // Remove previous click event listeners
-            $(document).off('click', "[id^='client_company_table'] tbody tr td:not(:last-child)");
+            const $row = $(this).closest('tr');
+            const cells = $row.find('td');
 
-            $(document).on('click', "[id^='client_company_table'] tbody tr td:not(:last-child)", function() {
-                // Place values to edit form fields in the modal
-                document.getElementById("clientCompanyEditPrefix").value = $(event.target).closest('tr').find('td:nth-child(' + '2' + ')').text();
-                document.getElementById("clientCompanyEditName").value = $(event.target).closest('tr').find('td:nth-child(' + '3' + ')').text();
-                document.getElementById("clientCompanyEditAddress").value = $(event.target).closest('tr').find('td:nth-child(' + '4' + ')').text();
-                document.getElementById("clientCompanyEditPhone").value = $(event.target).closest('tr').find('td:nth-child(' + '5' + ')').text();
+            $('#clientCompanyEditPrefix').val(cells.eq(2).text().trim());
+            $('#clientCompanyEditName').val(cells.eq(3).text().trim());
+            $('#clientCompanyEditAddress').val(cells.eq(4).text().trim());
+            $('#clientCompanyEditPhone').val(cells.eq(5).text().trim());
 
-                // Grab row client company id
-                originalCompanyId = $(event.target).closest('tr').find('td:nth-child(6) a').attr('id').split('-')[1];
+            openAltEditorModal('#clientCompanyEditModal');
+        });
 
-                // Open modal
-                var element = "#clientCompanyEditModal";
-                openAltEditorModal(element);
-            });
-        }
-
-        // Edit Client Company
-        function editClientCompany() {
-            var prefix = document.getElementById("clientCompanyEditPrefix").value;
-            var name = document.getElementById("clientCompanyEditName").value;
-            var address = document.getElementById("clientCompanyEditAddress").value;
-            var companyPhone = document.getElementById("clientCompanyEditPhone").value;
+        $('#clientCompanyEditForm').off('submit').on('submit', function(e) {
+            e.preventDefault();
 
             $.ajax({
                 type: 'POST',
                 url: "{{ route('client-company.edit') }}",
                 data: {
                     _token: $('meta[name="csrf-token"]').attr('content'),
-                    prefix: prefix,
-                    name: name,
                     id: originalCompanyId,
-                    address: address,
-                    companyPhone: companyPhone
+                    prefix: $('#clientCompanyEditPrefix').val().trim(),
+                    name: $('#clientCompanyEditName').val().trim(),
+                    address: $('#clientCompanyEditAddress').val().trim(),
+                    companyPhone: $('#clientCompanyEditPhone').val().trim()
                 },
                 success: function(response) {
-                    // Close modal after successfully edited
-                    var element = "#clientCompanyEditModal";
-                    closeAltEditorModal(element);
+                    closeAltEditorModal('#clientCompanyEditModal');
+                    window.showSubmitToast("Successfully updated.", "#91C714");
 
-                    // Show successful toast
+                    $('#clientCompanyEditForm')[0].reset();
+                    $('#client_company_table').DataTable().ajax.reload(null, false);
+                },
+                error: function(xhr) {
+                    const response = JSON.parse(xhr.responseText);
+                    window.showSubmitToast("Error: " + response.error, "#D32929");
+                }
+            });
+        });
+
+
+
+        // Store the ID of the last clicked moda when it's triggered
+        (function() {
+            $(document).on('click', "[data-toggle='modal']", function() {
+                lastClickedLink = $(this).attr('id');
+            });
+        })();
+
+        // Open delete modal and store company id
+        $(document).on('click', '.client-company-delete', function() {
+            const companyId = $(this).data('id');
+
+            // Store the company ID on the modal itself
+            $('#clientCompanyDeleteModal').attr('data-company-id', companyId);
+
+            // Open modal
+            openAltEditorModal('#clientCompanyDeleteModal');
+        });
+
+        $('#clientCompanyDeleteButton').off('click').on('click', function() {
+            const companyId = $('#clientCompanyDeleteModal').attr('data-company-id');
+
+            $.ajax({
+                type: 'POST',
+                url: "{{ route('client-company.delete') }}",
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    id: companyId
+                },
+                success: function(response) {
+                    // Close modal
+                    closeAltEditorModal('#clientCompanyDeleteModal');
+
+                    // Show success toast
+                    window.showSubmitToast("Successfully deleted.", "#91C714");
+
+                    // Reload table
+                    $('#client_company_table').DataTable().ajax.reload();
+                },
+                error: function(xhr) {
+                    const response = JSON.parse(xhr.responseText);
+                    window.showSubmitToast("Error: " + response.error, "#D32929");
+                }
+            });
+        });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // handle add PIC click button
+        $(document).on('click', '.add-pic-btn', function() {
+            const companyId = $(this).data('company-id');
+
+            // Clear modal fields
+            $('#picAddName').val('');
+            $('#picAddContact').val('');
+            $('#picAddEmail').val('');
+            $('#picAddDesignation').val('');
+            $('#picAddCompany').val(companyId);
+
+            // Set company ID in hidden field
+            $('#picAddCompanyId').val(companyId);
+
+            openAltEditorModal('#picAddModal');
+        });
+
+
+        $('#picAddButton').off('click').on('click', function(e) {
+            e.preventDefault();
+
+            const name = $('#picAddName').val();
+            const phone = $('#picAddContact').val();
+            const email = $('#picAddEmail').val();
+            const designation = $('#picAddDesignation').val();
+            const companyId = $('#picAddCompanyId').val(); // now correctly set
+
+            $.ajax({
+                url: '/client-company/pic/create', // create this route in Laravel
+                type: 'POST',
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    company_id: companyId,
+                    name: name,
+                    phone: phone,
+                    email: email,
+                    designation: designation
+                },
+                success: function(response) {
+                    closeAltEditorModal('#picAddModal');
                     window.showSubmitToast("Successfully added.", "#91C714");
 
                     // Clean fields
-                    document.getElementById("clientCompanyEditPrefix").value = "";
-                    document.getElementById("clientCompanyEditName").value = "";
-                    document.getElementById("clientCompanyEditAddress").value = "";
-                    document.getElementById("clientCompanyEditPhone").value = "";
+                    $('#picAddName').val('');
+                    $('#picAddContact').val('');
+                    $('#picAddEmail').val('');
+                    $('#picAddDesignation').val('');
+
+                    // Reload DataTable
+                    $('#client_company_table').DataTable().ajax.reload();
+                },
+                error: function(xhr) {
+                    let response = JSON.parse(xhr.responseText);
+                    window.showSubmitToast("Error: " + response.error, "#D32929");
+                }
+            });
+        });
+
+
+
+        // Handle PIC Edit button click
+        $('#client_company_table tbody').off('click', '.edit-pic-btn').on('click', '.edit-pic-btn', function () {
+            const btn = $(this);
+            const picId = btn.data('id');
+            const name = btn.data('name');
+            const phone = btn.data('phone');
+            const email = btn.data('email');
+            const designation = btn.data('designation');
+
+            // Fill modal fields
+            $('#picEditName').val(name);
+            $('#picEditContact').val(phone);
+            $('#picEditEmail').val(email);
+            $('#picEditDesignation').val(designation);
+
+            // Store PIC ID directly on modal element
+            $('#picEditModal').attr('data-pic-id', picId);
+
+            var element = "#picEditModal";
+            openAltEditorModal(element);
+        });
+
+        $('#picEditButton').off('click').on('click', function (e) {
+            e.preventDefault();
+            const picId = $('#picEditModal').attr('data-pic-id');
+            const name = $('#picEditName').val();
+            const phone = $('#picEditContact').val();
+            const email = $('#picEditEmail').val();
+            const designation = $('#picEditDesignation').val();
+
+            $.ajax({
+                url: '/client-company/pic/update', // create this route in Laravel
+                type: 'POST',
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    id: picId,
+                    name: name,
+                    phone: phone,
+                    email: email,
+                    designation: designation
+                },
+                success: function(response) {
+                    // Close modal after successfully edited
+                    var element = "#picEditModal";
+                    closeAltEditorModal(element);
+
+                    // Show successful toast
+                    window.showSubmitToast("Successfully updated.", "#91C714");
+
+                    // Clean fields
+                    document.getElementById("picEditName").value = "";
+                    document.getElementById("picEditContact").value = "";
+                    document.getElementById("picEditEmail").value = "";
+                    document.getElementById("picEditDesignation").value = "";
 
                     // Reload table
                     $('#client_company_table').DataTable().ajax.reload();
@@ -615,47 +880,54 @@
                     window.showSubmitToast(error, "#D32929");
                 }
             });
-        }
+        });
 
-        // Store the ID of the last clicked moda when it's triggered
-        (function() {
-            $(document).on('click', "[data-toggle='modal']", function() {
-                lastClickedLink = $(this).attr('id');
-            });
-        })();
+        // Handle PIC Delete button click
+        let lastClickedPicId = null;
 
-        // Delete Client Company
-        function clientCompanyDeleteButton() {
-            var deleteCompanyId = lastClickedLink.split("-")[1];
+        $('#client_company_table tbody').off('click', '.delete-pic-btn').on('click', '.delete-pic-btn', function () {
+            lastClickedPicId = $(this).data('id');
+
+            // Show delete confirmation modal
+            var element = "#picDeleteModal";
+            openAltEditorModal(element);
+        });
+
+        $('#picDeleteButton').off('click').on('click', function () {
+            if (!lastClickedPicId) return;
 
             $.ajax({
                 type: 'POST',
-                url: "{{ route('client-company.delete') }}",
+                url: '/client-company/pic/delete', // create this route in Laravel
                 data: {
                     _token: $('meta[name="csrf-token"]').attr('content'),
-                    id: deleteCompanyId
+                    id: lastClickedPicId,
                 },
                 success: function (response) {
                     // Close modal after successfully deleted
-                    var element = "#clientCompanyDeleteModal";
+                    var element = "#picDeleteModal";
                     closeAltEditorModal(element);
 
                     // Show successful toast
-                    window.showSubmitToast("Successfully deleted.", "#91C714");
+                    window.showSubmitToast("PIC deleted successfully.", "#91C714");
 
                     // Reload table
                     $('#client_company_table').DataTable().ajax.reload();
                 },
                 error: function (xhr, status, error) {
-                    // Display the validation error message
                     var response = JSON.parse(xhr.responseText);
-                    var error = "Error: " + response.error;
+                    var errorMsg = "Error: " + response.error;
 
                     // Show fail toast
-                    window.showSubmitToast(error, "#D32929");
+                    window.showSubmitToast(errorMsg, "#D32929");
                 }
             });
-        }
+        });
+
+
+
+    
+        initClientCompanyDatatable();
     })
 </script>
-@endsection('script')
+@endsection

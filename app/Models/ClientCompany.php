@@ -26,7 +26,7 @@ class ClientCompany extends Model
         'deleted_at'
     ];
 
-    public function client()
+    public function clients()
     {
         return $this->hasMany(Client::class, 'company_id', 'id');
     }

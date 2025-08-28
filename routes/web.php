@@ -96,6 +96,12 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/client-company/create', [ClientCompanyController::class, 'create'])->name('client-company.create');
     Route::post('/client-company/edit', [ClientCompanyController::class, 'edit'])->name('client-company.edit');
     Route::post('/client-company/delete', [ClientCompanyController::class, 'delete'])->name('client-company.delete');
+    Route::post('/client-company/pics', [ClientCompanyController::class, 'getPICs'])->name('client-company.pics');
+    Route::post('/client-company/pic/create', [ClientCompanyController::class, 'picCreate'])->name('client-company.pic.create');
+    Route::post('/client-company/pic/update', [ClientCompanyController::class, 'picUpdate'])->name('client-company.pic.update');
+    Route::post('/client-company/pic/delete', [ClientCompanyController::class, 'picDelete'])->name('client-company.pic.delete');
+
+
 
     // Contractors
     Route::get('/contractors', [ContractorController::class, 'index'])->name('contractors.index');

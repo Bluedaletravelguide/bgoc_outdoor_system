@@ -34,7 +34,7 @@
         @if (Auth::guard('web')->user()->can('billboard_booking.view'))
         <li>
             <a href="{{ route('billboard.availability.index') }}" class="side-menu {{ request()->routeIs('billboard.availability.index') ? 'side-menu--active' : '' }}">
-                <div class="side-menu__icon"> <i data-feather="inbox"></i> </div>
+                <div class="side-menu__icon"> <i data-feather="calendar"></i> </div>
                 <div class="side-menu__title"> Billboard Availability </div>
             </a>
         </li>
@@ -50,65 +50,16 @@
         </li>
         @endif
 
-        
-
-        <!-- employees -->
-        <!-- @if (Auth::guard('web')->user()->can('employee.view'))
-        <li>
-            <a href="javascript:;" class="side-menu {{ request()->routeIs('employees.index') || request()->routeIs('onSite.index') ? 'side-menu--active' : '' }}">
-                <div class="side-menu__icon"> <i data-feather="box"></i> </div>
-                <div class="side-menu__title">
-                    Employees 
-                    <div class="side-menu__sub-icon"> <i data-feather="chevron-down"></i> </div>
-                </div>
-            </a>
-            <ul class="{{ request()->routeIs('employees.index') || request()->routeIs('onSite.index') ? 'side-menu__sub-open' : '' }}">
-                <li>
-                    <a href="{{ route('employees.index') }}" class="side-menu {{ request()->routeIs('employees.index') ? 'side-menu--active' : '' }}">
-                        <div class="side-menu__icon"> <i data-feather="users"></i> </div>
-                        <div class="side-menu__title"> Employees </div>
-                    </a>
-                </li>
-            </ul>
-        </li>
-        @endif -->
-
         <!-- clients -->
         @if (Auth::guard('web')->user()->can('client.view'))
         <li>
-            <a href="javascript:;" class="side-menu {{ request()->routeIs('clients.index') || request()->routeIs('client-company.index') || request()->routeIs('projects.index') ? 'side-menu--active' : '' }}">
-                <div class="side-menu__icon"> <i data-feather="briefcase"></i> </div>
-                <div class="side-menu__title">
-                    Client 
-                    <div class="side-menu__sub-icon"> <i data-feather="chevron-down"></i> </div>
-                </div>
+            <a href="{{ route('client-company.index') }}" class="side-menu {{ request()->routeIs('client-company.index') ? 'side-menu--active' : '' }}">
+                <div class="side-menu__icon"> <i data-feather="user"></i> </div>
+                <div class="side-menu__title"> Clients </div>
             </a>
-            <ul class="{{ request()->routeIs('clients.index') || request()->routeIs('client-company.index') || request()->routeIs('projects.index') ? 'side-menu__sub-open' : '' }}">
-                @if (Auth::guard('web')->user()->can('client.view'))
-                <li>
-                    <a href="{{ route('clients.index') }}" class="side-menu {{ request()->routeIs('clients.index') ? 'side-menu--active' : '' }}">
-                        <div class="side-menu__icon"> <i data-feather="user"></i> </div>
-                        <div class="side-menu__title"> Clients </div>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('client-company.index') }}" class="side-menu {{ request()->routeIs('client-company.index') ? 'side-menu--active' : '' }}">
-                        <div class="side-menu__icon"> <i data-feather="table"></i> </div>
-                        <div class="side-menu__title"> Client Company </div>
-                    </a>
-                </li>
-                @endif
-                <!-- @if (Auth::guard('web')->user()->can('project.view'))
-                <li>
-                    <a href="{{ route('projects.index') }}" class="side-menu {{ request()->routeIs('projects.index') ? 'side-menu--active' : '' }}">
-                        <div class="side-menu__icon"> <i data-feather="file-text"></i> </div>
-                        <div class="side-menu__title"> Projects </div>
-                    </a>
-                </li>
-                @endif -->
-            </ul>
         </li>
         @endif
+
 
         <!-- management -->
         @if (Auth::guard('web')->user()->can('billboard.view'))

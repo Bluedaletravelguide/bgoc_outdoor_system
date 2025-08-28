@@ -40,7 +40,9 @@ class ClientCompanyController extends Controller
             abort(403, 'Sorry !! You are Unauthorized to view any client. Contact system admin for access !');
         }
 
-        return view('client_company.index', []);
+        $clientcompany = ClientCompany::all();
+
+        return view('client_company.index', compact('clientcompany'));
     }
 
     /**
@@ -51,73 +53,82 @@ class ClientCompanyController extends Controller
 
         $status = $request->input('status');
 
-        $columns = array(
+        $columns = [
             0 => 'company_prefix',
             1 => 'name',
             2 => 'address',
             3 => 'phone',
             4 => 'status',
             5 => 'id',
-        );
+        ];
 
-        $limit = $request->input('length');
-        $start = $request->input('start');
-        $orderColumnIndex = $request->input('order.0.column');
-        $orderColumnName = $columns[$orderColumnIndex];
-        $orderDirection = $request->input('order.0.dir');
+        $limit = $request->input('length', 25);
+        $start = $request->input('start', 0);
+        $orderColumnIndex = $request->input('order.0.column', 0);
+        $orderColumnName = $columns[$orderColumnIndex] ?? 'company_prefix';
+        $orderDirection = $request->input('order.0.dir', 'asc');
 
-        $query = ClientCompany::select('client_companies.*')
-            ->where('status', 1)
-            ->orderBy($orderColumnName, $orderDirection);
+        // Build query
+        $query = ClientCompany::with('clients')->where('status', 1);
 
-        if ($status != "all") {
-            $query->where('client_companies.status', $status);
-        }
+        // if ($status != "all") {
+        //     $query->where('status', $status);
+        // }
 
-        // Get total records count
+        // Total records before filtering
         $totalData = $query->count();
 
-        $searchValue = trim(strtolower($request->input('search.value')));
-
+        // Search filter
+        $searchValue = trim($request->input('search.value'));
         if (!empty($searchValue)) {
-            $query->where(function ($query) use ($searchValue) {
-                $query->where('client_companies.company_prefix', 'LIKE', "%{$searchValue}%")
-                    ->orWhere('client_companies.name', 'LIKE', "%{$searchValue}%")
-                    ->orWhere('client_companies.address', 'LIKE', "%{$searchValue}%")
-                    ->orWhere('client_companies.phone', 'LIKE', "%{$searchValue}%");
+            $query->where(function ($q) use ($searchValue) {
+                $q->where('company_prefix', 'LIKE', "%{$searchValue}%")
+                ->orWhere('name', 'LIKE', "%{$searchValue}%")
+                ->orWhere('address', 'LIKE', "%{$searchValue}%")
+                ->orWhere('phone', 'LIKE', "%{$searchValue}%");
             });
         }
 
-        // Get total filtered records count
+        // Total records after filtering
         $totalFiltered = $query->count();
 
-        // Apply pagination
-        $filteredData = $query->skip($start)->take($limit)->get();
+        // Apply ordering and pagination
+        $companies = $query->orderBy($orderColumnName, $orderDirection)
+                        ->skip($start)
+                        ->take($limit)
+                        ->get();
 
-        $data = array();
-
-        foreach ($filteredData as $d) {
-
-            $nestedData = array(
-                'company_prefix'    => $d->company_prefix,
-                'name'              => $d->name,
-                'address'           => $d->address,
-                'phone'             => $d->phone,
-                'status'            => $d->status,
-                'id'                => $d->id,
-            );
-            $data[] = $nestedData;
+        // Prepare DataTables response
+        $data = [];
+        foreach ($companies as $company) {
+            $data[] = [
+                'company_prefix' => $company->company_prefix,
+                'name'           => $company->name,
+                'address'        => $company->address,
+                'phone'          => $company->phone,
+                'status'         => $company->status,
+                'id'             => $company->id,
+                'pics'           => $company->clients->map(function ($client) {
+                    return [
+                        'name'        => $client->name,
+                        'email'       => $client->email,
+                        'phone'       => $client->phone,
+                        'designation' => $client->designation,
+                    ];
+                }),
+            ];
         }
 
-        $json_data = array(
-            "draw" => intval($request->input('draw')),
-            "recordsTotal" => intval($totalData),
+        $json_data = [
+            "draw"            => intval($request->input('draw', 1)),
+            "recordsTotal"    => intval($totalData),
             "recordsFiltered" => intval($totalFiltered),
-            "data" => $data,
-        );
+            "data"            => $data,
+        ];
 
-        echo json_encode($json_data);
+        return response()->json($json_data);
     }
+
 
     /**
      * Create client company.
@@ -230,7 +241,7 @@ class ClientCompanyController extends Controller
      * Edit client company.
      */
     public function edit(Request $request)
-    {
+    {        
         $prefix                 = $request->prefix;
         $name                   = $request->name;
         $id                     = $request->id;
@@ -331,53 +342,138 @@ class ClientCompanyController extends Controller
      */
     public function delete(Request $request)
     {
-        // Get the current UTC time
-        $current_UTC = Carbon::now('UTC');
-
+        
+        $currentTime = now();
         $id = $request->id;
 
-        // Validate fields
+        // Validate input
         $validator = Validator::make(
             $request->all(),
             [
-                'id' => [
-                    'required',
-                    'integer',
-                    'exists:client_companies,id',
-                ],
+                'id' => ['required', 'integer', 'exists:client_companies,id'],
             ],
             [
                 'id.exists' => 'The client company cannot be found.',
             ]
         );
 
-        // Handle failed validations
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()->first()], 422);
         }
 
         try {
-            // Ensure all queries successfully executed
             DB::beginTransaction();
 
-            // Update stus to 0 as deleted (soft delete)
-            ClientCompany::where('id', $id)
+            // Soft delete all PICs related to this client company
+            Client::where('company_id', $id)
                 ->update([
-                    'status'        => '0',
-                    'deleted_at'    => $current_UTC
+                    'status' => '0',
+                    'deleted_at' => $currentTime
                 ]);
 
-            // Ensure all queries successfully executed, commit the db changes
+            // Soft delete the client company
+            ClientCompany::where('id', $id)
+                ->update([
+                    'status' => '0',
+                    'deleted_at' => $currentTime
+                ]);
+
             DB::commit();
 
             return response()->json([
-                "success"   => "success",
+                'success' => 'success',
             ], 200);
+
         } catch (\Exception $e) {
-            // If any queries fail, undo all changes
             DB::rollback();
 
             return response()->json(['error' => $e->getMessage()], 422);
         }
     }
+
+
+    public function getPICs(Request $request)
+    {
+        $companyId = $request->company_id;
+        $pics = Client::where('company_id', $companyId)->get();
+
+        return response()->json(['pics' => $pics]);
+    }
+
+    public function picCreate(Request $request)
+    {
+
+        $validated = $request->validate([
+            'company_id' => 'required|exists:client_companies,id',
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:50',
+            'email' => 'required|email|max:255',
+            'designation' => 'nullable|string|max:100',
+        ]);
+
+        $pic = Client::create($validated);
+
+        return response()->json([
+            'success' => true,
+            'pic' => $pic
+        ]);
+    }
+
+
+    public function picUpdate(Request $request)
+    {
+        // 1️⃣ Validate request
+        $validated = $request->validate([
+            'id'          => 'required|exists:clients,id',
+            'name'        => 'required|string|max:255',
+            'phone'       => 'nullable|string|max:50',
+            'email'       => 'nullable|email|max:255',
+            'designation' => 'nullable|string|max:100',
+        ]);
+
+        try {
+            // 2️⃣ Find the PIC by ID
+            $pic = Client::findOrFail($validated['id']);
+
+            // 3️⃣ Update the fields
+            $pic->update([
+                'name'        => $validated['name'],
+                'phone'       => $validated['phone'] ?? $pic->phone,
+                'email'       => $validated['email'] ?? $pic->email,
+                'designation' => $validated['designation'] ?? $pic->designation,
+            ]);
+
+            // 4️⃣ Return success response
+            return response()->json([
+                'success' => true,
+                'message' => 'PIC updated successfully',
+            ]);
+        } catch (\Exception $e) {
+            // Optional: log the error
+            \Log::error('PIC update error: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update PIC',
+            ]);
+        }
+    }
+
+    public function picDelete(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|integer|exists:clients,id'
+        ]);
+
+        $pic = Client::find($request->id);
+
+        if ($pic) {
+            $pic->delete();
+            return response()->json(['success' => true]);
+        }
+
+        return response()->json(['success' => false]);
+    }
+
+
 }
