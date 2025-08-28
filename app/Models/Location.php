@@ -9,27 +9,34 @@ class Location extends Model
 {
     use HasFactory;
 
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
     protected $table = 'locations';
 
     protected $fillable = [
         'district_id',
+        'council_id',
         'name',
         'created_by',
         'updated_by',
-        'created_at',
-        'updated_at',
     ];
 
-
+    // 🔗 Relationships
     public function district()
     {
-        // Assuming type is used to determine the building
-        // You can adjust this logic based on your actual data structure
         return $this->belongsTo(District::class);
+    }
+
+    public function council()
+    {
+        return $this->belongsTo(Council::class);
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updater()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
     }
 }

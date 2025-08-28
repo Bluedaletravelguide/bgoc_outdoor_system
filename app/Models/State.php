@@ -21,4 +21,9 @@ class State extends Model
         'created_at',
         'updated_at',
     ];
+
+    public function councils()
+    {
+        return $this->hasMany(Council::class);
+    }
 }

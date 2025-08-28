@@ -207,14 +207,13 @@
                             <input type="text" class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardLocation" placeholder="Enter area name">
                         </div>
                         <div class="col-span-12 sm:col-span-6">
-                            <label for="start_date" class="form-label">GPS Longitude</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="inputGPSLongitude" value="" required>
-                        </div>
-
-                        <div class="col-span-12 sm:col-span-6">
                             <label for="end_date" class="form-label">GPS Latitude</label>
                             <input type="text" class="input w-full border mt-2 flex-1" id="inputGPSLatitude" value="" required>
                         </div>
+                        <div class="col-span-12 sm:col-span-6">
+                            <label for="start_date" class="form-label">GPS Longitude</label>
+                            <input type="text" class="input w-full border mt-2 flex-1" id="inputGPSLongitude" value="" required>
+                        </div>  
                         <div class="col-span-12 sm:col-span-12">
                             <label>Traffic Volume</label>
                             <input type="text" class="input w-full border mt-2 flex-1" id="inputBillboardTrafficVolume" value="" required>
@@ -287,13 +286,12 @@
                             <input type="text" class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardLocation" placeholder="Enter area name">
                         </div>
                         <div class="col-span-12 sm:col-span-6">
-                            <label for="start_date" class="form-label">GPS Longitude</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="editGPSLongitude" value="" required>
-                        </div>
-
-                        <div class="col-span-12 sm:col-span-6">
                             <label for="end_date" class="form-label">GPS Latitude</label>
                             <input type="text" class="input w-full border mt-2 flex-1" id="editGPSLatitude" value="" required>
+                        </div>
+                        <div class="col-span-12 sm:col-span-6">
+                            <label for="start_date" class="form-label">GPS Longitude</label>
+                            <input type="text" class="input w-full border mt-2 flex-1" id="editGPSLongitude" value="" required>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
                             <label>Traffic Volume</label>
@@ -891,7 +889,7 @@
                         data: "id",
                         render: function(data, type, row) {
                             var a = "{{ route('billboard.detail', ['id'=>':data'] )}}".replace(':data', data);
-                            var inventoryUrl = "{{ route('stockInventory.index', ['billboard'=>':id'] )}}".replace(':id', data);
+                            let mapUrl = `https://www.google.com/maps?q=${row.gps_latitude},${row.gps_longitude}`;
                             let element = 
                                 `<div class="flex flex-row">
                                     <a href="javascript:;" id="detail-` + data + `"
@@ -900,7 +898,7 @@
                                     </a>
 
                                     <!-- Map Button -->
-                                    <a href="${inventoryUrl}" 
+                                    <a href="${mapUrl}" target="_blank"
                                     class="button w-24 inline-block mr-2 mb-2 bg-theme-1 text-white">
                                     Map
                                     </a>
