@@ -203,8 +203,23 @@
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
+                            <label>Council</label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardCouncil">
+                                <option value="">-- Select Council --</option>
+                            </select>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
                             <label>Area</label>
                             <input type="text" class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardLocation" placeholder="Enter area name">
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>State/Private Land</label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardLand">
+                                <option value="">-- Select option --</option>
+                                <option value="A">A - State Land</option>
+                                <option value="B">B - Private Land</option>
+                                <option value="C">C - KKR</option>
+                            </select>
                         </div>
                         <div class="col-span-12 sm:col-span-6">
                             <label for="end_date" class="form-label">GPS Latitude</label>
@@ -241,7 +256,7 @@
                         <div class="col-span-12 sm:col-span-12">
                             <input type="hidden" id="editBillboardModalId" name="id">
                             <label>Outdoor Type</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardType">
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardType" disabled>
                                 <option value="">-- Select Outdoor Type --</option>
                                 @foreach ($billboardTypes as $prefix => $type)
                                     <option value="{{ $prefix }}">{{ $type }}</option>
@@ -282,6 +297,12 @@
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
+                            <label>Council</label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardCouncil" disabled>
+                                <option value="">-- Select Council --</option>
+                            </select>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
                             <label>Area</label>
                             <input type="text" class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardLocation" placeholder="Enter area name">
                         </div>
@@ -296,6 +317,14 @@
                         <div class="col-span-12 sm:col-span-12">
                             <label>Traffic Volume</label>
                             <input type="text" class="input w-full border mt-2 flex-1" id="editBillboardTrafficVolume" value="" required>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>Status</label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardStatus">
+                                <option value="">-- Select option --</option>
+                                <option value="1">Active</option>
+                                <option value="0">Inactive</option>
+                            </select>
                         </div>
                     </div>
 
@@ -681,13 +710,13 @@
             width: '100%'
         });
 
-
         // When "State" is changed in add form
         $('#inputBillboardState').on('change', function () {
             let stateId = $(this).val();
 
-            // Reset District and Location dropdowns
+            // Reset District & Council dropdowns
             $('#inputBillboardDistrict').empty().append('<option value="">-- Select District --</option>');
+            $('#inputBillboardCouncil').empty().append('<option value="">-- Select Council --</option>');
 
             if (stateId !== '') {
                 $.ajax({
@@ -708,6 +737,39 @@
                 });
             }
         });
+
+        // When "District" is changed in add form
+        $('#inputBillboardDistrict').on('change', function () {
+            let stateId = $('#inputBillboardState').val();   // ✅ get the selected state
+            let districtId = $(this).val();
+
+            // Reset Council dropdown
+            $('#inputBillboardCouncil').empty().append('<option value="">-- Select Council --</option>');
+
+            if (stateId !== '') {
+                $.ajax({
+                    url: '{{ route("location.getCouncils") }}',
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        state_id: stateId   // ✅ Correct
+                    },
+                    success: function (councils) {
+                        councils.forEach(function (council) {
+                            $('#inputBillboardCouncil').append(
+                                `<option value="${council.id}">${council.abbreviation} - ${council.name}</option>`
+                            );
+                        });
+                    },
+                    error: function () {
+                        alert('Failed to load councils.');
+                    }
+                });
+            }
+        });
+
+
+
 
         document.getElementById("billboardAddButton").addEventListener("click", function (e) {
             e.preventDefault();
@@ -921,10 +983,12 @@
                                     data-lighting="${row.lighting}"
                                     data-state_id="${row.state_id}"
                                     data-district_id="${row.district_id}"
+                                    data-council_id="${row.council_id}"
                                     data-location="${row.location_name}"
                                     data-gps_latitude="${row.gps_latitude}"
                                     data-gps_longitude="${row.gps_longitude}"
                                     data-traffic_volume="${row.traffic_volume}"
+                                    data-status="${row.status}"
                                 >
                                     Edit
                                 </a>
@@ -1011,6 +1075,78 @@
         setupAutoFilter();
         billboardEditModal();
 
+        // $('#billboard_table').off('click', '.edit-billboard').on('click', '.edit-billboard', function () {
+        //     const $this = $(this);
+        //     const billboardID = $this.data('id');
+
+        //     // Set values
+        //     $('#editBillboardType').val($this.data('type'));
+        //     $('#editBillboardSize').val($this.data('size'));
+        //     $('#editBillboardLighting').val($this.data('lighting'));
+        //     $('#editGPSLatitude').val($this.data('gps_latitude'));
+        //     $('#editGPSLongitude').val($this.data('gps_longitude'));
+        //     $('#editBillboardTrafficVolume').val($this.data('traffic_volume'));
+
+        //     $('#editBillboardModalId').val(billboardID);
+
+        //     // Set state and load districts
+        //     const stateID = $this.data('state_id');
+        //     const districtID = $this.data('district_id');
+        //     const location   = $this.data('location');
+
+        //     $('#editBillboardState').val(stateID).trigger('change');
+
+        //     $.post('{{ route("location.getDistricts") }}', {
+        //         _token: '{{ csrf_token() }}',
+        //         state_id: stateID
+        //     }, function (districts) {
+        //         $('#editBillboardDistrict').empty().append(`<option value="">-- Select District --</option>`);
+        //         districts.forEach(function (d) {
+        //             $('#editBillboardDistrict').append(`<option value="${d.id}">${d.name}</option>`);
+        //         });
+        //         $('#editBillboardDistrict').val(districtID).trigger('change');
+        //     });
+
+        //     // Now just set the location text directly
+        //     $('#editBillboardLocation').val(location);
+
+        //     // Open modal
+        //     openAltEditorModal("#billboardEditModal");
+        // });
+
+        // // On State change => fetch districts
+        // $('#editBillboardState').on('change', function () {
+        //     let stateID = $(this).val();
+        //     $('#editBillboardDistrict').html('<option value="">-- Loading Districts --</option>');
+        //     $('#editBillboardLocation').html('<option value="">-- Select Location --</option>');
+
+        //     if (stateID) {
+        //         $.get('/get-districts/' + stateID, function (data) {
+        //             let options = '<option value="">-- Select District --</option>';
+        //             data.forEach(function (district) {
+        //                 options += `<option value="${district.id}">${district.name}</option>`;
+        //             });
+        //             $('#editBillboardDistrict').html(options);
+        //         });
+        //     }
+        // });
+
+        // // On District change => fetch locations
+        // $('#editBillboardDistrict').on('change', function () {
+        //     let districtID = $(this).val();
+        //     $('#editBillboardLocation').html('<option value="">-- Loading Locations --</option>');
+
+        //     if (districtID) {
+        //         $.get('/get-locations/' + districtID, function (data) {
+        //             let options = '<option value="">-- Select Location --</option>';
+        //             data.forEach(function (location) {
+        //                 options += `<option value="${location.id}">${location.name}</option>`;
+        //             });
+        //             $('#editBillboardLocation').html(options);
+        //         });
+        //     }
+        // });
+
         $('#billboard_table').off('click', '.edit-billboard').on('click', '.edit-billboard', function () {
             const $this = $(this);
             const billboardID = $this.data('id');
@@ -1022,16 +1158,20 @@
             $('#editGPSLatitude').val($this.data('gps_latitude'));
             $('#editGPSLongitude').val($this.data('gps_longitude'));
             $('#editBillboardTrafficVolume').val($this.data('traffic_volume'));
+            $('#editBillboardStatus').val($this.data('status'));
 
             $('#editBillboardModalId').val(billboardID);
 
-            // Set state and load districts
-            const stateID = $this.data('state_id');
+            // Get IDs
+            const stateID    = $this.data('state_id');
             const districtID = $this.data('district_id');
+            const councilID  = $this.data('council_id');
             const location   = $this.data('location');
 
+            // ✅ Set state
             $('#editBillboardState').val(stateID).trigger('change');
 
+            // ✅ Fetch districts
             $.post('{{ route("location.getDistricts") }}', {
                 _token: '{{ csrf_token() }}',
                 state_id: stateID
@@ -1041,22 +1181,37 @@
                     $('#editBillboardDistrict').append(`<option value="${d.id}">${d.name}</option>`);
                 });
                 $('#editBillboardDistrict').val(districtID).trigger('change');
+
+                // ✅ Fetch councils after districts load
+                $.post('{{ route("location.getCouncils") }}', {
+                    _token: '{{ csrf_token() }}',
+                    state_id: stateID
+                }, function (councils) {
+                    $('#editBillboardCouncil').empty().append(`<option value="">-- Select Council --</option>`);
+                    councils.forEach(function (c) {
+                        $('#editBillboardCouncil').append(`<option value="${c.id}">${c.name} (${c.abbreviation})</option>`);
+                    });
+                    $('#editBillboardCouncil').val(councilID).trigger('change');
+                });
             });
 
-            // Now just set the location text directly
+            // ✅ Location
             $('#editBillboardLocation').val(location);
 
             // Open modal
             openAltEditorModal("#billboardEditModal");
         });
 
-        // On State change => fetch districts
+        // 🔄 On State change => fetch districts + councils
         $('#editBillboardState').on('change', function () {
             let stateID = $(this).val();
+
             $('#editBillboardDistrict').html('<option value="">-- Loading Districts --</option>');
+            $('#editBillboardCouncil').html('<option value="">-- Loading Councils --</option>');
             $('#editBillboardLocation').html('<option value="">-- Select Location --</option>');
 
             if (stateID) {
+                // districts
                 $.get('/get-districts/' + stateID, function (data) {
                     let options = '<option value="">-- Select District --</option>';
                     data.forEach(function (district) {
@@ -1064,10 +1219,19 @@
                     });
                     $('#editBillboardDistrict').html(options);
                 });
+
+                // councils
+                $.get('/get-councils/' + stateID, function (data) {
+                    let options = '<option value="">-- Select Council --</option>';
+                    data.forEach(function (c) {
+                        options += `<option value="${c.id}">${c.abbreviation} - ${c.name} </option>`;
+                    });
+                    $('#editBillboardCouncil').html(options);
+                });
             }
         });
 
-        // On District change => fetch locations
+        // 🔄 On District change => fetch locations
         $('#editBillboardDistrict').on('change', function () {
             let districtID = $(this).val();
             $('#editBillboardLocation').html('<option value="">-- Loading Locations --</option>');
@@ -1085,11 +1249,12 @@
 
 
 
+
         // Add New Billboard
         function billboardAddButton() {
 
-            document.getElementById("billboardAddButton").disabled = true;
-            document.getElementById('billboardAddButton').style.display = 'none';
+            // document.getElementById("billboardAddButton").disabled = true;
+            // document.getElementById('billboardAddButton').style.display = 'none';
 
             $.ajax({
                 type: 'POST',
@@ -1101,6 +1266,8 @@
                     lighting        : document.getElementById("inputBillboardLighting").value,
                     state           : document.getElementById("inputBillboardState").value,
                     district        : document.getElementById("inputBillboardDistrict").value,
+                    council         : document.getElementById("inputBillboardCouncil").value,
+                    land            : document.getElementById("inputBillboardLand").value,
                     location        : document.getElementById("inputBillboardLocation").value,
                     gpslongitude    : document.getElementById("inputGPSLongitude").value,
                     gpslatitude     : document.getElementById("inputGPSLatitude").value,
@@ -1120,6 +1287,8 @@
                     document.getElementById("inputBillboardLighting").value = "";
                     document.getElementById("inputBillboardState").value = "";
                     document.getElementById("inputBillboardDistrict").value = "";
+                    document.getElementById("inputBillboardCouncil").value = "";
+                    document.getElementById("inputBillboardLand").value = "";
                     document.getElementById("inputBillboardLocation").value = "";
                     document.getElementById("inputGPSLongitude").value = "";
                     document.getElementById("inputGPSLatitude").value = "";
@@ -1129,8 +1298,8 @@
                     $('#billboard_table').DataTable().ajax.reload();
                     
                     // Reset the button visibility and enable it for next submission
-                    document.getElementById("billboardAddButton").disabled = false;
-                    document.getElementById('billboardAddButton').style.display = 'inline-block';  // Shows the button again
+                    // document.getElementById("billboardAddButton").disabled = false;
+                    // document.getElementById('billboardAddButton').style.display = 'inline-block';  // Shows the button again
                 },
                 error: function(xhr, status, error) {
                     // Display the validation error message
@@ -1157,10 +1326,13 @@
                     lighting: $('#editBillboardLighting').val(),
                     state_id: $('#editBillboardState').val(),
                     district_id: $('#editBillboardDistrict').val(),
+                    council_id: $('#editBillboardCouncil').val(),
                     location_name: $('#editBillboardLocation').val(), // 👈 send as name
                     gps_latitude: $('#editGPSLatitude').val(),
                     gps_longitude: $('#editGPSLongitude').val(),
                     traffic_volume: $('#editBillboardTrafficVolume').val(),
+                    status: $('#editBillboardStatus').val(),
+                    
                 },
                 success: function(response) {
                     // Close modal after successfully edited
@@ -1177,10 +1349,12 @@
                     document.getElementById("editBillboardLighting").value = "";
                     document.getElementById("editBillboardState").value = "";
                     document.getElementById("editBillboardDistrict").value = "";
+                    document.getElementById("editBillboardCouncil").value = "";
                     document.getElementById("editBillboardLocation").value = "";
                     document.getElementById("editGPSLongitude").value = "";
                     document.getElementById("editGPSLatitude").value = "";
                     document.getElementById("editBillboardTrafficVolume").value = "";
+                    document.getElementById("editBillboardStatus").value = "";
 
                     // Reload table
                     $('#billboard_table').DataTable().ajax.reload();
@@ -1207,44 +1381,41 @@
             $(document).on('click', "[id^='edit-']", function (event) {
                 event.preventDefault();
 
-                // Get the billboard ID (if needed for further AJAX)
                 let billboardID = $(this).attr('id').split('-')[1];
-
-                // Get the parent row
                 let row = $(this).closest('tr');
 
-                // Extract values from data attributes
                 let prefix     = row.attr('data-prefix') || "";
                 let size       = row.attr('data-size') || "";
                 let lighting   = row.attr('data-lighting') || "";
                 let stateID    = row.attr('data-state_id') || "";
                 let districtID = row.attr('data-district_id') || "";
                 let locationID = row.attr('data-location_id') || "";
+                let latitude   = row.attr('data-latitude') || "";
+                let longitude  = row.attr('data-longitude') || "";
+                let traffic    = row.attr('data-traffic') || "";
 
-                // Fill static dropdowns
                 $('#editBillboardType').val(prefix);
                 $('#editBillboardSize').val(size);
                 $('#editBillboardLighting').val(lighting);
                 $('#editGPSLatitude').val(latitude);
                 $('#editGPSLongitude').val(longitude);
                 $('#editBillboardTrafficVolume').val(traffic);
+                $('#editBillboardStatus').val(status);
 
-                // Set state and trigger change to load districts
+                // Trigger state change to load districts
                 $('#editBillboardState').val(stateID).trigger('change');
 
-                // Chain select population after change events
                 setTimeout(() => {
                     $('#editBillboardDistrict').val(districtID).trigger('change');
-
                     setTimeout(() => {
                         $('#editBillboardLocation').val(locationID);
                     }, 300);
                 }, 300);
 
-                // Show the modal
                 openAltEditorModal("#billboardEditModal");
             });
         }
+
 
 
 

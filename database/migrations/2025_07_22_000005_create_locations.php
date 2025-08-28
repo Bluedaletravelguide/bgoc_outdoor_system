@@ -32,7 +32,7 @@ return new class extends Migration
         // COUNCILS
         Schema::create('councils', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('state_id');
+            $table->unsignedBigInteger('state_id')->nullable();
             $table->string('name'); // full name e.g. "Majlis Bandaraya Petaling Jaya"
             $table->string('abbreviation', 20); // short form e.g. "MBPJ"
             $table->timestamps();

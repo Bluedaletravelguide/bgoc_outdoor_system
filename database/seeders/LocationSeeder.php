@@ -233,5 +233,12 @@ class LocationSeeder extends Seeder
                 }
             }
         }
+
+        // 🟣 Special Council: KKR (no state)
+        Council::create([
+            'name' => 'Kementerian Kerja Raya',
+            'abbreviation' => 'KKR',
+            'state_id' => null,   // ✅ no state
+        ]);
     }
 }

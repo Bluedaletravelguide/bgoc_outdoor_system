@@ -81,7 +81,7 @@ class BillboardSeeder extends Seeder
         $prefixMap = [
             'Billboard' => 'BB',
             'Tempboard' => 'TB',
-            'Bunting'   => 'BT',
+            'Bunting'   => 'BU',
             'Banner'    => 'BN',
         ];
 

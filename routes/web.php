@@ -45,7 +45,10 @@ Route::group(['middleware' => ['auth']], function () {
     // Location
     Route::get('/location/all-districts', [LocationController::class, 'getAllDistricts'])->name('location.getAllDistricts');
     Route::post('/get-districts', [LocationController::class, 'getDistrictsByState'])->name('location.getDistricts');
+    Route::post('/get-councils', [LocationController::class, 'getCouncils'])->name('location.getCouncils');
     Route::post('/get-locations', [LocationController::class, 'getLocationsByDistrict'])->name('location.getLocations');
+    
+
 
 
     // Billboard
@@ -53,7 +56,6 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/billboard/list', [BillboardController::class, 'list'])->name('billboard.list');
     Route::post('/billboard/create', [BillboardController::class, 'create'])->name('billboard.create');
     Route::post('/billboard/delete', [BillboardController::class, 'delete'])->name('billboard.delete');
-    Route::post('/billboard/map', [BillboardController::class, 'viewMap'])->name('billboard.map');
     Route::post('/billboard/update', [BillboardController::class, 'update'])->name('billboard.update');
     // Route::get('/notification', [PushNotificationController::class, 'notificationHistory']);
     Route::get('/billboards/export/pdf', [BillboardController::class, 'exportListPdf'])->name('billboards.export.pdf');

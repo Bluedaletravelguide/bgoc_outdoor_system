@@ -15,6 +15,7 @@ use App\Models\BillboardImage;
 use App\Models\Contractor;
 use App\Models\State;
 use App\Models\District;
+use App\Models\Council;
 use App\Models\Location;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Str;
@@ -110,9 +111,10 @@ class BillboardController extends Controller
         $orderColumnName    = $columns[$orderColumnIndex];
         $orderDirection     = $request->input('order.0.dir');
 
-        $query = Billboard::select('billboards.*', 'locations.id as location_id', 'locations.name as location_name', 'districts.id as district_id', 'districts.name as district_name', 'states.id as state_id', 'states.name as state_name')
+        $query = Billboard::select('billboards.*', 'locations.id as location_id', 'locations.council_id as council_id', 'locations.name as location_name', 'districts.id as district_id', 'districts.name as district_name', 'states.id as state_id', 'states.name as state_name')
             ->leftJoin('locations', 'billboards.location_id', '=', 'locations.id')
             ->leftJoin('districts', 'locations.district_id', '=', 'districts.id')
+            ->leftJoin('councils', 'councils.id', '=', 'locations.council_id')
             ->leftJoin('states', 'districts.state_id', '=', 'states.id')
             ->orderBy($orderColumnName, $orderDirection)
             ->orderBy('billboards.id', 'desc');
@@ -171,11 +173,13 @@ class BillboardController extends Controller
                 'location_id'           => $d->location_id,
                 'state_id'              => $d->state_id,
                 'district_id'           => $d->district_id,
+                'council_id'            => $d->council_id,
                 'location_name'         => $d->location_name,
                 'region'                => $d->district_name . ', ' . $d->state_name,
                 'gps_latitude'          => $d->gps_latitude,
                 'gps_longitude'         => $d->gps_longitude,
                 'traffic_volume'        => $d->traffic_volume,
+                'status'                => $d->status,
                 'created_at'            => $created_at,
                 'status'                => $d->status,
                 'id'                    => $d->id,
@@ -199,116 +203,217 @@ class BillboardController extends Controller
     /**
      * Create service request and work order.
      */
-    public function create(Request $request)
-    {   
-        $user = Auth::user();
+    // public function create(Request $request)
+    // {   
+    //     $user = Auth::user();
         
-        // Get user roles
-        $role = $user->roles->pluck('name')[0];
-        $userID = $this->user->id;
+    //     // Get user roles
+    //     $role = $user->roles->pluck('name')[0];
+    //     $userID = $this->user->id;
 
-        $type               = $request->type;
-        $size               = $request->size;
-        $lighting           = $request->lighting;
-        $state              = $request->state;
-        $district           = $request->district;
-        $locationName       = $request->location;
-        $gpslongitude       = $request->gpslongitude;
-        $gpslatitude        = $request->gpslatitude;
-        $trafficvolume      = $request->trafficvolume;
+    //     $type               = $request->type;
+    //     $size               = $request->size;
+    //     $lighting           = $request->lighting;
+    //     $state              = $request->state;
+    //     $district           = $request->district;
+    //     $council            = $request->council;
+    //     $locationName       = $request->location;
+    //     $land               = $request->land;
+    //     $gpslongitude       = $request->gpslongitude;
+    //     $gpslatitude        = $request->gpslatitude;
+    //     $trafficvolume      = $request->trafficvolume;
 
-        // Get the current UTC time
-        $current_UTC = Carbon::now('UTC');
+    //     // Get the current UTC time
+    //     $current_UTC = Carbon::now('UTC');
+
+    //     DB::beginTransaction();
+
+    //     try {
+
+    //         // Step 1: Ensure location exists (or create new)
+    //         $location = Location::firstOrCreate(
+    //             [
+    //                 'name' => $locationName,
+    //                 'district_id' => $district,
+    //                 'council_id' => $council,
+    //             ],
+    //             // [
+    //             //     'created_by' => $userID
+    //             // ]
+    //         );
+
+    //         // Step 2: Fetch state code from state model (assuming you have it)
+    //         $stateCode = State::select('prefix')->where('id', $state)->first();
+
+    //         // Step 3: Count existing records for the same type and state to get the next number
+    //         $runningNumber = Billboard::leftJoin('locations', 'billboards.location_id', '=', 'locations.id')
+    //         ->leftJoin('districts', 'locations.district_id', '=', 'districts.id')
+    //         ->leftJoin('states', 'districts.state_id', '=', 'states.id')
+    //         ->where('states.id', $state)
+    //         ->count() + 1;
+
+    //         $billboardType = Billboard::select('type', 'prefix')->distinct()->where('prefix' , $type)->first();
+
+    //         // Format as 4-digit number with leading zeros
+    //         $formattedNumber = str_pad($runningNumber, 4, '0', STR_PAD_LEFT);
+
+    //         $councilAbbv = Council::find($council)->abbreviation;
+
+    //         // Step 5: Generate site_number
+    //         $siteNumber = "{$type}-{$stateCode->prefix}-{$formattedNumber}-{$councilAbbv}-{$land}";
+
+    //         // Step 6: Create a new service request
+    //         $billboard = Billboard::create([
+    //             'site_number'      => $siteNumber,
+    //             'status'            => 1,
+    //             'type'              => $billboardType->type,
+    //             'prefix'              => $billboardType->prefix,
+    //             'size'              => $size,
+    //             'lighting'          => $lighting,
+    //             'state'             => $state,
+    //             'district'          => $district,
+    //             'location_id'        => $location->id,
+    //             'gps_longitude'      => $gpslongitude,
+    //             'gps_latitude'       => $gpslatitude,
+    //             'traffic_volume'     => $trafficvolume,
+    //             'created_by'        => $userID,
+    //         ]);
+
+    //         // Generate the service request no & work order no based on prefixes and count
+    //         // $getPrefixNo = $billboard->billboardPrefixNo();
+
+    //         // Generate the service request number based on prefixes and count
+    //         // $billboard->service_request_no = $getPrefixNo[0];
+    //         $billboard->save();
+
+    //         // Validate the input
+    //         // $validator = Validator::make($request->all(), [
+    //         //     'priority' => 'required|in:1,2,3,4', // Priority must be one of the three values
+    //         //     ]);
+        
+    //         //     if ($validator->fails()) {
+    //         //     return response()->json(['error' => $validator->errors()->first()], 422);
+    //         //     }
+        
+
+        
+
+    //         // $pushNotificationController = new PushNotificationController();
+    //         // $pushNotificationController->sendEmailNewSR($serviceRequest, $workOrder);
+
+    //         // Ensure all queries successfully executed, commit the db changes
+    //         DB::commit();
+
+    //         return response()->json([
+    //             'success'   => 'success',
+    //         ], 200);
+
+    //     }catch (\Exception $e) {
+    //         // If any queries fail, undo all changes
+    //         DB::rollback();
+
+    //         return response()->json(['error' => $e->getMessage()], 422);
+    //     }
+    // }
+
+    public function create(Request $request)
+    {
+        $user = Auth::user();
+        $userID = $user->id;
+
+        // ✅ Validation
+        $validated = Validator::make($request->all(), [
+            'type'          => 'required|string|exists:billboards,prefix',
+            'size'          => 'required|string|max:50',
+            'lighting'      => 'required|string', // adjust based on your allowed values
+            'state'         => 'required|exists:states,id',
+            'district'      => 'nullable|exists:districts,id',
+            'council'       => 'required|exists:councils,id',
+            'location'      => 'required|string|max:255',
+            'land'          => 'required|string|max:10', // adjust if you only allow values like "PRIV" / "GOV"
+            'gpslongitude'  => 'nullable|numeric|between:-180,180',
+            'gpslatitude'   => 'nullable|numeric|between:-90,90',
+            'trafficvolume' => 'nullable|integer|min:0',
+        ]);
+
+        if ($validated->fails()) {
+            return response()->json(['error' => $validated->errors()->first()], 422);
+        }
 
         DB::beginTransaction();
 
         try {
+            $type         = $request->type;
+            $size         = $request->size;
+            $lighting     = $request->lighting;
+            $state        = $request->state;
+            $district     = $request->district;
+            $council      = $request->council;
+            $locationName = $request->location;
+            $land         = $request->land;
+            $gpslongitude = $request->gpslongitude;
+            $gpslatitude  = $request->gpslatitude;
+            $trafficvolume= $request->trafficvolume;
 
             // Step 1: Ensure location exists (or create new)
-            $location = Location::firstOrCreate(
-                [
-                    'name' => $locationName,
-                    'district_id' => $district,
-                ],
-                // [
-                //     'created_by' => $userID
-                // ]
-            );
-
-            // Step 2: Fetch state code from state model (assuming you have it)
-            $stateCode = State::select('prefix')->where('id', $state)->first();
-
-            // Step 3: Count existing records for the same type and state to get the next number
-            $runningNumber = Billboard::leftJoin('locations', 'billboards.location_id', '=', 'locations.id')
-            ->leftJoin('districts', 'locations.district_id', '=', 'districts.id')
-            ->leftJoin('states', 'districts.state_id', '=', 'states.id')
-            ->where('states.id', $state)
-            ->count() + 1;
-
-            $billboardType = Billboard::select('type', 'prefix')->distinct()->where('prefix' , $type)->first();
-
-            // Format as 4-digit number with leading zeros
-            $formattedNumber = str_pad($runningNumber, 4, '0', STR_PAD_LEFT);
-
-            // Step 4: Set status character
-            $statusChar = 'A'; // or use: $status == 1 ? 'A' : 'I'
-
-            // Step 5: Generate site_number
-            $siteNumber = "{$type}-{$stateCode->prefix}-{$formattedNumber}-{$statusChar}";
-
-            // Step 6: Create a new service request
-            $billboard = Billboard::create([
-                'site_number'      => $siteNumber,
-                'status'            => 1,
-                'type'              => $billboardType->type,
-                'prefix'              => $billboardType->prefix,
-                'size'              => $size,
-                'lighting'          => $lighting,
-                'state'             => $state,
-                'district'          => $district,
-                'location_id'        => $location->id,
-                'gps_longitude'      => $gpslongitude,
-                'gps_latitude'       => $gpslatitude,
-                'traffic_volume'     => $trafficvolume,
-                'created_by'        => $userID,
+            $location = Location::firstOrCreate([
+                'name'        => $locationName,
+                'district_id' => $district,
+                'council_id'  => $council,
             ]);
 
-            // Generate the service request no & work order no based on prefixes and count
-            // $getPrefixNo = $billboard->billboardPrefixNo();
+            // Step 2: Fetch state code
+            $stateCode = State::select('prefix')->where('id', $state)->firstOrFail();
 
-            // Generate the service request number based on prefixes and count
-            // $billboard->service_request_no = $getPrefixNo[0];
-            $billboard->save();
+            // Step 3: Running number
+            $runningNumber = Billboard::leftJoin('locations', 'billboards.location_id', '=', 'locations.id')
+                ->leftJoin('districts', 'locations.district_id', '=', 'districts.id')
+                ->leftJoin('states', 'districts.state_id', '=', 'states.id')
+                ->where('states.id', $state)
+                ->count() + 1;
 
-            // Validate the input
-            // $validator = Validator::make($request->all(), [
-            //     'priority' => 'required|in:1,2,3,4', // Priority must be one of the three values
-            //     ]);
-        
-            //     if ($validator->fails()) {
-            //     return response()->json(['error' => $validator->errors()->first()], 422);
-            //     }
-        
+            $billboardType = Billboard::select('type', 'prefix')
+                ->distinct()
+                ->where('prefix', $type)
+                ->firstOrFail();
 
-        
+            $formattedNumber = str_pad($runningNumber, 4, '0', STR_PAD_LEFT);
+            $councilAbbv = Council::findOrFail($council)->abbreviation;
 
-            // $pushNotificationController = new PushNotificationController();
-            // $pushNotificationController->sendEmailNewSR($serviceRequest, $workOrder);
+            // Step 4: Generate site_number
+            $siteNumber = "{$type}-{$stateCode->prefix}-{$formattedNumber}-{$councilAbbv}-{$land}";
 
-            // Ensure all queries successfully executed, commit the db changes
+            // Step 5: Create billboard
+            $billboard = Billboard::create([
+                'site_number'     => $siteNumber,
+                'status'          => 1,
+                'type'            => $billboardType->type,
+                'prefix'          => $billboardType->prefix,
+                'size'            => $size,
+                'lighting'        => $lighting,
+                'state'           => $state,
+                'district'        => $district,
+                'location_id'     => $location->id,
+                'gps_longitude'   => $gpslongitude,
+                'gps_latitude'    => $gpslatitude,
+                'traffic_volume'  => $trafficvolume,
+                'created_by'      => $userID,
+            ]);
+
             DB::commit();
 
             return response()->json([
-                'success'   => 'success',
-            ], 200);
+                'success' => true,
+                'message' => 'Billboard created successfully.',
+                'billboard_id' => $billboard->id,
+            ], 201);
 
-        }catch (\Exception $e) {
-            // If any queries fail, undo all changes
-            DB::rollback();
-
+        } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 422);
         }
     }
+
 
     /**
      * Update status of billboard
@@ -336,6 +441,7 @@ class BillboardController extends Controller
             'gps_latitude' => 'nullable|numeric',
             'gps_longitude' => 'nullable|numeric',
             'traffic_volume' => 'nullable|integer',
+            'status' => 'nullable|integer',
         ]);
 
         try {
@@ -355,7 +461,7 @@ class BillboardController extends Controller
             $prefixMap = [
                 'BB' => 'Billboard',
                 'TB' => 'Tempboard',
-                'BT' => 'Bunting',
+                'BU' => 'Bunting',
                 'BN' => 'Banner',
             ];
 
@@ -374,6 +480,7 @@ class BillboardController extends Controller
                 'gps_latitude'   => (float)$request->gps_latitude,
                 'gps_longitude'  => (float)$request->gps_longitude,
                 'traffic_volume' => (int)$request->traffic_volume,
+                'status' => (int)$request->status,
             ]);
 
             // Ensure all queries successfully executed, commit the db changes
@@ -436,12 +543,15 @@ class BillboardController extends Controller
         
         $billboard_detail = Billboard::leftJoin('locations', 'locations.id', 'billboards.location_id')
             ->leftJoin('districts', 'districts.id', '=', 'locations.district_id')
+            ->leftJoin('councils', 'councils.id', '=', 'locations.council_id')
             ->leftJoin('states', 'states.id', '=', 'districts.state_id')
             ->leftJoin('billboard_images', 'billboard_images.billboard_id', 'billboards.id')
             ->select(
                 'billboards.*',
                 'locations.name as location_name',
                 'districts.name as district_name',
+                'councils.name as council_name',
+                'councils.abbreviation as council_abbrv',
                 'states.name as state_name',
                 'billboard_images.image_path as billboard_image'
             )
