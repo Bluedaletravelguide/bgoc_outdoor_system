@@ -176,6 +176,7 @@ return new class extends Migration
             $table->foreignId('billboard_id')->nullable()->constrained('billboards')->onDelete('set null');
             $table->foreignId('client_id')->nullable()->constrained('client_companies')->onDelete('set null');
             $table->foreignId('from_contractor_id')->nullable()->constrained('contractors')->onDelete('set null');
+            $table->foreignId('to_contractor_id')->nullable()->constrained('contractors')->onDelete('set null');
 
             $table->enum('type', ['in', 'out']); // IN = return/delivery, OUT = release
             $table->unsignedInteger('quantity')->default(0);

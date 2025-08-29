@@ -664,7 +664,6 @@ class StockInventoryController extends Controller
         });
 
         $validated = $validator->validate();
-        logger('masok sini: ', $validated);
 
         try {
             $userId = auth()->id() ?? 1;
@@ -695,11 +694,12 @@ class StockInventoryController extends Controller
                         if ($targetId <= 0) return;
 
                         if ($from->balance_contractor < $qty) {
-                            throw new \Exception("Insufficient balance for contractor ID {$sourceId}.");
+                            $contractorName = Contractor::find($sourceId)?->name ?? "Unknown Contractor";
+                            throw new \Exception("Error: Insufficient stock balance for contractor {$contractorName}.");
                         }
 
                         // Target contractor inventory (e.g., Arun)
-                        $to = \App\Models\StockInventory::firstOrNew(['contractor_id' => $targetId]);
+                        $to = StockInventory::firstOrNew(['contractor_id' => $targetId]);
                         $to->balance_contractor = $to->balance_contractor ?? 0;
                         $to->balance_bgoc       = $to->balance_bgoc ?? 0;
                         $to->save();
@@ -709,8 +709,8 @@ class StockInventoryController extends Controller
                         $from->save();
                         $from->transactions()->create([
                             'billboard_id'       => $row['id'] ?? null,
-                            'client_id'          => $targetId ?? null,
                             'from_contractor_id' => $sourceId,
+                            'to_contractor_id'   => $targetId,
                             'type'               => 'out',
                             'quantity'           => $qty,
                             'transaction_date'   => !empty($validated['date_out'])
@@ -725,14 +725,14 @@ class StockInventoryController extends Controller
                         $to->save();
                         $to->transactions()->create([
                             'billboard_id'       => $row['id'] ?? null,
-                            'client_id'          => $targetId ?? null,
                             'from_contractor_id' => $sourceId,
+                            'to_contractor_id'   => $targetId,
                             'type'               => 'in',
                             'quantity'           => $qty,
                             'transaction_date'   => !empty($validated['date_in'])
-                                                    ? \Carbon\Carbon::parse($validated['date_in'])->format('Y-m-d H:i:s')
+                                                    ? Carbon::parse($validated['date_in'])->format('Y-m-d H:i:s')
                                                     : now(),
-                            'remarks'            => $validated['remarks_in'] ?? null,
+                            'remarks'            => $validated['remarks_in'] ?? ($validated['remarks_out'] ?? null),
                             'created_by'         => $userId,
                         ]);
 
@@ -761,7 +761,7 @@ class StockInventoryController extends Controller
                 // -------------------------
                 // Default (BGOC) mode below
                 // -------------------------
-                $inventory = \App\Models\StockInventory::firstOrNew(['contractor_id' => $sourceId]);
+                $inventory = StockInventory::firstOrNew(['contractor_id' => $sourceId]);
                 $inventory->balance_contractor = $inventory->balance_contractor ?? 0;
                 $inventory->balance_bgoc       = $inventory->balance_bgoc ?? 0;
                 $inventory->save();
@@ -1072,15 +1072,10 @@ class StockInventoryController extends Controller
     {
         $id = $request->id;
 
-        // Validate fields
         $validator = Validator::make(
             $request->all(),
             [
-                'id' => [
-                    'required',
-                    'integer',
-                    'exists:stock_inventory_transactions,id',
-                ],
+                'id' => 'required|integer|exists:stock_inventory_transactions,id',
             ],
             [
                 'id.exists' => 'The stock inventory transaction cannot be found.',
@@ -1094,39 +1089,79 @@ class StockInventoryController extends Controller
         try {
             DB::beginTransaction();
 
-            // Get transaction
             $transaction = StockInventoryTransaction::findOrFail($id);
+            $isTransfer = $transaction->from_contractor_id && $transaction->to_contractor_id;
 
-            // Find related stock inventory
-            $stockInventory = StockInventory::findOrFail($transaction->stock_inventory_id);
+            if ($isTransfer) {
+                // find paired transaction
+                $paired = StockInventoryTransaction::where('from_contractor_id', $transaction->from_contractor_id)
+                    ->where('to_contractor_id', $transaction->to_contractor_id)
+                    ->where('quantity', $transaction->quantity)
+                    ->where('transaction_date', $transaction->transaction_date)
+                    ->where('id', '!=', $transaction->id)
+                    ->where('type', $transaction->type === 'in' ? 'out' : 'in')
+                    ->first();
 
-            // Adjust balances depending on type
-            if ($transaction->type === 'in') {
-                $stockInventory->balance_contractor -= $transaction->quantity;
-            } elseif ($transaction->type === 'out') {
-                $stockInventory->balance_bgoc -= $transaction->quantity;
-            }
+                // rollback balances for current
+                $stockInventory = StockInventory::find($transaction->stock_inventory_id);
+                if ($transaction->type === 'in') {
+                    $stockInventory->balance_contractor -= $transaction->quantity;
+                } elseif ($transaction->type === 'out') {
+                    $stockInventory->balance_contractor += $transaction->quantity;
+                }
+                $stockInventory->balance_contractor = max(0, $stockInventory->balance_contractor);
+                $transaction->delete();
 
-            // Prevent negative values
-            $stockInventory->balance_contractor = max(0, $stockInventory->balance_contractor);
-            $stockInventory->balance_bgoc       = max(0, $stockInventory->balance_bgoc);
+                // check if no more transactions → delete inventory
+                if ($stockInventory->transactions()->count() === 0) {
+                    $stockInventory->delete();
+                } else {
+                    $stockInventory->save();
+                }
 
-            // Delete the transaction
-            $transaction->delete();
+                // rollback balances for paired
+                if ($paired) {
+                    $pairedInventory = StockInventory::find($paired->stock_inventory_id);
+                    if ($paired->type === 'in') {
+                        $pairedInventory->balance_contractor -= $paired->quantity;
+                    } elseif ($paired->type === 'out') {
+                        $pairedInventory->balance_contractor += $paired->quantity;
+                    }
+                    $pairedInventory->balance_contractor = max(0, $pairedInventory->balance_contractor);
+                    $paired->delete();
 
-            // 🔹 Check if stock inventory has any remaining transactions
-            if ($stockInventory->transactions()->count() === 0) {
-                // No transactions left → delete the stock inventory
-                $stockInventory->delete();
+                    if ($pairedInventory->transactions()->count() === 0) {
+                        $pairedInventory->delete();
+                    } else {
+                        $pairedInventory->save();
+                    }
+                }
             } else {
-                // Still has transactions → just update balances
-                $stockInventory->save();
+                // normal (BGOC/client) transaction
+                $stockInventory = StockInventory::find($transaction->stock_inventory_id);
+
+                if ($transaction->type === 'in') {
+                    $stockInventory->balance_contractor -= $transaction->quantity;
+                } elseif ($transaction->type === 'out') {
+                    $stockInventory->balance_bgoc -= $transaction->quantity;
+                }
+
+                $stockInventory->balance_contractor = max(0, $stockInventory->balance_contractor);
+                $stockInventory->balance_bgoc       = max(0, $stockInventory->balance_bgoc);
+
+                $transaction->delete();
+
+                if ($stockInventory->transactions()->count() === 0) {
+                    $stockInventory->delete();
+                } else {
+                    $stockInventory->save();
+                }
             }
 
             DB::commit();
 
             return response()->json([
-                "success" => "Transaction deleted and balances updated successfully.",
+                "success" => "Transaction (and paired transfer if any) deleted successfully.",
             ], 200);
 
         } catch (\Exception $e) {
@@ -1134,6 +1169,9 @@ class StockInventoryController extends Controller
             return response()->json(['error' => $e->getMessage()], 422);
         }
     }
+
+
+
 
 
 }

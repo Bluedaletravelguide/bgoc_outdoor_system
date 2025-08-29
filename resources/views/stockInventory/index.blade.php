@@ -30,7 +30,7 @@
     </h2>
 </div>
 
-<!-- stock inventory filter -->
+<!-- stock inventory filter and table -->
 <div class="intro-y box p-5 mt-5">
     <div class="pos col-span-12 lg:col-span-4">
         <!-- BEGIN: Stock -->
@@ -124,7 +124,7 @@
                             <th class="bg-green-600 text-white">Site</th>
                             <th class="bg-green-600 text-white">Client</th>
                             <th class="bg-green-600 text-white">Remarks</th>
-                            <!-- <th width="10%">Action</th> -->
+                            <th width="10%">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -802,7 +802,12 @@
             width: '100%'
         });
 
-        $('#inventoryAddButton').on('click', function (e) {
+        // $('#inventoryAddButton').on('click', function (e) {
+        //     e.preventDefault();
+        //     inventoryAddButton();
+        // });
+
+        document.getElementById("inventoryAddButton").addEventListener("click", function (e) {
             e.preventDefault();
             inventoryAddButton();
         });
@@ -828,8 +833,8 @@
         }
 
         // Close modal
-        function closeAltEditorModal(selector) {
-            $(selector).addClass('hidden').removeClass('flex');
+        function closeAltEditorModal(element) {
+            cash(element).modal('hide');
         }
 
         function setupAutoFilter() {
@@ -953,25 +958,13 @@
                     $('#inventory_table').DataTable().ajax.reload(null, false); 
                 },
                 error: function(xhr, status, error) {
-                let message = "An unexpected error occurred.";
+                    // Display the validation error message
+                    var response = JSON.parse(xhr.responseText);
+                    var error = "Error: " + response.error;
 
-                try {
-                    let response = JSON.parse(xhr.responseText);
-
-                    if (response.error) {
-                        message = response.error; // our custom error
-                    } else if (response.errors) {
-                        // Laravel validation errors (object of arrays)
-                        message = Object.values(response.errors).flat().join("\n");
-                    } else if (response.message) {
-                        message = response.message; // fallback for exceptions
-                    }
-                } catch (e) {
-                    message = xhr.responseText || message;
+                    // Show fail toast
+                    window.showSubmitToast(error, "#D32929");
                 }
-
-                window.showSubmitToast(message, "#D32929");
-            }
 
             });
         }
@@ -1127,42 +1120,42 @@
                 { data: 'site_out', name: 'site_out.name' },
                 { data: 'client_out_name', name: 'client_companies.name' },
                 { data: 'remarks_out', name: 'transactions_out.remarks' },
-                // {
-                //     data: null,
-                //     orderable: false,
-                //     render: function(data, type, row) {
-                //         let transactionId = row.transaction_in_id ? row.transaction_in_id : row.transaction_out_id;
-                //         let typeLabel = row.transaction_in_id ? 'IN' : 'OUT';
+                {
+                    data: null,
+                    orderable: false,
+                    render: function(data, type, row) {
+                        let transactionId = row.transaction_in_id ? row.transaction_in_id : row.transaction_out_id;
+                        let typeLabel = row.transaction_in_id ? 'IN' : 'OUT';
 
-                //         return `
-                //             <div class="flex items-center justify-center space-x-3">
-                //                 <a href="javascript:;"
-                //                 class="button w-24 inline-block mr-2 mb-2 bg-theme-1 text-white edit-inventory"
-                //                 data-transaction-in-id="${row.transaction_in_id || ''}"
-                //                 data-transaction-out-id="${row.transaction_out_id || ''}"
-                //                 data-stock-inventory-id="${row.stock_inventory_id}">
-                //                 Edit
-                //                 </a>
-                //                 <a href="javascript:;" class="text-theme-6" 
-                //                     data-toggle="modal" 
-                //                     data-transaction-id="${transactionId}" 
-                //                     data-transaction-type="${typeLabel}"
-                //                     data-target="#inventoryDeleteModal" 
-                //                     id="delete-${transactionId}" 
-                //                     title="Delete ${typeLabel} Transaction">
-                //                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" 
-                //                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                //                         <polyline points="3 6 5 6 21 6"></polyline>
-                //                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4
-                //                             a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                //                         <line x1="10" y1="11" x2="10" y2="17"></line>
-                //                         <line x1="14" y1="11" x2="14" y2="17"></line>
-                //                     </svg>
-                //                 </a>
-                //             </div>
-                //         `;
-                //     }
-                // },
+                        return `
+                            <div class="flex items-center justify-center space-x-3">
+                                <a href="javascript:;"
+                                class="button w-24 inline-block mr-2 mb-2 bg-theme-1 text-white edit-inventory"
+                                data-transaction-in-id="${row.transaction_in_id || ''}"
+                                data-transaction-out-id="${row.transaction_out_id || ''}"
+                                data-stock-inventory-id="${row.stock_inventory_id}">
+                                Edit
+                                </a>
+                                <a href="javascript:;" class="text-theme-6" 
+                                    data-toggle="modal" 
+                                    data-transaction-id="${transactionId}" 
+                                    data-transaction-type="${typeLabel}"
+                                    data-target="#inventoryDeleteModal" 
+                                    id="delete-${transactionId}" 
+                                    title="Delete ${typeLabel} Transaction">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" 
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4
+                                            a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                                    </svg>
+                                </a>
+                            </div>
+                        `;
+                    }
+                },
             ],
             order: [[0, 'asc']],
 
