@@ -17,9 +17,7 @@ class DatabaseSeeder extends Seeder
             SuperAdminSeeder::class,
             PermissionSeeder::class,
             LocationSeeder::class,
-            BillboardSeeder::class,
             UserSeeder::class,
-            ContractorSeeder::class,
         ]);
     }
 }
