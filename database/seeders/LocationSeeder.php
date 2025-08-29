@@ -26,18 +26,19 @@ class LocationSeeder extends Seeder
             // 🟣 SELANGOR
             "Selangor" => [
                 "prefix" => "SEL",
-                "districts" => ["Petaling", "Diraja Klang", "Hulu Langat", "Gombak", "Kuala Selangor", "Sabak Bernam", "Kuala Langat", "Hulu Selangor", "Ampang Jaya","Kajang", "Sabak Bernam", "Sepang"],
+                "districts" => ["Petaling", "Klang", "Hulu Langat", "Gombak", "Kuala Selangor", "Sabak Bernam", "Kuala Langat", "Hulu Selangor", "Ampang Jaya","Kajang", "Seri Kembangan", "Sepang"],
                 "councils" => [
                     ["name" => "Majlis Bandaraya Petaling Jaya", "abbreviation" => "MBPJ"],
                     ["name" => "Majlis Bandaraya Shah Alam", "abbreviation" => "MBSA"],
                     ["name" => "Majlis Bandaraya Subang Jaya", "abbreviation" => "MBSJ"],
-                    ["name" => "Majlis Perbandaran Diraja Klang", "abbreviation" => "MPDK"],
+                    ["name" => "Majlis Perbandaran Klang", "abbreviation" => "MPDK"],
                     ["name" => "Majlis Perbandaran Ampang Jaya", "abbreviation" => "MPAJ"],
                     ["name" => "Majlis Perbandaran Selayang", "abbreviation" => "MPS"],
                     ["name" => "Majlis Daerah Kuala Selangor", "abbreviation" => "MDKS"],
                     ["name" => "Majlis Daerah Hulu Selangor", "abbreviation" => "MDHS"],
                     ["name" => "Majlis Perbandaran Kajang", "abbreviation" => "MPKJ"],
                     ["name" => "Majlis Daerah Sabak Bernam", "abbreviation" => "MDSB"],
+                    ["name" => "Majlis Daerah Seri Kembangan", "abbreviation" => "MDSK"],
                     ["name" => "Majlis Daerah Sepang", "abbreviation" => "MPSepang"],
                     ["name" => "Majlis Daerah Kuala Langat", "abbreviation" => "MDKL"],
                 ]
@@ -468,17 +469,17 @@ class LocationSeeder extends Seeder
             }
 
             // 🌍 Sample Locations
-            foreach ($districts as $districtName => $district) {
-                foreach ($councils as $council) {
-                    for ($i = 1; $i <= 2; $i++) {
-                        Location::create([
-                            'name' => "{$districtName} Location $i",
-                            'district_id' => $district->id,
-                            'council_id' => $council->id,
-                        ]);
-                    }
-                }
-            }
+            // foreach ($districts as $districtName => $district) {
+            //     foreach ($councils as $council) {
+            //         for ($i = 1; $i <= 2; $i++) {
+            //             Location::create([
+            //                 'name' => "{$districtName} Location $i",
+            //                 'district_id' => $district->id,
+            //                 'council_id' => $council->id,
+            //             ]);
+            //         }
+            //     }
+            // }
         }
 
         // 🟣 Special Council: KKR (no state)
