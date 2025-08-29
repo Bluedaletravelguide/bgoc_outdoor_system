@@ -118,6 +118,12 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/inventory/{transaction}/edit', [StockInventoryController::class, 'editData']);
     Route::post('/inventory/delete', [StockInventoryController::class, 'delete'])->name('stockInventory.delete');
 
+    // Users
+    Route::get('/users', [UsersController::class, 'index'])->name('users');
+    Route::post('/users/list', [UsersController::class, 'list'])->name('users.list');
+    Route::post('/users/create', [UsersController::class, 'create'])->name('users.create.employee');
+    Route::post('/users/edit', [UsersController::class, 'editEmployee'])->name('users.edit.employee');
+    Route::post('/users/delete', [UsersController::class, 'deleteEmployee'])->name('users.delete.employee');
 
 
 

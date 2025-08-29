@@ -164,27 +164,26 @@
                             <label>Outdoor Type</label>
                             <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardType">
                                 <option value="">-- Select Outdoor Type --</option>
-                                @foreach ($billboardTypes as $prefix => $type)
-                                    <option value="{{ $prefix }}">{{ $type }}</option>
-                                @endforeach
+                                <option value="BB">Billboard</option>
+                                <option value="TB">Tempboard</option>
+                                <option value="BU">Bunting</option>
+                                <option value="BN">Banner</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Size</label>
+                            <label>Size (H)'x(W)'</label>
                             <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardSize">
                                 <option value="">-- Select Size --</option>
-                                @foreach ($billboardSize as $size)
-                                    <option value="{{ $size }}">{{ $size }}</option>
-                                @endforeach
+                                <option value="15x10">15x10</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
                             <label>Lighting</label>
                             <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardLighting">
                                 <option value="">-- Select Lighting --</option>
-                                @foreach ($billboardLighting as $lighting)
-                                    <option value="{{ $lighting }}">{{ $lighting }}</option>
-                                @endforeach
+                                <option value="None">None</option>
+                                <option value="TNB">TNB</option>
+                                <option value="SOLAR">SOLAR</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
@@ -258,27 +257,26 @@
                             <label>Outdoor Type</label>
                             <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardType" disabled>
                                 <option value="">-- Select Outdoor Type --</option>
-                                @foreach ($billboardTypes as $prefix => $type)
-                                    <option value="{{ $prefix }}">{{ $type }}</option>
-                                @endforeach
+                                <option value="BB">Billboard</option>
+                                <option value="TB">Tempboard</option>
+                                <option value="BU">Bunting</option>
+                                <option value="BN">Banner</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
                             <label>Billboard Size</label>
                             <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardSize">
                                 <option value="">-- Select Size --</option>
-                                @foreach ($billboardSize as $size)
-                                    <option value="{{ $size }}">{{ $size }}</option>
-                                @endforeach
+                                <option value="15x10">15x10</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
                             <label>Lighting</label>
                             <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardLighting">
                                 <option value="">-- Select Lighting --</option>
-                                @foreach ($billboardLighting as $lighting)
-                                    <option value="{{ $lighting }}">{{ $lighting }}</option>
-                                @endforeach
+                                <option value="None">None</option>
+                                <option value="TNB">TNB</option>
+                                <option value="SOLAR">SOLAR</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">

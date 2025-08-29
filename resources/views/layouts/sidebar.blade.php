@@ -86,7 +86,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('employees.index') }}" class="side-menu {{ request()->routeIs('employees.index') ? 'side-menu--active' : '' }}">
+                    <a href="{{ route('users') }}" class="side-menu {{ request()->routeIs('users') ? 'side-menu--active' : '' }}">
                         <div class="side-menu__icon"> <i data-feather="user"></i> </div>
                         <div class="side-menu__title"> Users </div>
                     </a>

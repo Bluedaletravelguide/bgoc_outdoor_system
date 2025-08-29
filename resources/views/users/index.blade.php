@@ -20,7 +20,7 @@
     <!-- BEGIN: User Status Info -->
     <div class="rounded-md px-5 py-4 mb-2 bg-gray-200 text-gray-600">
         <div class="flex items-center">
-            <div class="font-medium text-lg">User Status Info:</div>
+            <div class="font-medium text-lg">User Info:</div>
         </div>
         <ul>
             <li> <b> User Status: Active </b> - Users are active and allowed to access the system.</li>
@@ -30,150 +30,69 @@
     <!-- END: User Status Info -->
 
     <div class="pos col-span-12 lg:col-span-4">
-        <!-- BEGIN: Tabs -->
-        <div class="intro-y pr-1">
-            <div class="box p-2">
-                <div class="pos__tabs nav-tabs justify-center flex">
-                    <a data-toggle="tab" data-target="#employee_users" href="javascript:;" class="flex-1 py-2 rounded-md text-center active">Employee Users</a>
-                    <a data-toggle="tab" data-target="#client_users" href="javascript:;" class="flex-1 py-2 rounded-md text-center">Client Users</a>
-                </div>
-            </div>
-        </div>
-        <!-- END: Tabs -->
-
-        <div class="tab-content">
-
-            <!-- BEGIN: Employee Users -->
-            <div class="tab-content__pane mt-4 active" id="employee_users">
-                <!-- BEGIN: Filter & Add New User -->
-                <div class="flex flex-col sm:flex-row sm:items-end xl:items-start">
-                    <!-- BEGIN: Filter -->
-                    <form class="xl:flex sm:mr-auto">
-                        <div class="sm:flex items-center sm:mr-4">
-                            <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Role</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputEmployeeRole">
-                                <option value="all">All</option>
-                                <option value="team_leader">Team Leader</option>
-                                <option value="employee_technician">Employee Technician</option>
-                            </select>
-                        </div>
-                        <div class="mt-2 xl:mt-0">
-                            <button type="button" class="button w-full sm:w-16 bg-theme-32 text-white" id="filterEmployeeButton">Filter</button>
-                        </div>
-                    </form>
-                    <!-- END: Filter -->
-
-                    <!-- BEGIN: Add New User -->
-                    <div class="text-center">
-                        <a href="javascript:;" data-toggle="modal" data-target="#employeeUsersAddModal" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-32 text-white" id="employeeUsersAddModalButton">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus w-4 h-4">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                            Register New Employee User
-                        </a>
+        <!-- BEGIN: Employee Users -->
+        <div class="tab-content__pane mt-4 active" id="employee_users">
+            <!-- BEGIN: Filter & Add New User -->
+            <div class="flex flex-col sm:flex-row sm:items-end xl:items-start">
+                <!-- BEGIN: Filter -->
+                <form class="xl:flex sm:mr-auto">
+                    <!-- <div class="sm:flex items-center sm:mr-4">
+                        <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Role</label>
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputEmployeeRole">
+                            <option value="all">All</option>
+                            <option value="team_leader">Team Leader</option>
+                            <option value="employee_technician">Employee Technician</option>
+                        </select>
                     </div>
-                    <!-- END: Add New User -->
-                </div>
-                <!-- END: Filter & Add New User -->
+                    <div class="mt-2 xl:mt-0">
+                        <button type="button" class="button w-full sm:w-16 bg-theme-32 text-white" id="filterEmployeeButton">Filter</button>
+                    </div> -->
+                </form>
+                <!-- END: Filter -->
 
-                <!-- BEGIN: Users List -->
-                <div class="overflow-x-auto scrollbar-hidden">
-                    <table class="table mt-5" id="employee_users_table">
-                        <thead>
-                            <tr class="bg-theme-32 text-white">
-                                <th>System Display Name</th>
-                                <th>System Login Username</th>
-                                <th>Employee Name</th>
-                                <th>Role</th>
-                                <th>Email</th>
-                                <th class="text-center">User Status</th>
-                                <th>Last Login At</th>
-                                <th class="dt-no-sort dt-exclude-export">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-
-                        </tbody>
-                    </table>
+                <!-- BEGIN: Add New User -->
+                <div class="text-center">
+                    <a href="javascript:;" data-toggle="modal" data-target="#employeeUsersAddModal" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-32 text-white" id="employeeUsersAddModalButton">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus w-4 h-4">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Register New Employee User
+                    </a>
                 </div>
-                <!-- END: Users List -->
+                <!-- END: Add New User -->
             </div>
-            <!-- END: Employee Users -->
+            <!-- END: Filter & Add New User -->
 
-            <!-- BEGIN: Client Users -->
-            <div class="tab-content__pane mt-4" id="client_users">
-                <!-- BEGIN: Filter & Add New User -->
-                <div class="flex flex-col sm:flex-row sm:items-end xl:items-start">
-                    <!-- BEGIN: Filter -->
-                    <form class="xl:flex sm:mr-auto">
-                        <div class="sm:flex items-center sm:mr-4">
-                            <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Company</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputClientCompany">
-                                <option value="all">All</option>
-                                @foreach($client_companies as $client_company)
-                                <option value="{{ $client_company->id }}">{{ $client_company->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="sm:flex items-center sm:mr-4">
-                            <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Role</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputClientRole">
-                                <option value="all">All</option>
-                                <option value="client_user">Client User</option>
-                            </select>
-                        </div>
-                        <div class="mt-2 xl:mt-0">
-                            <button type="button" class="button w-full sm:w-16 bg-theme-32 text-white" id="filterClientButton">Filter</button>
-                        </div>
-                    </form>
-                    <!-- END: Filter -->
+            <!-- BEGIN: Users List -->
+            <div class="overflow-x-auto scrollbar-hidden">
+                <table class="table mt-5" id="users_table">
+                    <thead>
+                        <tr class="bg-theme-32 text-white">
+                            <th>No.</th>
+                            <th>Name</th>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Email</th>
+                            <!-- <th>Last Login At</th> -->
+                            <th class="dt-no-sort dt-exclude-export">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
 
-                    <!-- BEGIN: Add New User -->
-                    <div class="text-center">
-                        <a href="javascript:;" data-toggle="modal" data-target="#clientUsersAddModal" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-32 text-white" id="clientUsersAddModalButton">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus w-4 h-4">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                            Register New Client User
-                        </a>
-                    </div>
-                    <!-- END: Add New User -->
-                </div>
-                <!-- END: Filter & Add New User -->
-
-                <!-- BEGIN: Users List -->
-                <div class="overflow-x-auto scrollbar-hidden">
-                    <table class="table mt-5" id="client_users_table">
-                        <thead>
-                            <tr class="bg-theme-32 text-white">
-                                <th>System Display Name</th>
-                                <th>System Login Username</th>
-                                <th>Client Company</th>
-                                <th>Client Name</th>
-                                <th>Role</th>
-                                <th>Email</th>
-                                <th class="text-center">User Status</th>
-                                <th>Last Login At</th>
-                                <th class="dt-no-sort dt-exclude-export">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
-                </div>
-                <!-- END: Users List -->
+                    </tbody>
+                </table>
             </div>
-            <!-- END: Client Users -->
+            <!-- END: Users List -->
         </div>
+        <!-- END: Employee Users -->
     </div>
 </div>
 @endsection('app_content')
 
 @section('modal_content')
 <!-- BEGIN: Employee Users Edit Modal -->
-<div class="modal" id="employeeUsersEditModal">
+<div class="modal" id="usersEditModal">
     <div class="modal__content">
         <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
             <h2 class="font-medium text-base mr-auto">Edit User</h2>
@@ -407,12 +326,12 @@
         document.getElementById("clientUsersAddModalButton").addEventListener("click", clientUsersAddButtonGetClients);
         document.getElementById("clientUsersDeleteButton").addEventListener("click", clientUsersDeleteButton);
 
-        // When "filterEmployeeButton" button is clicked, initiate initemployeeUsersDatatable
+        // When "filterEmployeeButton" button is clicked, initiate initUsersDatatable
         var filterEmployeeRole;
 
         function filterEmployeeButton() {
             filterEmployeeRole = document.getElementById("inputEmployeeRole").value;
-            initemployeeUsersDatatable(filterEmployeeRole);
+            initUsersDatatable(filterEmployeeRole);
         };
 
         // When "filterClientButton" button is clicked, initiate initClientUsersDatatable
@@ -431,7 +350,7 @@
 
         // When any submit button is clicked
         (function() {
-            var employee_users_table = $('#employee_users_table')[0].altEditor;
+            var users_table = $('#users_table')[0].altEditor;
             var client_users_table = $('#client_users_table')[0].altEditor;
 
             document.getElementById('employeeUsersAddButton').addEventListener('click', function(e) {
@@ -484,13 +403,13 @@
          */
 
         // Setup the Employee users datatable
-        function initemployeeUsersDatatable(filterEmployeeRole) {
+        function initUsersDatatable() {
             const dt = new Date();
             const formattedDate = `${dt.getFullYear()}${(dt.getMonth() + 1).toString().padStart(2, '0')}${dt.getDate().toString().padStart(2, '0')}`;
             const formattedTime = `${dt.getHours()}:${dt.getMinutes()}:${dt.getSeconds()}`;
-            const $fileName = `Employee_Users_List_${formattedDate}_${formattedTime}`;
+            const $fileName = `Users_List_${formattedDate}_${formattedTime}`;
 
-            const table = $('#employee_users_table').DataTable({
+            const table = $('#users_table').DataTable({
                 destroy: true,
                 debug: true,
                 processing: true,
@@ -508,7 +427,7 @@
                 ],
                 iDisplayLength: 25,
                 ajax: {
-                    url: "{{ route('users.list.employee') }}",
+                    url: "{{ route('users.list') }}",
                     dataType: "json",
                     type: "POST",
                     data: function(d) {
@@ -566,51 +485,31 @@
                     targets: 'dt-no-sort',
                     orderable: false
                 }],
-                columns: [{
+                columns: [
+                    {
+                        data: null, // <-- important
+                        name: 'no',
+                        orderable: false,
+                        searchable: false,
+                        render: function (data, type, row, meta) {
+                            return meta.row + meta.settings._iDisplayStart + 1;
+                        }
+                    },
+                    {
                         data: "name",
                     },
                     {
                         data: "username",
                     },
                     {
-                        data: "employee_name",
-                    },
-                    {
                         data: "role",
-                        render: function(data, type, row) {
-                            let element = ``
-
-                            if (data == "superadmin") {
-                                element = `Superadmin`;
-                            } else if (data == "employee_occ_admin") {
-                                element = `OCC Admin`;
-                            } else if (data == "employee_occ_operator") {
-                                element = `OCC Operator`;
-                            } else if (data == "team_leader") {
-                                element = `Team Leader`;
-                            } else if (data == "employee_technician") {
-                                element = `Employee Technician`;
-                            }
-
-                            return element;
-                        }
                     },
                     {
                         data: "email",
                     },
-                    {
-                        data: "status",
-                        render: function(data, type, row) {
-                            let element = `<div class="cursor-pointer rounded-full bg-theme-9 px-2 py-1 text-xs font-medium text-center text-white">
-                                                Active
-                                            </div>`;
-
-                            return element;
-                        }
-                    },
-                    {
-                        data: "last_login_at",
-                    },
+                    // {
+                    //     data: "last_login_at",
+                    // },
                     {
                         data: "id",
                         render: function(data, type, row) {
@@ -637,7 +536,7 @@
             }
 
             // Update styling for the filter input
-            var filterDiv = document.getElementById("employee_users_table_filter");
+            var filterDiv = document.getElementById("users_table_filter");
             if (filterDiv) {
                 filterDiv.style.float = "right";
                 filterDiv.classList.remove('dataTables_filter');
@@ -649,8 +548,8 @@
             }
 
             // Update styling for the info and paginate elements
-            var infoDiv = document.getElementById("employee_users_table_info");
-            var paginateDiv = document.getElementById("employee_users_table_paginate");
+            var infoDiv = document.getElementById("users_table_info");
+            var paginateDiv = document.getElementById("users_table_paginate");
 
             if (infoDiv) {
                 infoDiv.style.float = "left";
@@ -662,8 +561,8 @@
                 paginateDiv.classList.add("mt-5");
             }
 
-            // Update styling for the "employee_users_table_length" div and its select element
-            var existingDiv = document.getElementById("employee_users_table_length");
+            // Update styling for the "users_table_length" div and its select element
+            var existingDiv = document.getElementById("users_table_length");
             if (existingDiv) {
                 existingDiv.classList.remove('dataTables_length');
                 existingDiv.classList.add('mt-2', 'mb-1');
@@ -675,7 +574,7 @@
             }
 
             // Open modal to edit employee user
-            employeeUsersEditModal();
+            usersEditModal();
         };
 
         // Add New Employee User - Get Employees
@@ -736,7 +635,7 @@
                     document.getElementById("employeeUsersAddEmail").value = "";
 
                     // Reload table
-                    $('#employee_users_table').DataTable().ajax.reload();
+                    $('#users_table').DataTable().ajax.reload();
                 },
                 error: function(xhr, status, error) {
                     // Display the validation error message
@@ -750,11 +649,11 @@
         }
 
         // Open modal to edit employee user
-        function employeeUsersEditModal() {
+        function usersEditModal() {
             // Remove previous click event listeners
-            $(document).off('click', "[id^='employee_users_table'] tbody tr td:not(:last-child)");
+            $(document).off('click', "[id^='users_table'] tbody tr td:not(:last-child)");
 
-            $(document).on('click', "[id^='employee_users_table'] tbody tr td:not(:last-child)", function() {
+            $(document).on('click', "[id^='users_table'] tbody tr td:not(:last-child)", function() {
                 // Assign original username to global variable
                 original_employee_username = $(event.target).closest('tr').find('td:nth-child(' + '2' + ')').text();
 
@@ -774,7 +673,7 @@
                 }
 
                 // Open modal
-                var element = "#employeeUsersEditModal";
+                var element = "#usersEditModal";
                 openAltEditorModal(element);
             });
         }
@@ -799,14 +698,14 @@
                 },
                 success: function(response) {
                     // Close modal after successfully edited
-                    var element = "#employeeUsersEditModal";
+                    var element = "#usersEditModal";
                     closeAltEditorModal(element);
 
                     // Show successful toast
                     window.showSubmitToast("Successfully edited.", "#91C714");
 
                     // Reload table
-                    $('#employee_users_table').DataTable().ajax.reload();
+                    $('#users_table').DataTable().ajax.reload();
                 },
                 error: function(xhr, status, error) {
                     // Display the validation error message
@@ -839,7 +738,7 @@
                     window.showSubmitToast("Successfully deleted.", "#91C714");
 
                     // Reload table
-                    $('#employee_users_table').DataTable().ajax.reload();
+                    $('#users_table').DataTable().ajax.reload();
                 },
                 error: function(xhr, status, error) {
                     // Display the validation error message
