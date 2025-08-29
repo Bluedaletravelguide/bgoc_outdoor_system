@@ -12,9 +12,11 @@ use App\Models\Employee;
 use App\Models\Client;
 use App\Models\ClientCompany;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Auth;
 
 class UsersController extends Controller
 {
+    public $user;
     /**
      * Create a new controller instance.
      *
@@ -22,7 +24,10 @@ class UsersController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware(function ($request, $next) {
+            $this->user = Auth::guard('web')->user();
+            return $next($request);
+        });
     }
 
     /**
@@ -32,13 +37,9 @@ class UsersController extends Controller
     {
         $client_companies = ClientCompany::select('id', 'name')->get();
 
-        return view('users.index', [
-            'client_companies'  => $client_companies,
-        ]);
-    }
+        logger('user masok sini 1');
 
-    public function listUser(Request $request){
-
+        return view('users.index');
     }
 
     /**
@@ -46,7 +47,7 @@ class UsersController extends Controller
      */
     public function list(Request $request)
     {
-        logger('user masok sini');
+        logger('user masok sini 2');
         
         $role = $request->input('role');
 
@@ -376,257 +377,6 @@ class UsersController extends Controller
 
             // Update employee user_id to null as removing the association of the deleted user account
             Employee::where('user_id', $delete_user_id)
-                ->update([
-                    'user_id'   => null
-                ]);
-
-            // Delete system user
-            User::find($delete_user_id)->delete();
-
-            // Ensure all queries successfully executed, commit the db changes
-            DB::commit();
-
-            return response()->json([
-                "success"   => "success",
-            ], 200);
-        } catch (\Exception $e) {
-            // If any queries fail, undo all changes
-            DB::rollback();
-
-            return response()->json(['error' => $e->getMessage()], 422);
-        }
-    }
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    /**
-     * Create client user.
-     */
-    public function createClient(Request $request)
-    {
-        $name       = $request->name;
-        $username   = $request->username;
-        $role       = $request->role;
-        $client     = $request->client;
-        $password   = $request->password;
-        $email      = $request->email;
-
-        // Validate fields
-        $validator = Validator::make(
-            $request->all(),
-            [
-                'name' => [
-                    'required',
-                    'string',
-                    'max:255',
-                ],
-                'username' => [
-                    'required',
-                    'string',
-                    'max:255',
-                    'unique:users,username',
-                    'regex:/^\S*$/', // No spaces allowed
-                ],
-                'role' => [
-                    'required',
-                    'string',
-                    'in:client_user',
-                ],
-                'client' => [
-                    'required',
-                    'integer',
-                    'exists:clients,id,user_id,NULL',
-                ],
-                'password' => [
-                    'required',
-                    'string',
-                    'min:6',
-                    'confirmed'
-                ],
-                'email' => [
-                    'required',
-                    'string',
-                    'email',
-                    'max:255',
-                ],
-            ],
-            [
-                'name.required' => 'The "System Display Name" field is required.',
-                'name.string' => 'The "System Display Name" must be a string.',
-                'name.max' => 'The "System Display Name" must not be greater than :max characters.',
-
-                'username.required' => 'The "System Login Username" field is required.',
-                'username.string' => 'The "System Login Username" must be a string.',
-                'username.max' => 'The "System Login Username" must not be greater than :max characters.',
-                'username.unique' => 'The "System Login Username" is already been taken.',
-                'username.regex' => 'The "System Login Username" must not contain any spaces.',
-
-                'role.required' => 'The "Role" field is required.',
-                'role.string' => 'The "Role" must be a string.',
-                'role.max' => 'The "Role" must not be greater than :max characters.',
-
-                'client.exists' => 'The client cannot be found or already associated with an user account.',
-
-                'password.confirmed' => 'The password confirmation does not match.',
-
-                'email.required' => 'The "Email" field is required.',
-                'email.string' => 'The "Email" field must be a string.',
-                'email.email' => 'The "Email" field must be a valid email address.',
-                'email.max' => 'The "Email" field must not be greater than :max characters.',
-            ]
-        );
-
-        // Handle failed validations
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()->first()], 422);
-        }
-
-        try {
-            // Ensure all queries successfully executed
-            DB::beginTransaction();
-
-            // Insert new system user
-            $user = User::create([
-                'name'      => $name,
-                'username'  => $username,
-                'email'     => $email,
-                'type'      => "client",
-                'status'    => "1",
-                'password'  => Hash::make($password),
-            ]);
-
-            $role_name = Role::where('name', $role)->first();
-
-            // Update client user_id
-            Client::where('id', $client)
-                ->update([
-                    'user_id'   => $user->id
-                ]);
-
-            // Update user role
-            $user->syncRoles([$role_name]);
-
-            // Ensure all queries successfully executed, commit the db changes
-            DB::commit();
-
-            return response()->json([
-                "success"   => "success",
-            ], 200);
-        } catch (\Exception $e) {
-            // If any queries fail, undo all changes
-            DB::rollback();
-
-            return response()->json(['error' => $e->getMessage()], 422);
-        }
-    }
-
-    /**
-     * Create client user - get list of clients.
-     */
-    public function createGetClients(Request $request)
-    {
-        $type = $request->type;
-
-        $client_company_list = ClientCompany::get();
-        $clients_list = Client::whereNull('user_id');
-
-        if ($type == "default") {
-            $default_client = $client_company_list->first();
-            $clients_list = $clients_list->where('company_id', $default_client->id);
-        } else {
-            $clients_list = $clients_list->where('company_id', $request->client_id);
-        }
-
-        $clients_list = $clients_list->get();
-
-        return response()->json(["client_company_list" => $client_company_list, "clients_list" => $clients_list], 200);
-    }
-
-    
-
-    /**
-     * Delete client user.
-     */
-    public function deleteClient(Request $request)
-    {
-        $delete_user_id = $request->delete_user_id;
-
-        // Validate fields
-        $validator = Validator::make(
-            $request->all(),
-            [
-                'delete_user_id' => [
-                    'required',
-                    'integer',
-                    'exists:users,id',
-                ],
-            ],
-            [
-                'delete_user_id.exists' => 'The client cannot be found.',
-            ]
-        );
-
-        // Handle failed validations
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()->first()], 422);
-        }
-
-        try {
-            // Ensure all queries successfully executed
-            DB::beginTransaction();
-
-            // Update client user_id to null as removing the association of the deleted user account
-            Client::where('user_id', $delete_user_id)
                 ->update([
                     'user_id'   => null
                 ]);
