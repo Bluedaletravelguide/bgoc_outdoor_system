@@ -221,16 +221,47 @@
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-6">
-                            <label for="end_date" class="form-label">GPS Latitude</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="inputGPSLatitude" value="" required>
+                            <label for="inputGPSLatitude" class="form-label">GPS Latitude</label>
+                            <input 
+                                type="number" 
+                                class="input w-full border mt-2 flex-1" 
+                                id="inputGPSLatitude" 
+                                name="gps_latitude"
+                                step="0.000001" 
+                                min="-90" 
+                                max="90" 
+                                placeholder="e.g. 3.1390" 
+                                required
+                            >
                         </div>
+
                         <div class="col-span-12 sm:col-span-6">
-                            <label for="start_date" class="form-label">GPS Longitude</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="inputGPSLongitude" value="" required>
+                            <label for="inputGPSLongitude" class="form-label">GPS Longitude</label>
+                            <input 
+                                type="number" 
+                                class="input w-full border mt-2 flex-1" 
+                                id="inputGPSLongitude" 
+                                name="gps_longitude"
+                                step="0.000001" 
+                                min="-180" 
+                                max="180" 
+                                placeholder="e.g. 101.6869" 
+                                required
+                            >
                         </div>  
+
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Traffic Volume</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="inputBillboardTrafficVolume" value="" required>
+                            <label for="inputBillboardTrafficVolume" class="form-label">Traffic Volume</label>
+                            <input 
+                                type="number" 
+                                class="input w-full border mt-2 flex-1" 
+                                id="inputBillboardTrafficVolume" 
+                                name="traffic_volume"
+                                min="0" 
+                                step="1" 
+                                placeholder="e.g. 50000" 
+                                required
+                            >
                         </div>
                     </div>
 
