@@ -366,11 +366,9 @@ class BillboardController extends Controller
             $stateCode = State::select('prefix')->where('id', $state)->firstOrFail();
 
             // Step 3: Running number
-            $runningNumber = Billboard::leftJoin('locations', 'billboards.location_id', '=', 'locations.id')
-                ->leftJoin('districts', 'locations.district_id', '=', 'districts.id')
-                ->leftJoin('states', 'districts.state_id', '=', 'states.id')
-                ->where('states.id', $state)
-                ->count() + 1;
+            $runningNumber = Billboard::whereHas('location.district.state', function ($query) use ($state) {
+                $query->where('id', $state);
+            })->count() + 1;
 
             $formattedNumber = str_pad($runningNumber, 4, '0', STR_PAD_LEFT);
             $councilAbbv = Council::findOrFail($council)->abbreviation;
