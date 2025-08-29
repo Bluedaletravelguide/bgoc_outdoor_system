@@ -323,7 +323,7 @@ class BillboardController extends Controller
 
         // ✅ Validation
         $validated = Validator::make($request->all(), [
-            'type'          => 'required|string|exists:billboards,prefix',
+            'type'          => 'required|string',
             'size'          => 'required|string|max:50',
             'lighting'      => 'required|string', // adjust based on your allowed values
             'state'         => 'required|exists:states,id',
@@ -372,23 +372,28 @@ class BillboardController extends Controller
                 ->where('states.id', $state)
                 ->count() + 1;
 
-            $billboardType = Billboard::select('type', 'prefix')
-                ->distinct()
-                ->where('prefix', $type)
-                ->firstOrFail();
-
             $formattedNumber = str_pad($runningNumber, 4, '0', STR_PAD_LEFT);
             $councilAbbv = Council::findOrFail($council)->abbreviation;
 
             // Step 4: Generate site_number
             $siteNumber = "{$type}-{$stateCode->prefix}-{$formattedNumber}-{$councilAbbv}-{$land}";
 
+            $typeMap = [
+                'BB' => 'Billboard',
+                'TB' => 'Tempboard',
+                'BU' => 'Bunting',
+                'BN' => 'Banner',
+            ];
+
+            $prefix = $request->type;                // e.g. "TB"
+            $type   = $typeMap[$prefix] ?? $prefix;  // e.g. "Tempboard"
+
             // Step 5: Create billboard
             $billboard = Billboard::create([
                 'site_number'     => $siteNumber,
                 'status'          => 1,
-                'type'            => $billboardType->type,
-                'prefix'          => $billboardType->prefix,
+                'type'            => $type,
+                'prefix'          => $prefix,
                 'size'            => $size,
                 'lighting'        => $lighting,
                 'state'           => $state,
