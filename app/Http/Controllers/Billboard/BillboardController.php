@@ -331,8 +331,10 @@ class BillboardController extends Controller
             'council'       => 'required|exists:councils,id',
             'location'      => 'required|string|max:255',
             'land'          => 'required|string|max:10', // adjust if you only allow values like "PRIV" / "GOV"
-            'gpslongitude'  => 'nullable|numeric|between:-180,180',
-            'gpslatitude'   => 'nullable|numeric|between:-90,90',
+            'gpsCoordinate' => [
+                'required',
+                'regex:/^-?([0-8]?\d(\.\d+)?|90(\.0+)?),\s*-?(1[0-7]\d(\.\d+)?|180(\.0+)?)$/'
+            ],
             'trafficvolume' => 'nullable|integer|min:0',
         ]);
 
@@ -351,9 +353,11 @@ class BillboardController extends Controller
             $council      = $request->council;
             $locationName = $request->location;
             $land         = $request->land;
-            $gpslongitude = $request->gpslongitude;
-            $gpslatitude  = $request->gpslatitude;
             $trafficvolume= $request->trafficvolume;
+
+            $coords = explode(',', $request->gpsCoordinate);
+            $gpslatitude = trim($coords[0]);
+            $gpslongitude = trim($coords[1]);
 
             // Step 1: Ensure location exists (or create new)
             $location = Location::firstOrCreate([
@@ -451,8 +455,10 @@ class BillboardController extends Controller
             'state_id' => 'nullable|integer',
             'district_id' => 'nullable|integer',
             'location_name' => 'nullable|string|max:255',
-            'gps_latitude' => 'nullable|numeric',
-            'gps_longitude' => 'nullable|numeric',
+            'gpsCoordinate' => [
+                'required',
+                'regex:/^-?([0-8]?\d(\.\d+)?|90(\.0+)?),\s*-?(1[0-7]\d(\.\d+)?|180(\.0+)?)$/'
+            ],
             'traffic_volume' => 'nullable|integer',
             'status' => 'nullable|integer',
         ]);
@@ -463,6 +469,10 @@ class BillboardController extends Controller
 
             $billboard = Billboard::findOrFail($request->id);
             $location = Location::find($billboard->location_id);
+
+            $coords = explode(',', $request->gpsCoordinate);
+            $gpslatitude = trim($coords[0]);
+            $gpslongitude = trim($coords[1]);
 
             if ($location) {
                 $location->update([
@@ -490,8 +500,8 @@ class BillboardController extends Controller
                 'lighting'       => $request->lighting,
                 'state_id'       => $request->state_id,
                 'district_id'    => $request->district_id,
-                'gps_latitude'   => (float)$request->gps_latitude,
-                'gps_longitude'  => (float)$request->gps_longitude,
+                'gps_latitude'   => $gpslatitude,
+                'gps_longitude'  => $gpslongitude,
                 'traffic_volume' => (int)$request->traffic_volume,
                 'status' => (int)$request->status,
             ]);

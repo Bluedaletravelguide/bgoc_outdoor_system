@@ -37,8 +37,6 @@ class UsersController extends Controller
     {
         $client_companies = ClientCompany::select('id', 'name')->get();
 
-        logger('user masok sini 1');
-
         return view('users.index');
     }
 
@@ -46,9 +44,7 @@ class UsersController extends Controller
      * Show the users list.
      */
     public function list(Request $request)
-    {
-        logger('user masok sini 2');
-        
+    {        
         $role = $request->input('role');
 
         $columns = array(
@@ -70,6 +66,7 @@ class UsersController extends Controller
             ->leftJoin('model_has_roles', 'users.id', '=', 'model_has_roles.model_id')
             ->leftJoin('roles', 'model_has_roles.role_id', '=', 'roles.id')
             ->select('users.*', 'roles.name as role')
+            ->where('users.status', 1)
             ->orderBy($orderColumnName, $orderDirection);
 
         // Get total records count
@@ -127,7 +124,6 @@ class UsersController extends Controller
         $name       = $request->name;
         $username   = $request->username;
         $role       = $request->role;
-        $employee   = $request->employee;
         $password   = $request->password;
         $email      = $request->email;
 
@@ -150,12 +146,7 @@ class UsersController extends Controller
                 'role' => [
                     'required',
                     'string',
-                    'in:superadmin,employee_occ_admin,employee_occ_operator,employee_supervisor,employee_technician',
-                ],
-                'employee' => [
-                    'required',
-                    'integer',
-                    'exists:employees,id,user_id,NULL',
+                    'in:superadmin,admin,support,sales,services'
                 ],
                 'password' => [
                     'required',
@@ -171,22 +162,21 @@ class UsersController extends Controller
                 ],
             ],
             [
-                'name.required' => 'The "System Display Name" field is required.',
-                'name.string' => 'The "System Display Name" must be a string.',
-                'name.max' => 'The "System Display Name" must not be greater than :max characters.',
+                'name.required' => 'The "Name" field is required.',
+                'name.string' => 'The "Name" must be a string.',
+                'name.max' => 'The "Name" must not be greater than :max characters.',
 
-                'username.required' => 'The "System Login Username" field is required.',
-                'username.string' => 'The "System Login Username" must be a string.',
-                'username.max' => 'The "System Login Username" must not be greater than :max characters.',
-                'username.unique' => 'The "System Login Username" is already been taken.',
-                'username.regex' => 'The "System Login Username" must not contain any spaces.',
+                'username.required' => 'The "Username" field is required.',
+                'username.string' => 'The "Username" must be a string.',
+                'username.max' => 'The "Username" must not be greater than :max characters.',
+                'username.unique' => 'The "Username" is already been taken.',
+                'username.regex' => 'The "Username" must not contain any spaces.',
 
                 'role.required' => 'The "Role" field is required.',
                 'role.string' => 'The "Role" must be a string.',
                 'role.max' => 'The "Role" must not be greater than :max characters.',
 
-                'employee.exists' => 'The employee cannot be found or already associated with an user account.',
-
+                'password.required' => 'The "Password" field is required.',
                 'password.confirmed' => 'The password confirmation does not match.',
 
                 'email.required' => 'The "Email" field is required.',
@@ -210,18 +200,13 @@ class UsersController extends Controller
                 'name'      => $name,
                 'username'  => $username,
                 'email'     => $email,
-                'type'      => "employee",
                 'status'    => "1",
                 'password'  => Hash::make($password),
             ]);
 
             $role_name = Role::where('name', $role)->first();
 
-            // Update employee user_id
-            Employee::where('id', $employee)
-                ->update([
-                    'user_id'   => $user->id
-                ]);
+            logger('role_name: ' . $role_name);
 
             // Update user role
             $user->syncRoles([$role_name]);
@@ -273,7 +258,7 @@ class UsersController extends Controller
                 'role' => [
                     'required',
                     'string',
-                    'in:superadmin,employee_occ_admin,employee_occ_operator,employee_supervisor,employee_technician',
+                    'in:superadmin,admin,support,sales,services',
                 ],
                 'email' => [
                     'required',
@@ -376,13 +361,13 @@ class UsersController extends Controller
             DB::beginTransaction();
 
             // Update employee user_id to null as removing the association of the deleted user account
-            Employee::where('user_id', $delete_user_id)
+            User::where('id', $delete_user_id)
                 ->update([
-                    'user_id'   => null
+                    'status'   => 0
                 ]);
 
             // Delete system user
-            User::find($delete_user_id)->delete();
+            // User::find($delete_user_id)->delete();
 
             // Ensure all queries successfully executed, commit the db changes
             DB::commit();

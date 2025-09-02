@@ -119,11 +119,11 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/inventory/delete', [StockInventoryController::class, 'delete'])->name('stockInventory.delete');
 
     // Users
-    Route::get('/users', [UsersController::class, 'index'])->name('users');
+    Route::get('/users', [UsersController::class, 'index'])->name('users.index');
     Route::post('/users/list', [UsersController::class, 'list'])->name('users.list');
-    Route::post('/users/create', [UsersController::class, 'create'])->name('users.create.employee');
-    Route::post('/users/edit', [UsersController::class, 'editEmployee'])->name('users.edit.employee');
-    Route::post('/users/delete', [UsersController::class, 'deleteEmployee'])->name('users.delete.employee');
+    Route::post('/users/create', [UsersController::class, 'create'])->name('users.create');
+    Route::post('/users/edit', [UsersController::class, 'edit'])->name('users.edit');
+    Route::post('/users/delete', [UsersController::class, 'delete'])->name('users.delete');
 
 
 

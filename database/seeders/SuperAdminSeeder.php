@@ -23,7 +23,6 @@ class SuperAdminSeeder extends Seeder
             $superAdmin->name = "Super Admin";
             $superAdmin->email = "superadmin@bluedale.com.my";
             $superAdmin->username = "superadmin";
-            // $superAdmin->type = "employee";
             $superAdmin->password = Hash::make('password');
             $superAdmin->save();
         }
@@ -41,6 +40,19 @@ class SuperAdminSeeder extends Seeder
             $admin->save();
         }
 
+        // Check if the user 'supports' already exists
+        $supports = User::where('username', 'supports')->first();
+
+        if (is_null($supports)) {
+            // Create the 'supports' user
+            $supports = new User();
+            $supports->name = "Supports";
+            $supports->email = "supports@bluedale.com.my";
+            $supports->username = "supports";
+            $supports->password = Hash::make('password');
+            $supports->save();
+        }
+
         // Check if the user 'sales' already exists
         $sales = User::where('username', 'sales')->first();
 
@@ -52,6 +64,19 @@ class SuperAdminSeeder extends Seeder
             $sales->username = "sales";
             $sales->password = Hash::make('password');
             $sales->save();
+        }
+
+        // Check if the user 'services' already exists
+        $services = User::where('username', 'services')->first();
+
+        if (is_null($services)) {
+            // Create the 'services' user
+            $services = new User();
+            $services->name = "Services";
+            $services->email = "services@bluedale.com.my";
+            $services->username = "services";
+            $services->password = Hash::make('password');
+            $services->save();
         }
     }
 }

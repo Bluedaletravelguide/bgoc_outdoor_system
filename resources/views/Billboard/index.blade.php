@@ -138,7 +138,7 @@
                     <th>Lighting</th>
                     <th>Area</th>
                     <th>Region</th>
-                    <th>Date Registered</th>
+                    <th>Date Created</th>
                     <th>Status</th>
                     <th class="dt-exclude-export dt-no-sort">Show Detail</th>
                     <th class="dt-exclude-export dt-no-sort">Actions</th>
@@ -218,38 +218,22 @@
                                 <option value="A">A - State Land</option>
                                 <option value="B">B - Private Land</option>
                                 <option value="C">C - KKR</option>
+                                <option value="D">D - Others</option>
                             </select>
                         </div>
-                        <div class="col-span-12 sm:col-span-6">
-                            <label for="inputGPSLatitude" class="form-label">GPS Latitude</label>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label for="inputGPSCoordinate" class="form-label">GPS Coordinate</label>
                             <input 
-                                type="number" 
+                                type="text" 
                                 class="input w-full border mt-2 flex-1" 
-                                id="inputGPSLatitude" 
-                                name="gps_latitude"
-                                step="0.000001" 
-                                min="-90" 
-                                max="90" 
-                                placeholder="e.g. 3.1390" 
+                                id="inputGPSCoordinate" 
+                                name="gps_coordinate"
+                                pattern="^-?([0-8]?\d(\.\d+)?|90(\.0+)?),\s*-?(1[0-7]\d(\.\d+)?|180(\.0+)?)$"
+                                placeholder="e.g. 3.1390, 101.6869" 
                                 required
                             >
+                            <small class="text-gray-500">Format: latitude (-90 → 90), longitude (-180 → 180)</small>
                         </div>
-
-                        <div class="col-span-12 sm:col-span-6">
-                            <label for="inputGPSLongitude" class="form-label">GPS Longitude</label>
-                            <input 
-                                type="number" 
-                                class="input w-full border mt-2 flex-1" 
-                                id="inputGPSLongitude" 
-                                name="gps_longitude"
-                                step="0.000001" 
-                                min="-180" 
-                                max="180" 
-                                placeholder="e.g. 101.6869" 
-                                required
-                            >
-                        </div>  
-
                         <div class="col-span-12 sm:col-span-12">
                             <label for="inputBillboardTrafficVolume" class="form-label">Traffic Volume</label>
                             <input 
@@ -335,13 +319,17 @@
                             <label>Area</label>
                             <input type="text" class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardLocation" placeholder="Enter area name">
                         </div>
-                        <div class="col-span-12 sm:col-span-6">
-                            <label for="end_date" class="form-label">GPS Latitude</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="editGPSLatitude" value="" required>
-                        </div>
-                        <div class="col-span-12 sm:col-span-6">
-                            <label for="start_date" class="form-label">GPS Longitude</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="editGPSLongitude" value="" required>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label for="editGPSCoordinate" class="form-label">GPS Coordinate</label>
+                            <input 
+                                type="text" 
+                                class="input w-full border mt-2 flex-1" 
+                                id="editGPSCoordinate" 
+                                name="gps_coordinate"
+                                placeholder="e.g. 3.1390, 101.6869" 
+                                required
+                            >
+                            <small class="text-gray-500">Format: latitude, longitude</small>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
                             <label>Traffic Volume</label>
@@ -1104,78 +1092,6 @@
         setupAutoFilter();
         billboardEditModal();
 
-        // $('#billboard_table').off('click', '.edit-billboard').on('click', '.edit-billboard', function () {
-        //     const $this = $(this);
-        //     const billboardID = $this.data('id');
-
-        //     // Set values
-        //     $('#editBillboardType').val($this.data('type'));
-        //     $('#editBillboardSize').val($this.data('size'));
-        //     $('#editBillboardLighting').val($this.data('lighting'));
-        //     $('#editGPSLatitude').val($this.data('gps_latitude'));
-        //     $('#editGPSLongitude').val($this.data('gps_longitude'));
-        //     $('#editBillboardTrafficVolume').val($this.data('traffic_volume'));
-
-        //     $('#editBillboardModalId').val(billboardID);
-
-        //     // Set state and load districts
-        //     const stateID = $this.data('state_id');
-        //     const districtID = $this.data('district_id');
-        //     const location   = $this.data('location');
-
-        //     $('#editBillboardState').val(stateID).trigger('change');
-
-        //     $.post('{{ route("location.getDistricts") }}', {
-        //         _token: '{{ csrf_token() }}',
-        //         state_id: stateID
-        //     }, function (districts) {
-        //         $('#editBillboardDistrict').empty().append(`<option value="">-- Select District --</option>`);
-        //         districts.forEach(function (d) {
-        //             $('#editBillboardDistrict').append(`<option value="${d.id}">${d.name}</option>`);
-        //         });
-        //         $('#editBillboardDistrict').val(districtID).trigger('change');
-        //     });
-
-        //     // Now just set the location text directly
-        //     $('#editBillboardLocation').val(location);
-
-        //     // Open modal
-        //     openAltEditorModal("#billboardEditModal");
-        // });
-
-        // // On State change => fetch districts
-        // $('#editBillboardState').on('change', function () {
-        //     let stateID = $(this).val();
-        //     $('#editBillboardDistrict').html('<option value="">-- Loading Districts --</option>');
-        //     $('#editBillboardLocation').html('<option value="">-- Select Location --</option>');
-
-        //     if (stateID) {
-        //         $.get('/get-districts/' + stateID, function (data) {
-        //             let options = '<option value="">-- Select District --</option>';
-        //             data.forEach(function (district) {
-        //                 options += `<option value="${district.id}">${district.name}</option>`;
-        //             });
-        //             $('#editBillboardDistrict').html(options);
-        //         });
-        //     }
-        // });
-
-        // // On District change => fetch locations
-        // $('#editBillboardDistrict').on('change', function () {
-        //     let districtID = $(this).val();
-        //     $('#editBillboardLocation').html('<option value="">-- Loading Locations --</option>');
-
-        //     if (districtID) {
-        //         $.get('/get-locations/' + districtID, function (data) {
-        //             let options = '<option value="">-- Select Location --</option>';
-        //             data.forEach(function (location) {
-        //                 options += `<option value="${location.id}">${location.name}</option>`;
-        //             });
-        //             $('#editBillboardLocation').html(options);
-        //         });
-        //     }
-        // });
-
         $('#billboard_table').off('click', '.edit-billboard').on('click', '.edit-billboard', function () {
             const $this = $(this);
             const billboardID = $this.data('id');
@@ -1184,11 +1100,14 @@
             $('#editBillboardType').val($this.data('type'));
             $('#editBillboardSize').val($this.data('size'));
             $('#editBillboardLighting').val($this.data('lighting'));
-            $('#editGPSLatitude').val($this.data('gps_latitude'));
-            $('#editGPSLongitude').val($this.data('gps_longitude'));
+            
+            // Combine latitude & longitude into one coordinate
+            const latitude = $this.data('gps_latitude');
+            const longitude = $this.data('gps_longitude');
+            $('#editGPSCoordinate').val(latitude + ', ' + longitude);
+            
             $('#editBillboardTrafficVolume').val($this.data('traffic_volume'));
             $('#editBillboardStatus').val($this.data('status'));
-
             $('#editBillboardModalId').val(billboardID);
 
             // Get IDs
@@ -1298,8 +1217,7 @@
                     council         : document.getElementById("inputBillboardCouncil").value,
                     land            : document.getElementById("inputBillboardLand").value,
                     location        : document.getElementById("inputBillboardLocation").value,
-                    gpslongitude    : document.getElementById("inputGPSLongitude").value,
-                    gpslatitude     : document.getElementById("inputGPSLatitude").value,
+                    gpsCoordinate   : document.getElementById("inputGPSCoordinate").value,
                     trafficvolume   : document.getElementById("inputBillboardTrafficVolume").value,
                 },
                 success: function(response) {
@@ -1319,8 +1237,7 @@
                     document.getElementById("inputBillboardCouncil").value = "";
                     document.getElementById("inputBillboardLand").value = "";
                     document.getElementById("inputBillboardLocation").value = "";
-                    document.getElementById("inputGPSLongitude").value = "";
-                    document.getElementById("inputGPSLatitude").value = "";
+                    document.getElementById("inputGPSCoordinate").value = "";
                     document.getElementById("inputBillboardTrafficVolume").value = "";
 
                     // Reload table
@@ -1357,8 +1274,7 @@
                     district_id: $('#editBillboardDistrict').val(),
                     council_id: $('#editBillboardCouncil').val(),
                     location_name: $('#editBillboardLocation').val(), // 👈 send as name
-                    gps_latitude: $('#editGPSLatitude').val(),
-                    gps_longitude: $('#editGPSLongitude').val(),
+                    gpsCoordinate: $('#editGPSCoordinate').val(),
                     traffic_volume: $('#editBillboardTrafficVolume').val(),
                     status: $('#editBillboardStatus').val(),
                     
@@ -1382,6 +1298,7 @@
                     document.getElementById("editBillboardLocation").value = "";
                     document.getElementById("editGPSLongitude").value = "";
                     document.getElementById("editGPSLatitude").value = "";
+                    document.getElementById("editGPSCoordinate").value = "";
                     document.getElementById("editBillboardTrafficVolume").value = "";
                     document.getElementById("editBillboardStatus").value = "";
 
@@ -1428,6 +1345,13 @@
                 $('#editBillboardLighting').val(lighting);
                 $('#editGPSLatitude').val(latitude);
                 $('#editGPSLongitude').val(longitude);
+                $('#editGPSCoordinate').val(longitude);
+                // Combined GPS coordinate field
+                if (latitude && longitude) {
+                    $('#editGPSCoordinate').val(latitude + ', ' + longitude);
+                } else {
+                    $('#editGPSCoordinate').val("");
+                }
                 $('#editBillboardTrafficVolume').val(traffic);
                 $('#editBillboardStatus').val(status);
 

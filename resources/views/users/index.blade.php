@@ -15,6 +15,7 @@
     </h2>
 </div>
 
+<!-- datatable -->
 <div class="intro-y box p-5 mt-5">
 
     <!-- BEGIN: User Status Info -->
@@ -30,8 +31,8 @@
     <!-- END: User Status Info -->
 
     <div class="pos col-span-12 lg:col-span-4">
-        <!-- BEGIN: Employee Users -->
-        <div class="tab-content__pane mt-4 active" id="employee_users">
+        <!-- BEGIN: Users -->
+        <div class="tab-content__pane mt-4 active">
             <!-- BEGIN: Filter & Add New User -->
             <div class="flex flex-col sm:flex-row sm:items-end xl:items-start">
                 <!-- BEGIN: Filter -->
@@ -52,12 +53,12 @@
 
                 <!-- BEGIN: Add New User -->
                 <div class="text-center">
-                    <a href="javascript:;" data-toggle="modal" data-target="#employeeUsersAddModal" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-32 text-white" id="employeeUsersAddModalButton">
+                    <a href="javascript:;" data-toggle="modal" data-target="#usersAddModal" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-32 text-white" id="usersAddModalButton">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus w-4 h-4">
                             <line x1="12" y1="5" x2="12" y2="19"></line>
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                         </svg>
-                        Register New Employee User
+                        Register New User
                     </a>
                 </div>
                 <!-- END: Add New User -->
@@ -85,13 +86,13 @@
             </div>
             <!-- END: Users List -->
         </div>
-        <!-- END: Employee Users -->
+        <!-- END: Users -->
     </div>
 </div>
 @endsection('app_content')
 
 @section('modal_content')
-<!-- BEGIN: Employee Users Edit Modal -->
+<!-- BEGIN: Users Edit Modal -->
 <div class="modal" id="usersEditModal">
     <div class="modal__content">
         <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
@@ -100,39 +101,39 @@
         <form>
             <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                 <div class="col-span-12 sm:col-span-12">
-                    <label>System Display Name</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="System Display Name" id="employeeUsersEditName" required>
+                    <label>Name</label>
+                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Name" id="usersEditName" required>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
-                    <label>System Login Username</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="System Login Username" id="employeeUsersEditUsername" required>
+                    <label>Username</label>
+                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="System Login Username" id="usersEditUsername" required>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
                     <label>Role</label>
-                    <select class="input w-full border mt-2 flex-1" id="employeeUsersEditRole" required>
+                    <select class="input w-full border mt-2 flex-1" id="usersEditRole" required>
                         <option value="superadmin">Superadmin</option>
-                        <option value="employee_occ_admin">OCC Admin</option>
-                        <option value="employee_occ_operator">OCC Operator</option>
-                        <option value="team_leader">Team Leader</option>
-                        <option value="employee_technician">Employee Technician</option>
+                        <option value="admin">Admin</option>
+                        <option value="supports">Supports</option>
+                        <option value="sales">Sales</option>
+                        <option value="services">Services</option>
                     </select>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
                     <label>Email</label>
-                    <input type="email" class="input w-full border mt-2 flex-1" placeholder="example@gmail.com" id="employeeUsersEditEmail" required>
+                    <input type="email" class="input w-full border mt-2 flex-1" placeholder="example@gmail.com" id="usersEditEmail" required>
                 </div>
             </div>
 
             <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
-                <button type="submit" class="button w-20 bg-theme-1 text-white" id="employeeUsersEditButton">Submit</button>
+                <button type="submit" class="button w-20 bg-theme-1 text-white" id="usersEditButton">Submit</button>
             </div>
         </form>
     </div>
 </div>
-<!-- END: Employee Users Edit Modal -->
+<!-- END: Users Edit Modal -->
 
-<!-- BEGIN: Employee Users Add Modal -->
-<div class="modal" id="employeeUsersAddModal">
+<!-- BEGIN: Users Add Modal -->
+<div class="modal" id="usersAddModal">
     <div class="modal__content">
         <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
             <h2 class="font-medium text-base mr-auto">Add User</h2>
@@ -140,51 +141,47 @@
         <form>
             <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                 <div class="col-span-12 sm:col-span-12">
-                    <label>System Display Name</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="System Display Name" id="employeeUsersAddName" required>
+                    <label>Name</label>
+                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Name" id="usersAddName" required>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
-                    <label>System Login Username</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="System Login Username" id="employeeUsersAddUsername" required>
+                    <label>Username</label>
+                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Username" id="usersAddUsername" required>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
                     <label>Role</label>
-                    <select class="input w-full border mt-2 flex-1" id="employeeUsersAddRole" required>
-                        <option value="employee_occ_admin">OCC Admin</option>
-                        <option value="employee_occ_operator">OCC Operator</option>
-                        <option value="team_leader">Team Leader</option>
-                        <option value="employee_technician">Employee Technician</option>
-                    </select>
-                </div>
-                <div class="col-span-12 sm:col-span-12">
-                    <label>Employee Name</label>
-                    <select class="input w-full border mt-2 flex-1" id="employeeUsersAddEmployee" required>
+                    <select class="input w-full border mt-2 flex-1" id="usersAddRole" required>
+                        <option value="superadmin">Superadmin</option>
+                        <option value="admin">Admin</option>
+                        <option value="support">Support</option>
+                        <option value="sales">Sales</option>
+                        <option value="services">Services</option>
                     </select>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
                     <label>Password</label>
-                    <input type="password" class="input w-full border mt-2 flex-1" placeholder="Password" id="employeeUsersAddPassword" required>
+                    <input type="password" class="input w-full border mt-2 flex-1" placeholder="Password" id="usersAddPassword" required>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
                     <label>Password Confirmation</label>
-                    <input type="password" class="input w-full border mt-2 flex-1" placeholder="Password" id="employeeUsersAddPasswordConfirmation" required>
+                    <input type="password" class="input w-full border mt-2 flex-1" placeholder="Password" id="usersAddPasswordConfirmation" required>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
                     <label>Email</label>
-                    <input type="email" class="input w-full border mt-2 flex-1" placeholder="example@gmail.com" id="employeeUsersAddEmail" required>
+                    <input type="email" class="input w-full border mt-2 flex-1" placeholder="example@gmail.com" id="usersAddEmail" required>
                 </div>
             </div>
 
             <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
-                <button type="submit" class="button w-20 bg-theme-1 text-white" id="employeeUsersAddButton">Submit</button>
+                <button type="submit" class="button w-20 bg-theme-1 text-white" id="usersAddButton">Submit</button>
             </div>
         </form>
     </div>
 </div>
-<!-- END: Employee Users Add Modal -->
+<!-- END: Users Add Modal -->
 
-<!-- BEGIN: Employee Users Delete Modal -->
-<div class="modal" id="employeeUsersDeleteModal">
+<!-- BEGIN: Users Delete Modal -->
+<div class="modal" id="usersDeleteModal">
     <div class="modal__content">
         <div class="p-5 text-center"> <i data-feather="x-circle" class="w-16 h-16 text-theme-6 mx-auto mt-3"></i>
             <div class="text-3xl mt-5">Are you sure?</div>
@@ -192,117 +189,11 @@
         </div>
         <div class="px-5 pb-8 text-center">
             <button type="button" data-dismiss="modal" class="button w-24 border text-gray-700 dark:border-dark-5 dark:text-gray-300 mr-1">Cancel</button>
-            <button type="button" class="button w-24 bg-theme-6 text-white" id="employeeUsersDeleteButton">Delete</button>
+            <button type="button" class="button w-24 bg-theme-6 text-white" id="usersDeleteButton">Delete</button>
         </div>
     </div>
 </div>
-<!-- END: Employee Users Delete Modal -->
-
-<!-- BEGIN: Client Users Edit Modal -->
-<div class="modal" id="clientUsersEditModal">
-    <div class="modal__content">
-        <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
-            <h2 class="font-medium text-base mr-auto">Edit User</h2>
-        </div>
-        <form>
-            <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
-                <div class="col-span-12 sm:col-span-12">
-                    <label>System Display Name</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="System Display Name" id="clientUsersEditName" required>
-                </div>
-                <div class="col-span-12 sm:col-span-12">
-                    <label>System Login Username</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="System Login Username" id="clientUsersEditUsername" required>
-                </div>
-                <div class="col-span-12 sm:col-span-12">
-                    <label>Role</label>
-                    <select class="input w-full border mt-2 flex-1" id="clientUsersEditRole" required>
-                        <option value="client_user">Client User</option>
-                    </select>
-                </div>
-                <div class="col-span-12 sm:col-span-12">
-                    <label>Email</label>
-                    <input type="email" class="input w-full border mt-2 flex-1" placeholder="example@gmail.com" id="clientUsersEditEmail" required>
-                </div>
-            </div>
-
-            <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
-                <button type="submit" class="button w-20 bg-theme-1 text-white" id="clientUsersEditButton">Submit</button>
-            </div>
-        </form>
-    </div>
-</div>
-<!-- END: Client Users Edit Modal -->
-
-<!-- BEGIN: Client Users Add Modal -->
-<div class="modal" id="clientUsersAddModal">
-    <div class="modal__content">
-        <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
-            <h2 class="font-medium text-base mr-auto">Add User</h2>
-        </div>
-        <form>
-            <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
-                <div class="col-span-12 sm:col-span-12">
-                    <label>System Display Name</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="System Display Name" id="clientUsersAddName" required>
-                </div>
-                <div class="col-span-12 sm:col-span-12">
-                    <label>System Login Username</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="System Login Username" id="clientUsersAddUsername" required>
-                </div>
-                <div class="col-span-12 sm:col-span-12">
-                    <label>Role</label>
-                    <select class="input w-full border mt-2 flex-1" id="clientUsersAddRole" required>
-                        <option value="client_user">Client User</option>
-                    </select>
-                </div>
-                <div class="col-span-12 sm:col-span-12">
-                    <label>Client Company</label>
-                    <select class="input w-full border mt-2 flex-1" id="clientUsersAddClientCompany" required>
-                    </select>
-                </div>
-                <div class="col-span-12 sm:col-span-12">
-                    <label>Client Name</label>
-                    <select class="input w-full border mt-2 flex-1" id="clientUsersAddClient" required>
-                    </select>
-                </div>
-                <div class="col-span-12 sm:col-span-12">
-                    <label>Password</label>
-                    <input type="password" class="input w-full border mt-2 flex-1" placeholder="Password" id="clientUsersAddPassword" required>
-                </div>
-                <div class="col-span-12 sm:col-span-12">
-                    <label>Password Confirmation</label>
-                    <input type="password" class="input w-full border mt-2 flex-1" placeholder="Password" id="clientUsersAddPasswordConfirmation" required>
-                </div>
-                <div class="col-span-12 sm:col-span-12">
-                    <label>Email</label>
-                    <input type="email" class="input w-full border mt-2 flex-1" placeholder="example@gmail.com" id="clientUsersAddEmail" required>
-                </div>
-            </div>
-
-            <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
-                <button type="submit" class="button w-20 bg-theme-1 text-white" id="clientUsersAddButton">Submit</button>
-            </div>
-        </form>
-    </div>
-</div>
-<!-- END: Client Users Add Modal -->
-
-<!-- BEGIN: Client Users Delete Modal -->
-<div class="modal" id="clientUsersDeleteModal">
-    <div class="modal__content">
-        <div class="p-5 text-center"> <i data-feather="x-circle" class="w-16 h-16 text-theme-6 mx-auto mt-3"></i>
-            <div class="text-3xl mt-5">Are you sure?</div>
-            <div class="text-gray-600 mt-2">Confirm deleting the user? This process cannot be undone.</div>
-        </div>
-        <div class="px-5 pb-8 text-center">
-            <button type="button" data-dismiss="modal" class="button w-24 border text-gray-700 dark:border-dark-5 dark:text-gray-300 mr-1">Cancel</button>
-            <button type="button" class="button w-24 bg-theme-6 text-white" id="clientUsersDeleteButton">Delete</button>
-        </div>
-    </div>
-</div>
-<!-- END: Client Users Delete Modal -->
-
+<!-- END: Users Delete Modal -->
 
 @endsection('modal_content')
 
@@ -310,59 +201,28 @@
 <script>
     $(document).ready(function() {
         // Global variables
-        var original_employee_username;
-        var original_client_username;
-        var client_type = "default";
-        var client_id;
+        var original_username;
         var lastClickedLink;
 
         // Listen to below buttons
-        document.getElementById("employeeUsersAddButton").addEventListener("click", employeeUsersAddButton);
-        document.getElementById("employeeUsersAddModalButton").addEventListener("click", employeeUsersAddButtonGetEmployees);
-        document.getElementById("employeeUsersDeleteButton").addEventListener("click", employeeUsersDeleteButton);
-        document.getElementById("clientUsersAddButton").addEventListener("click", clientUsersAddButton);
-        document.getElementById("clientUsersDeleteButton").addEventListener("click", clientUsersDeleteButton);
-
-
-
-        // When "filterClientButton" button is clicked, initiate initClientUsersDatatable
-        var filterClientRole;
-        var filterClientCompany;
-
-        function filterClientButton() {
-            filterClientRole = document.getElementById("inputClientRole").value;
-            filterClientCompany = document.getElementById("inputClientCompany").value;
-            initClientUsersDatatable(filterClientRole, filterClientCompany);
-        };
+        document.getElementById("usersAddButton").addEventListener("click", usersAddButton);
+        document.getElementById("usersDeleteButton").addEventListener("click", usersDeleteButton);
 
         // When any submit button is clicked
         (function() {
             var users_table = $('#users_table')[0].altEditor;
 
-            document.getElementById('employeeUsersAddButton').addEventListener('click', function(e) {
+            document.getElementById('usersAddButton').addEventListener('click', function(e) {
                 // Prevent the default form submission behavior
                 e.preventDefault();
             });
 
-            document.getElementById('employeeUsersEditButton').addEventListener('click', function(e) {
+            document.getElementById('usersEditButton').addEventListener('click', function(e) {
                 // Prevent the default form submission behavior
                 e.preventDefault();
 
-                // Edit employee users
-                editemployeeUsers();
-            });
-
-            document.getElementById('clientUsersAddButton').addEventListener('click', function(e) {
-                // Prevent the default form submission behavior
-                e.preventDefault();
-            });
-
-            document.getElementById('clientUsersEditButton').addEventListener('click', function(e) {
-                // Prevent the default form submission behavior
-                e.preventDefault();
-
-                // Edit client users
-                editClientUsers();
+                // Edit users
+                editUsers();
             });
         })();
 
@@ -385,10 +245,10 @@
 
 
         /**
-         * EMPLOYEE USERS 
+         * USERS 
          */
 
-        // Setup the Employee users datatable
+        // Setup the users datatable
         function initUsersDatatable() {
             const dt = new Date();
             const formattedDate = `${dt.getFullYear()}${(dt.getMonth() + 1).toString().padStart(2, '0')}${dt.getDate().toString().padStart(2, '0')}`;
@@ -500,7 +360,7 @@
                         data: "id",
                         render: function(data, type, row) {
                             let element = `
-                            <a class="flex items-center text-theme-6" href="javascript:;" data-toggle="modal" data-target="#employeeUsersDeleteModal" id="delete-employee-` + data + `">
+                            <a class="flex items-center text-theme-6" href="javascript:;" data-toggle="modal" data-target="#usersDeleteModal" id="delete-user-` + data + `">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 w-4 h-4 mr-1">
                                     <polyline points="3 6 5 6 21 6"></polyline>
                                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -559,66 +419,39 @@
                 }
             }
 
-            // Open modal to edit employee user
+            // Open modal to edit user
             usersEditModal();
         };
 
-        // Add New Employee User - Get Employees
-        function employeeUsersAddButtonGetEmployees() {
-            $.ajax({
-                type: 'GET',
-                url: "{{ route('users.create.employee.get.employees') }}",
-                data: {
-                    _token: $('input[name="csrf-token"]').val(),
-                },
-                success: function(response) {
-                    var selectElement = document.getElementById("employeeUsersAddEmployee");
-                    selectElement.innerHTML = '';
-
-                    response.employees_list.forEach(function(item) {
-                        var option = document.createElement("option");
-                        option.text = item.name;
-                        option.value = item.id;
-                        selectElement.add(option);
-                    });
-                },
-                error: function(xhr, status, error) {
-                    console.error(error);
-                }
-            });
-        };
-
-        // Add New Employee User
-        function employeeUsersAddButton() {
+        // Add New User
+        function usersAddButton() {
             $.ajax({
                 type: 'POST',
-                url: "{{ route('users.create.employee') }}",
+                url: "{{ route('users.create') }}",
                 data: {
                     _token: $('meta[name="csrf-token"]').attr('content'),
-                    name: document.getElementById("employeeUsersAddName").value,
-                    username: document.getElementById("employeeUsersAddUsername").value,
-                    role: document.getElementById("employeeUsersAddRole").value,
-                    employee: document.getElementById("employeeUsersAddEmployee").value,
-                    password: document.getElementById("employeeUsersAddPassword").value,
-                    password_confirmation: document.getElementById("employeeUsersAddPasswordConfirmation").value,
-                    email: document.getElementById("employeeUsersAddEmail").value
+                    name: document.getElementById("usersAddName").value,
+                    username: document.getElementById("usersAddUsername").value,
+                    role: document.getElementById("usersAddRole").value,
+                    password: document.getElementById("usersAddPassword").value,
+                    password_confirmation: document.getElementById("usersAddPasswordConfirmation").value,
+                    email: document.getElementById("usersAddEmail").value
                 },
                 success: function(response) {
                     // Close modal after successfully edited
-                    var element = "#employeeUsersAddModal";
+                    var element = "#usersAddModal";
                     closeAltEditorModal(element);
 
                     // Show successful toast
                     window.showSubmitToast("Successfully added.", "#91C714");
 
                     // Clean fields
-                    document.getElementById("employeeUsersAddName").value = "";
-                    document.getElementById("employeeUsersAddUsername").value = "";
-                    document.getElementById("employeeUsersAddRole").value = "";
-                    document.getElementById("employeeUsersAddEmployee").value = "";
-                    document.getElementById("employeeUsersAddPassword").value = "";
-                    document.getElementById("employeeUsersAddPasswordConfirmation").value = "";
-                    document.getElementById("employeeUsersAddEmail").value = "";
+                    document.getElementById("usersAddName").value = "";
+                    document.getElementById("usersAddUsername").value = "";
+                    document.getElementById("usersAddRole").value = "";
+                    document.getElementById("usersAddPassword").value = "";
+                    document.getElementById("usersAddPasswordConfirmation").value = "";
+                    document.getElementById("usersAddEmail").value = "";
 
                     // Reload table
                     $('#users_table').DataTable().ajax.reload();
@@ -634,28 +467,32 @@
             });
         }
 
-        // Open modal to edit employee user
+        // Open modal to edit user
         function usersEditModal() {
             // Remove previous click event listeners
             $(document).off('click', "[id^='users_table'] tbody tr td:not(:last-child)");
 
             $(document).on('click', "[id^='users_table'] tbody tr td:not(:last-child)", function() {
                 // Assign original username to global variable
-                original_employee_username = $(event.target).closest('tr').find('td:nth-child(' + '2' + ')').text();
+                original_username = $(event.target).closest('tr').find('td:nth-child(' + '3' + ')').text();
 
                 // Place values to edit form fields in the modal
-                document.getElementById("employeeUsersEditName").value = $(event.target).closest('tr').find('td:nth-child(' + '1' + ')').text();
-                document.getElementById("employeeUsersEditUsername").value = $(event.target).closest('tr').find('td:nth-child(' + '2' + ')').text();
-                document.getElementById("employeeUsersEditEmail").value = $(event.target).closest('tr').find('td:nth-child(' + '5' + ')').text();
+                document.getElementById("usersEditName").value = $(event.target).closest('tr').find('td:nth-child(' + '2' + ')').text();
+                document.getElementById("usersEditUsername").value = $(event.target).closest('tr').find('td:nth-child(' + '3' + ')').text();
+                document.getElementById("usersEditEmail").value = $(event.target).closest('tr').find('td:nth-child(' + '5' + ')').text();
 
                 var selectRole = $(event.target).closest('tr').find('td:nth-child(' + '4' + ')').text();
 
                 if (selectRole == "superadmin") {
-                    document.getElementById("employeeUsersEditRole").value = "Superadmin";
-                } else if (selectRole == "team_leader") {
-                    document.getElementById("employeeUsersEditRole").value = "Team Leader";
-                } else if (selectRole == "employee_technician") {
-                    document.getElementById("employeeUsersEditRole").value = "Employee Technician";
+                    document.getElementById("usersEditRole").value = "superadmin";
+                } else if (selectRole == "admin") {
+                    document.getElementById("usersEditRole").value = "admin";
+                } else if (selectRole == "support") {
+                    document.getElementById("usersEditRole").value = "support";
+                } else if (selectRole == "sales") {
+                    document.getElementById("usersEditRole").value = "sales";
+                } else if (selectRole == "services") {
+                    document.getElementById("usersEditRole").value = "services";
                 }
 
                 // Open modal
@@ -664,21 +501,21 @@
             });
         }
 
-        // Edit Employee User
-        function editemployeeUsers() {
-            var name = document.getElementById("employeeUsersEditName").value;
-            var username = document.getElementById("employeeUsersEditUsername").value;
-            var role = document.getElementById("employeeUsersEditRole").value;
-            var email = document.getElementById("employeeUsersEditEmail").value;
+        // Edit User
+        function editUsers() {
+            var name = document.getElementById("usersEditName").value;
+            var username = document.getElementById("usersEditUsername").value;
+            var role = document.getElementById("usersEditRole").value;
+            var email = document.getElementById("usersEditEmail").value;
 
             $.ajax({
                 type: 'POST',
-                url: "{{ route('users.edit.employee') }}",
+                url: "{{ route('users.edit') }}",
                 data: {
                     _token: $('meta[name="csrf-token"]').attr('content'),
                     name: name,
                     username: username,
-                    original_username: original_employee_username,
+                    original_username: original_username,
                     role: role,
                     email: email
                 },
@@ -704,20 +541,20 @@
             });
         }
 
-        // Delete Employee User
-        function employeeUsersDeleteButton() {
+        // Delete User
+        function usersDeleteButton() {
             var delete_user_id = lastClickedLink.split("-")[2];
 
             $.ajax({
                 type: 'POST',
-                url: "{{ route('users.delete.employee') }}",
+                url: "{{ route('users.delete') }}",
                 data: {
                     _token: $('meta[name="csrf-token"]').attr('content'),
                     delete_user_id: delete_user_id
                 },
                 success: function(response) {
                     // Close modal after successfully deleted
-                    var element = "#employeeUsersDeleteModal";
+                    var element = "#usersDeleteModal";
                     closeAltEditorModal(element);
 
                     // Show successful toast
