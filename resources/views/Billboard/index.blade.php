@@ -175,6 +175,7 @@
                             <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardSize">
                                 <option value="">-- Select Size --</option>
                                 <option value="15x10">15x10</option>
+                                <option value="30x20">30x20</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
