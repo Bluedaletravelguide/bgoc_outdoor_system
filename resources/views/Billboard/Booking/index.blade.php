@@ -118,7 +118,7 @@
                 </select>
             </div>
             <div class="sm:flex items-center sm:mr-4">
-                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Area</label>
+                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Location</label>
                 <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardBookingLocation">
                     <option value="" selected="">-- Select State --</option>
                     @foreach ($locations as $location)
@@ -192,7 +192,7 @@
                     <th class="whitespace-nowrap">No.</th>
                     <th class="whitespace-nowrap">Site #</th>
                     <th class="whitespace-nowrap">Client Name</th>
-                    <th class="whitespace-nowrap">Area</th>
+                    <th class="whitespace-nowrap">Location</th>
                     <th class="whitespace-nowrap">Start Date</th>
                     <th class="whitespace-nowrap">End Date</th> 
                     <th class="whitespace-nowrap">Duration (Month)</th>
@@ -250,9 +250,9 @@
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Area</label>
+                            <label>Location</label>
                             <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBookingLocation">
-                                <option value="">-- Select Area --</option>
+                                <option value="">-- Select Location --</option>
                             </select>
                         </div>                     
                         <div class="col-span-12 sm:col-span-6">

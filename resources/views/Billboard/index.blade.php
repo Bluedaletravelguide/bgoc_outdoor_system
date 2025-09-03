@@ -136,7 +136,7 @@
                     <th>Type</th>
                     <th>Size</th>
                     <th>Lighting</th>
-                    <th>Area</th>
+                    <th>Location</th>
                     <th>Region</th>
                     <th>Date Created</th>
                     <th>Status</th>
@@ -208,8 +208,8 @@
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Area</label>
-                            <input type="text" class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardLocation" placeholder="Enter area name">
+                            <label>Location</label>
+                            <input type="text" class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardLocation" placeholder="Enter location name">
                         </div>
                         <div class="col-span-12 sm:col-span-12">
                             <label>State/Private Land</label>
@@ -283,6 +283,7 @@
                             <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardSize">
                                 <option value="">-- Select Size --</option>
                                 <option value="15x10">15x10</option>
+                                <option value="30x20">30x20</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
@@ -316,8 +317,8 @@
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Area</label>
-                            <input type="text" class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardLocation" placeholder="Enter area name">
+                            <label>Location</label>
+                            <input type="text" class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardLocation" placeholder="Enter location name">
                         </div>
                         <div class="col-span-12 sm:col-span-12">
                             <label for="editGPSCoordinate" class="form-label">GPS Coordinate</label>

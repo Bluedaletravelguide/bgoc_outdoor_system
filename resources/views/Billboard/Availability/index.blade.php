@@ -83,7 +83,7 @@
                 </select>
             </div>
             <div class="sm:flex items-center sm:mr-4">
-                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Area</label>
+                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Location</label>
                 <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterAvailabilityLocation">
                     <option value="" selected="">-- Select State --</option>
                     @foreach ($locations as $location)
@@ -174,7 +174,7 @@
                 <tr class="bg-theme-1 text-white">
                     <th class="whitespace-nowrap w-12">No.</th>
                     <th class="whitespace-nowrap w-24">Site #</th>
-                    <th class="whitespace-nowrap">Area</th>
+                    <th class="whitespace-nowrap">Location</th>
                     <th class="whitespace-nowrap">State</th>
                     <th class="whitespace-nowrap w-24">Status</th>
                     <th class="whitespace-nowrap w-24">Next Available</th> 

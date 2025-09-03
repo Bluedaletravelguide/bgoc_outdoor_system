@@ -66,7 +66,7 @@
                 <!-- clients -->
                 @if (Auth::guard('web')->user()->can('client.view'))
                     <li>
-                        <a href="{{ route('clients.index') }}" class="side-menu {{ request()->routeIs('clients.index') ? 'side-menu--active' : '' }}">
+                        <a href="{{ route('client-company.index') }}" class="side-menu {{ request()->routeIs('client-company.index') ? 'side-menu--active' : '' }}">
                             <div class="side-menu__icon"> <i data-feather="user"></i> </div>
                             <div class="side-menu__title"> Clients </div>
                         </a>
