@@ -31,7 +31,7 @@ class BillboardSeeder extends Seeder
             ->join('states', 'districts.state_id', '=', 'states.id')
             ->pluck('states.prefix', 'locations.id')
             ->toArray();
-        
+
         $bgocAsClient = [
             [
                 'company_prefix' => 'BGOC',

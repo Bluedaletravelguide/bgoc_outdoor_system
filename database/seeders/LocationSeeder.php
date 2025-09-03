@@ -47,7 +47,7 @@ class LocationSeeder extends Seeder
             // 🟣 KUALA LUMPUR (Federal Territory)
             "Kuala Lumpur" => [
                 "prefix" => "KUL",
-                "districts" => ["Bukit Bintang", "Cheras", "Kepong", "Lembah Pantai", "Segambut", "Setiawangsa", "Titiwangsa", "Wangsa Maju"],
+                "districts" => ["Bukit Bintang", "Cheras", "Kepong", "Lembah Pantai", "Segambut", "Setiawangsa", "Titiwangsa", "Wangsa Maju", "Kuala Lumpur"],
                 "councils" => [
                     ["name" => "Dewan Bandaraya Kuala Lumpur", "abbreviation" => "DBKL"],
                 ]
