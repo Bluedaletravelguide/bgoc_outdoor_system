@@ -84,7 +84,7 @@
                 <div class="font-bold text-2xl mt-5">Billboard Details</div><br>
                 <div class="text-gray-600">Site Number: {{ $billboard_detail->site_number }} </div>
                 <div class="text-gray-600">Location: {{ $billboard_detail->location_name }} </div>
-                <div class="text-gray-600">Region: {{ $billboard_detail->district_name }}, {{ $billboard_detail->state_name }} </div>
+                <div class="text-gray-600">District/State: {{ $billboard_detail->district_name }}, {{ $billboard_detail->state_name }} </div>
                 <div class="text-gray-600">Council: {{ $billboard_detail->council_abbrv }} - {{ $billboard_detail->council_name }} </div>
                 <div class="text-gray-600">GPS Coordinate: {{ $billboard_detail->gps_latitude }}, {{ $billboard_detail->gps_longitude }}</div>
                 <div class="text-gray-600">Traffic Volume: {{ $billboard_detail->traffic_volume }} </div>

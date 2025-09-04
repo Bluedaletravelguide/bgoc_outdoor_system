@@ -83,16 +83,13 @@ class BillboardController extends Controller
 
         $userID = $this->user->id;
 
-        // determine user role
-        // $isTechnician = in_array($role, ["employee_technician"]) && $user->status == 1;
-        // $isAdmin = in_array($role, ["superadmin", "team_leader"]) && $user->status == 1;
-
         $status = $request->input('status');
         $state = $request->input('state');
         $district = $request->input('district');
         $type     = $request->input('type');
+        $site_type     = $request->input('site_type');
         $size     = $request->input('size');
-
+        
         $columns = array(
             0 => 'site_number',
             1 => 'type',
@@ -103,6 +100,7 @@ class BillboardController extends Controller
             6 => 'date_registered',
             7 => 'status',
             8 => 'id',
+            9 => 'site_type',
         );
 
         $limit              = $request->input('length');
@@ -133,6 +131,10 @@ class BillboardController extends Controller
 
         if ($type != "all") {
             $query->where('billboards.type', $type);
+        }
+
+        if ($site_type != "all") {
+            $query->where('billboards.site_type', $site_type);
         }
 
         if ($size != "all") {
@@ -166,6 +168,7 @@ class BillboardController extends Controller
 
             $nestedData = array(
                 'site_number'           => $d->site_number,
+                'site_type'             => $d->site_type,
                 'type'                  => $d->type, // display name
                 'type_prefix'           => $d->prefix,
                 'size'                  => $d->size,
@@ -336,6 +339,7 @@ class BillboardController extends Controller
                 'regex:/^-?([0-8]?\d(\.\d+)?|90(\.0+)?),\s*-?(1[0-7]\d(\.\d+)?|180(\.0+)?)$/'
             ],
             'trafficvolume' => 'nullable|integer|min:0',
+            'siteType' => 'nullable|string|max:10',
         ]);
 
         if ($validated->fails()) {
@@ -345,15 +349,16 @@ class BillboardController extends Controller
         DB::beginTransaction();
 
         try {
-            $type         = $request->type;
-            $size         = $request->size;
-            $lighting     = $request->lighting;
-            $state        = $request->state;
-            $district     = $request->district;
-            $council      = $request->council;
-            $locationName = $request->location;
-            $land         = $request->land;
-            $trafficvolume= $request->trafficvolume;
+            $type           = $request->type;
+            $size           = $request->size;
+            $lighting       = $request->lighting;
+            $state          = $request->state;
+            $district       = $request->district;
+            $council        = $request->council;
+            $locationName   = $request->location;
+            $land           = $request->land;
+            $trafficvolume  = $request->trafficvolume;
+            $siteType       = $request->siteType;
 
             $coords = explode(',', $request->gpsCoordinate);
             $gpslatitude = trim($coords[0]);
@@ -402,19 +407,20 @@ class BillboardController extends Controller
 
             // Step 5: Create billboard
             $billboard = Billboard::create([
-                'site_number'     => $siteNumber,
-                'status'          => 1,
-                'type'            => $type,
-                'prefix'          => $prefix,
-                'size'            => $size,
-                'lighting'        => $lighting,
-                'state'           => $state,
-                'district'        => $district,
-                'location_id'     => $location->id,
-                'gps_longitude'   => $gpslongitude,
-                'gps_latitude'    => $gpslatitude,
-                'traffic_volume'  => $trafficvolume,
-                'created_by'      => $userID,
+                'site_number'       => $siteNumber,
+                'status'            => 1,
+                'type'              => $type,
+                'prefix'            => $prefix,
+                'size'              => $size,
+                'lighting'          => $lighting,
+                'state'             => $state,
+                'district'          => $district,
+                'location_id'       => $location->id,
+                'gps_longitude'     => $gpslongitude,
+                'gps_latitude'      => $gpslatitude,
+                'traffic_volume'    => $trafficvolume,
+                'site_type'          => $siteType,
+                'created_by'        => $userID,
             ]);
 
             DB::commit();
@@ -461,6 +467,7 @@ class BillboardController extends Controller
             ],
             'traffic_volume' => 'nullable|integer',
             'status' => 'nullable|integer',
+            'site_type' => 'nullable|string|max:255',
         ]);
 
         try {
@@ -503,7 +510,8 @@ class BillboardController extends Controller
                 'gps_latitude'   => $gpslatitude,
                 'gps_longitude'  => $gpslongitude,
                 'traffic_volume' => (int)$request->traffic_volume,
-                'status' => (int)$request->status,
+                'status'         => (int)$request->status,
+                'site_type'      => $request->site_type,
             ]);
 
             // Ensure all queries successfully executed, commit the db changes
@@ -667,7 +675,6 @@ class BillboardController extends Controller
     public function viewMap(Request $request)
     {
 
-        logger('mapnya disini: ' . $request);
         $filter = $request->input('filter');
         $id = $request->input('id');
         

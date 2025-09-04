@@ -77,6 +77,8 @@ class BillboardAvailabilityController extends Controller
                 'no'          => $index + 1,
                 'site_number' => $billboard->site_number,
                 'location'    => $billboard->location->name,
+                'site_type'   => $billboard->site_type ?? '-',
+                'type'        => $billboard->type ?? '-',
                 'size'        => $billboard->size ?? '-',
                 'is_available' => $isAvailable,
                 'next_available_raw' => $isAvailable ? null : $nextAvailableDate,
@@ -110,11 +112,13 @@ class BillboardAvailabilityController extends Controller
             }
 
             $results[] = [
+                'id'             => $billboard->id,
                 'site_number'    => $billboard->site_number,
                 'location_name'  => $billboard->location->name,
                 'district_name'  => $billboard->location->district->name ?? '',
                 'state_name'     => $billboard->location->district->state->name ?? '',
                 'is_available'   => $isAvailable,
+                'status_label'    => $isAvailable ? 'Available' : 'Not Available', // 👈 add this
                 'next_available_raw' => $isAvailable ? null : $nextAvailableDate,
                 'next_available' => $isAvailable ? null : optional($nextAvailableDate)->format('d/m/Y'),
             ];
@@ -140,6 +144,7 @@ class BillboardAvailabilityController extends Controller
             'district'   => $request->input('district'),
             'location'   => $request->input('location'),
             'type'       => $request->input('type'),
+            'site_type'       => $request->input('site_type'),
             'status'     => $request->input('status'),
             'search_value' => $request->input('search.value'),
             'order_column_index' => $request->input('order.0.column'),
@@ -166,6 +171,7 @@ class BillboardAvailabilityController extends Controller
             ->when($filters['district'], fn($q) => $q->whereHas('location.district', fn($q2) => $q2->where('id', $filters['district'])))
             ->when($filters['location'], fn($q) => $q->where('location_id', $filters['location']))
             ->when($filters['type'], fn($q) => $q->where('prefix', $filters['type']))
+            ->when($filters['site_type'], fn($q) => $q->where('billboards.site_type', $filters['site_type']))
             ->when(!empty($filters['search_value']), function ($query) use ($filters) {
                 $search = $filters['search_value'];
 
@@ -214,7 +220,7 @@ class BillboardAvailabilityController extends Controller
     {
         return collect($items)->sortBy(function ($item) {
             return [
-                $item['is_available'] ? 0 : 1,
+                $item['is_available'] ? 1 : 0,
                 $item['next_available_raw'] ?? now()->addYears(10)
             ];
         })->values()->all();
@@ -251,9 +257,11 @@ class BillboardAvailabilityController extends Controller
                     }
 
                     $colorClass = match ($booking->status) {
-                        'ongoing'         => 'bg-green-600',
-                        'pending_install' => 'bg-blue-600',
-                        'pending_payment' => 'bg-red-600',
+                        'pending_payment' => 'bg-theme-6',
+                        'pending_install' => 'bg-theme-1',
+                        'ongoing'         => 'bg-theme-12',
+                        'completed'       => 'bg-green-600',
+                        'dismantle'       => 'bg-theme-13',
                         default           => 'bg-gray-400',
                     };
 
@@ -274,7 +282,7 @@ class BillboardAvailabilityController extends Controller
                 $months[] = [
                     'month' => $monthKey,
                     'span'  => 1,
-                    'text'  => '-',
+                    'text'  => '',
                     'color' => '',
                 ];
             }
@@ -283,271 +291,12 @@ class BillboardAvailabilityController extends Controller
         return $months;
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    /**
-     * Create service request and work order.
-     */
-    public function create(Request $request)
-    {   
-        $user = Auth::user();
-        
-        // Get user roles
-        $role = $user->roles->pluck('name')[0];
-        $userID = $this->user->id;
-
-        logger('masuk sini3');
-
-        $type               = $request->type;
-        $size               = $request->size;
-        $lighting           = $request->lighting;
-        $state              = $request->state;
-        $district           = $request->district;
-        $location           = $request->location;
-        $gpslongitude       = $request->gpslongitude;
-        $gpslatitude        = $request->gpslatitude;
-        $trafficvolume      = $request->trafficvolume;
-
-        // Get the current UTC time
-        $current_UTC = Carbon::now('UTC');
-
-        DB::beginTransaction();
-
-        try {
-            // Step 1: Fetch state code from state model (assuming you have it)
-            $stateCode = State::select('prefix')->where('id', $state)->first();
-
-            // Step 2: Count existing records for the same type and state to get the next number
-            $runningNumber = Billboard::leftJoin('locations', 'billboards.location_id', '=', 'locations.id')
-            ->leftJoin('districts', 'locations.district_id', '=', 'districts.id')
-            ->leftJoin('states', 'districts.state_id', '=', 'states.id')
-            ->where('states.id', $state)
-            ->count() + 1;
-
-            $billboardType = Billboard::select('type', 'prefix')->distinct()->where('prefix' , $type)->first();
-
-            // Format as 4-digit number with leading zeros
-            $formattedNumber = str_pad($runningNumber, 4, '0', STR_PAD_LEFT);
-
-            // Step 3: Set status character
-            $statusChar = 'A'; // or use: $status == 1 ? 'A' : 'I'
-
-            // Step 4: Generate site_number
-            $siteNumber = "{$type}-{$stateCode->prefix}-{$formattedNumber}-{$statusChar}";
-
-            //Create a new service request
-            $billboard = Billboard::create([
-                'site_number'      => $siteNumber,
-                'status'            => 1,
-                'type'              => $billboardType->type,
-                'prefix'              => $billboardType->prefix,
-                'size'              => $size,
-                'lighting'          => $lighting,
-                'state'             => $state,
-                'district'          => $district,
-                'location_id'          => $location,
-                'gps_longitude'      => $gpslongitude,
-                'gps_latitude'       => $gpslatitude,
-                'traffic_volume'     => $trafficvolume,
-                'created_by'        => $userID,
-            ]);
-
-            // Generate the service request no & work order no based on prefixes and count
-            // $getPrefixNo = $billboard->billboardPrefixNo();
-
-            // Generate the service request number based on prefixes and count
-            // $billboard->service_request_no = $getPrefixNo[0];
-            $billboard->save();
-
-            // Validate the input
-            // $validator = Validator::make($request->all(), [
-            //     'priority' => 'required|in:1,2,3,4', // Priority must be one of the three values
-            //     ]);
-        
-            //     if ($validator->fails()) {
-            //     return response()->json(['error' => $validator->errors()->first()], 422);
-            //     }
-        
-
-        
-
-            // $pushNotificationController = new PushNotificationController();
-            // $pushNotificationController->sendEmailNewSR($serviceRequest, $workOrder);
-
-            // Ensure all queries successfully executed, commit the db changes
-            DB::commit();
-
-            return response()->json([
-                'success'   => 'success',
-            ], 200);
-
-        }catch (\Exception $e) {
-            // If any queries fail, undo all changes
-            DB::rollback();
-
-            return response()->json(['error' => $e->getMessage()], 422);
-        }
-    }
-
-    /**
-     * Edit work order.
-     */
-    public function edit(Request $request)
-    {
-
-        //Check the permission to edit the work order 
-        if (!$this->user->can('work_order.edit')) {
-            return response()->json(['error' => 'Sorry !! You are Unauthorized to edit work order. Contact system admin for access !'], 403);
-        }
-
-        // Get the current UTC time
-        $current_UTC = Carbon::now('UTC');
-
-        $original_workOrder_id   = $request->original_workOrder_id;
-        $priority                = $request->priority;
-        
-        //Validation rules
-        $validator = Validator::make(
-            $request->all(),
-            [
-                'original_workOrder_id' => [
-                    'required',
-                    'string',
-                    'max:700',
-                    Rule::exists('work_order','id')->whereNot('status', 'VERIFICATION_PASSED'),
-                    Rule::exists('work_order','id')->whereNot('priority', $priority),
-                ],
-                'priority' => [
-                    'required',
-                    'string',
-                    'in: 1,2,3,4',
-                    // Rule::exists('work_order')->where(fn($query)=>
-                    //     $query->where('id', $original_workOrder_id) 
-                    //         ->where('priority', '!=', $priority) 
-                        
-                    // ),
-                    // Rule::exists('work_order')->where('id', $original_workOrder_id),
-                    //'exists:work_order,priority,id,' . $original_workOrder_id . '0',
-                ],
-            ],
-
-            [
-                'original_workOrder_id.exists' => 'Work order is not allowed to be edited in VERIFICATION_PASSED phse',
-
-                'priority.required' => 'The "Priority" field is required.',
-                'priority.in'       => 'The value of "Priority" field is incorrect.',
-                //'priority.exists'   => 'The "Priority" field is no change',
-            ],
-        );
-
-        // Handle failed validations
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()->first()], 422);
-        }
-        try {
-            // Ensure all queries successfully executed
-            DB::beginTransaction();
-
-            // Retrieve the WorkOrder and related ServiceRequest
-            $workOrder = WorkOrder::findOrFail($original_workOrder_id);
-            $serviceRequest = ServiceRequest::findOrFail($workOrder->service_request_id);
-
-            // Get the created_at timestamp from ServiceRequest
-            $createdAt = Carbon::parse($serviceRequest->created_at);
-            
-
-                // Set due_date based on priority
-                switch ($priority) {
-                    case '1':
-                        $dueDate = $createdAt->addDays(15)->toDateTimeString(); // Add 5 days for Low priority
-                        break;
-                    case '2':
-                        $dueDate = $createdAt->addDays(30)->toDateTimeString(); // Add 3 days for Medium priority
-                        break;
-                    case '3':
-                        $dueDate = $createdAt->addDays(60)->toDateTimeString(); // Add 2 days for High priority
-                        break;
-                    case '4':
-                        $dueDate = $createdAt->addDays(70)->toDateTimeString(); // Add 2 days for High priority
-                        break;    
-                    default:
-                        $dueDate = $createdAt->toDateString(); // Default to created_at if priority is not recognized
-                        break;        
-            }
-
-            // Update work order
-            WorkOrder::where('id', $original_workOrder_id)
-                ->update([
-                    'priority'      => $priority,
-                    'due_date'      => $dueDate,
-                    'updated_at'    => $current_UTC,
-                ]);
-
-            // Ensure all queries successfully executed, commit the db changes
-            DB::commit();
-
-            return response()->json([
-                "success"   => "success",
-            ], 200);
-        } 
-        catch (\Exception $e) {
-            // If any queries fail, undo all changes
-            DB::rollback();
-
-            return response()->json(['error' => $e->getMessage()], 422);
-        }
-    }
-
     /**
      * Update status of work order
      */
     public function update(Request $request){
 
         $statusUpdated = $request->update_status;
-
-        logger('status updatedd: '. $statusUpdated);
 
         //Point to relevant function based on the new work order status need to assign 
         if($statusUpdated == 'STARTED') {
@@ -563,149 +312,57 @@ class BillboardAvailabilityController extends Controller
         return $result;
     }
 
-    /**
-     * Delete billboard
-     */
-    public function delete(Request $request)
-    {   
-        $user = Auth::user();
-        
-        // // Get user roles
-        $role = $user->roles->pluck('name')[0];
-        $userID = $this->user->id;
-
-        $id = $request->id;
-
-        logger('delete: ' . $id);
-
-        try {
-            // Ensure all queries successfully executed
-            DB::beginTransaction();
-
-            // Update client company
-            Billboard::where('id', $id)->delete();
-
-            // Ensure all queries successfully executed, commit the db changes
-            DB::commit();
-
-            return response()->json([
-                "success"   => "success",
-            ], 200);
-        } catch (\Exception $e) {
-            // If any queries fail, undo all changes
-            DB::rollback();
-
-            return response()->json(['error' => $e->getMessage()], 422);
-        }
-    }
-
-    /**
-     * View billboard details
-     */
-    public function redirectNewTab(Request $request)
-    {
-
-        $filter = $request->input('filter');
-        $id = $request->input('id');
-        
-        $billboard_detail = Billboard::leftJoin('locations', 'locations.id', 'billboards.location_id')
-            ->leftJoin('districts', 'districts.id', '=', 'locations.district_id')
-            ->leftJoin('states', 'states.id', '=', 'districts.state_id')
-            ->leftJoin('billboard_images', 'billboard_images.billboard_id', 'billboards.id')
-            ->select(
-                'billboards.*',
-                'locations.name as location_name',
-                'districts.name as district_name',
-                'states.name as state_name',
-                'billboard_images.image_path as billboard_image'
-            )
-            ->where('billboards.id', $request->id)
-            ->first();
-
-        $billboard_images = BillboardImage::where('billboard_id', $request->id)->get();
 
 
-            logger('bb details: ' . $billboard_detail);
 
-            // Convert to Dubai time
-            // $dubaiTime = Carbon::parse($open_WO_DetailId->created_dt);
 
-            // Add new formatted date, month, and year fields to the object
-            // $open_WO_DetailId->created_dt = $dubaiTime->format('F j, Y \a\t g:i A');
 
-        // if ($open_WO_DetailId !== null) {
 
-        //     $woActivities = WorkOrderActivity::select(
-        //         'work_order_activity.id as comment_id',
-        //         'comments',
-        //         'comment_by',
-        //         'work_order_activity.created_at as created_at',
-        //         'name',
-        //     )
-        //     ->leftJoin('users', 'users.id', 'work_order_activity.comment_by')
-        //     ->where('work_order_id', '=', $request->id);
 
-            // if($filter){
-            //     if ($filter == 'new') {
-            //         $woActivities->orderBy('created_at', 'desc');
-            //     } elseif ($filter == 'old'){
-            //         $woActivities->orderBy('created_at', 'asc');
-            //     }
-            // }
-            // // ->get();
 
-            // $woActivities = $woActivities->get();
 
-            // $woActivities->transform(function ($woActivity) {
-            //     // Convert to Dubai time
-            //     $created_dt = Carbon::parse($woActivity->created_at);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     
-            //     // Add new formatted date, month, and year fields to the object
-            //     $woActivity->created_dt = $created_dt->format('F j, Y \a\t g:i A');
 
-            //     // Fetch related attachments
-            //     $attachments = WorkOrderActivityAttachment::select('id', 'url')
-            //     ->where('wo_activity_id', '=', $woActivity->comment_id)
-            //     ->get();
-
-            //     // Add attachments to the activity
-            //     $woActivity->attachments = $attachments;
     
-            //     return $woActivity;
-            // });
 
-            // $gg = $woActivities->get();
-
-            // $WoOrHistory = WorkOrderHistory::select(
-            //     'work_order_history.id',
-            //     'work_order_history.status',
-            //     'work_order_history.status_changed_by',
-            //     'work_order_history.assigned_teamleader',
-            //     'work_order_history.assign_to_technician',
-            //     'users.id as user_id',
-            //     'users.name as user_name',
-            // )
-            // ->leftJoin('users', 'users.id', '=', DB::raw('CASE 
-            //         WHEN work_order_history.status = "NEW" THEN work_order_history.status_changed_by 
-            //         WHEN work_order_history.status = "ACCEPTED" THEN work_order_history.status_changed_by 
-            //         WHEN work_order_history.status = "ASSIGNED_SP" THEN work_order_history.status_changed_by                     
-            //         WHEN work_order_history.status = "ACCEPTED_TECHNICIAN" THEN work_order_history.assign_to_technician
-            //         WHEN work_order_history.status = "STARTED" THEN work_order_history.assign_to_technician
-            //         WHEN work_order_history.status = "COMPLETED" THEN work_order_history.assign_to_technician
-            //         ELSE NULL 
-            //     END'))
-            // ->where('work_order_history.work_order_id', '=', $request->id)
-            // ->get();
-
-            // return view('workOrderProfile.index', compact('open_WO_DetailId', 'imageData', 'WoOrObImageBefore', 'WoOrObImageAfter', 'WoOrHistory'));
-            return view('billboard.detail', compact('billboard_detail', 'billboard_images'));
-            
-        // } else {
-        //     // Handle the case when no record is found
-        //     // You can return an error message or redirect the user
-        //     return response()->json(['error' => 'No record found with the provided ID'], 404);
-        // }
-    }
+    
 
     public function downloadPdf($id)
     {

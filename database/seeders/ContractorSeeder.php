@@ -3,13 +3,15 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\ClientCompany;
 use App\Models\Contractor;
+use Faker\Factory as Faker;
 
 class ContractorSeeder extends Seeder
 {
     public function run(): void
     {
+        $faker = Faker::create();
+
         $data = [
             [
                 'company_name' => 'Bluedale Group Of Companies',
@@ -19,32 +21,32 @@ class ContractorSeeder extends Seeder
             [
                 'company_name' => 'Mahamad Advertising',
                 'name' => 'Arun',
-                'phone' => fake()->phoneNumber(), // random phone
+                'phone' => $faker->phoneNumber(), // random phone
             ],
             [
                 'company_name' => 'TCK Loga Enterprise',
                 'name' => 'Waqas',
-                'phone' => fake()->phoneNumber(),
+                'phone' => $faker->phoneNumber(),
             ],
             [
                 'company_name' => 'Fahad Ali',
                 'name' => 'Fahad',
-                'phone' => fake()->phoneNumber(), // random phone
+                'phone' => $faker->phoneNumber(),
             ],
             [
                 'company_name' => 'Muhammad Naveed',
                 'name' => 'Naveed',
-                'phone' => fake()->phoneNumber(), // random phone
+                'phone' => $faker->phoneNumber(),
             ],
             [
                 'company_name' => 'Cheema Jaya Enterprise',
                 'name' => 'Bilal',
-                'phone' => fake()->phoneNumber(), // random phone
+                'phone' => $faker->phoneNumber(),
             ],
             [
                 'company_name' => 'PBS Outsource',
                 'name' => 'Faisal',
-                'phone' => fake()->phoneNumber(), // random phone
+                'phone' => $faker->phoneNumber(),
             ],
         ];
 

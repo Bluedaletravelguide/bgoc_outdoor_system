@@ -19,6 +19,7 @@ class Billboard extends Model
     protected $fillable = [
         'location_id',
         'site_number',
+        'site_type',
         'gps_latitude',
         'gps_longitude',
         'traffic_volume',

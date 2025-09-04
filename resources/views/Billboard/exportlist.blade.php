@@ -19,7 +19,12 @@
 
         .section {
             page-break-inside: avoid;
+            page-break-after: always;
             margin-bottom: 30px;
+        }
+
+        .section:last-child {
+            page-break-after: auto;
         }
 
         .info-container {
@@ -119,8 +124,5 @@
             </div>
         </div>
     @endforeach
-
-    <!-- <img src="file://{{ public_path('storage/' . $img->image_path) }}" alt="Billboard Image"> -->
-
 </body>
 </html>

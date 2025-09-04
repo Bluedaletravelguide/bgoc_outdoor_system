@@ -51,6 +51,18 @@
     .status-installation { background-color: #f8d7da; }  /* red */
     .status-artwork { background-color: #fff3cd; }       /* yellow */
     .status-payment { background-color: #ffe5b4; }       /* orange */
+    
+    /* Custom horizontal scrollbar */
+    .overflow-x-auto::-webkit-scrollbar {
+        height: 8px;
+    }
+    .overflow-x-auto::-webkit-scrollbar-thumb {
+        background-color: #718096; /* gray-400 */
+        border-radius: 4px;
+    }
+    .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+        background-color: #4a5568; /* gray-500 */
+    }
 </style>
 <!-- Flatpickr CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -129,10 +141,12 @@
             <div class="row sm:flex items-center sm:mr-4">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Status</label>
                 <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardBookingStatus">
-                    <option value="" selected="">-- Select Status --</option>
-                    <option value="ongoing">Ongoing</option>
-                    <option value="pending_install">Pending Install</option>
+                    <option value="" selected="">-- Select Status --</option> 
                     <option value="pending_payment">Pending Payment</option>
+                    <option value="pending_install">Pending Install</option>
+                    <option value="ongoing">Ongoing</option>
+                    <option value="completed">Completed</option>
+                    <option value="dismantle">Dismantle</option>
                 </select>
             </div>
         </form>
@@ -186,7 +200,7 @@
 
     <!-- Monthly Ongoing table -->
     <div class="overflow-x-auto scrollbar-hidden">
-        <table class="table mt-5" id="billboard_booking_table">
+        <table class="min-w-[1200px] w-full text-sm text-left" id="billboard_booking_table">
             <thead>
                 <tr class="bg-theme-1 text-white">
                     <th class="whitespace-nowrap">No.</th>
@@ -212,97 +226,127 @@
 @endsection('app_content')
 
 @section('modal_content')
-<!-- Create Modal -->
-    <div class="row flex flex-col sm:flex-row sm:items-end xl:items-start mb-2">
-        <div class="modal" id="addBookingModal">
-            <div class="modal__content">
-                <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
-                    <h2 class="font-medium text-base mr-auto">Add New Job Order</h2>
-                </div>
-                <form id="inputBookingForm">
-                    <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Site Number</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="inputBookingSiteNo" value="" disabled>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Client</label>
-                            <select id="inputBookingCompany" class="input w-full border mt-2 select2-client" required>
-                                <option value="">-- Select Client --</option>
-                                @foreach ($companies as $company)
-                                    <option value="{{ $company->id }}">{{ $company->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>State</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBookingState">
-                                <option value="">-- Select State --</option>
-                                @foreach ($states as $state)
-                                    <option value="{{ $state->id }}">{{ $state->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>District</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBookingDistrict">
-                                <option value="">-- Select District --</option>
-                            </select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Location</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBookingLocation">
-                                <option value="">-- Select Location --</option>
-                            </select>
-                        </div>                     
-                        <div class="col-span-12 sm:col-span-6">
-                            <label for="start_date" class="form-label">Start Date</label>
-                            <input type="text" id="start_date" class="input border mt-2" placeholder="Select start date">
-                        </div>
-                        <div class="col-span-12 sm:col-span-6">
-                            <label for="end_date" class="form-label">End Date</label>
-                            <input type="text" id="end_date" class="input border mt-2" placeholder="Select end date">
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Status</label>
-                            <select id="inputBookingStatus" class="input w-full border mt-2 select" required>
-                                <option disabled selected hidden value="">-- Select Status --</option>
-                                <option value="pending_payment">Pending Payment</option>
-                                <option value="pending_install">Pending Install</option>
-                                <option value="ongoing">Ongoing</option>            
-                            </select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Artwork by</label>
-                            <select id="inputBookingArtworkBy" class="input w-full border mt-2 select" required>
-                                <option disabled selected hidden value="">-- Select Artwork by --</option>
-                                <option value="Client">Client</option>
-                                <option value="Bluedale">Bluedale</option>
-                            </select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>DBP Approval</label>
-                            <select id="inputBookingDBPApproval" class="input w-full border mt-2 select" required>
-                                <option disabled selected hidden value="">-- Select DBP Approval --</option>
-                                <option value="NA">Not Available</option>
-                                <option value="In Review">In Review</option>
-                                <option value="Approved">Approved</option>
-                                <option value="Rejected">Rejected</option>
-                            </select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Remarks</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="inputBookingRemarks" value="" required>
-                        </div>
-                    </div>
 
-                    <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
-                        <button type="submit" class="button w-20 bg-theme-1 text-white" id="inputBookingSubmit">Submit</button>
-                    </div>
-                </form>
+<!-- Remarks Modal -->
+<div class="row flex flex-col sm:flex-row sm:items-end xl:items-start mb-2">
+    <div class="modal" id="remarksModal">
+        <div class="modal__content">
+            <!-- Modal Header -->
+            <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
+                <h2 class="font-medium text-base mr-auto">Remarks</h2>
             </div>
-        </div> 
+
+            <!-- Modal Body -->
+            <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
+                <div class="col-span-12 sm:col-span-12">
+                    <label>Full Remarks</label>
+                    <textarea class="input w-full border mt-2 flex-1" id="remarksContent" rows="8" readonly></textarea>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
+                <button type="button" class="button w-20 bg-gray-300 text-gray-700" onclick="closeAltEditorModal('#remarksModal')">Close</button>
+            </div>
+        </div>
     </div>
+</div>
+<!-- Remarks Modal End -->
+
+<!-- Create Modal -->
+<div class="row flex flex-col sm:flex-row sm:items-end xl:items-start mb-2">
+    <div class="modal" id="addBookingModal">
+        <div class="modal__content">
+            <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
+                <h2 class="font-medium text-base mr-auto">Add New Job Order</h2>
+            </div>
+            <form id="inputBookingForm">
+                <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>Site Number</label>
+                        <input type="text" class="input w-full border mt-2 flex-1" id="inputBookingSiteNo" value="" disabled>
+                    </div>
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>Client</label>
+                        <select id="inputBookingCompany" class="input w-full border mt-2 select2-client" required>
+                            <option value="">-- Select Client --</option>
+                            @foreach ($companies as $company)
+                                <option value="{{ $company->id }}">{{ $company->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>State</label>
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBookingState">
+                            <option value="">-- Select State --</option>
+                            @foreach ($states as $state)
+                                <option value="{{ $state->id }}">{{ $state->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>District</label>
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBookingDistrict">
+                            <option value="">-- Select District --</option>
+                        </select>
+                    </div>
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>Location</label>
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBookingLocation">
+                            <option value="">-- Select Location --</option>
+                        </select>
+                    </div>                     
+                    <div class="col-span-12 sm:col-span-6">
+                        <label for="start_date" class="form-label">Start Date</label>
+                        <input type="text" id="start_date" class="input border mt-2" placeholder="Select start date">
+                    </div>
+                    <div class="col-span-12 sm:col-span-6">
+                        <label for="end_date" class="form-label">End Date</label>
+                        <input type="text" id="end_date" class="input border mt-2" placeholder="Select end date">
+                    </div>
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>Status</label>
+                        <select id="inputBookingStatus" class="input w-full border mt-2 select" required>
+                            <option disabled selected hidden value="">-- Select Status --</option>
+                            <option value="pending_payment">Pending Payment</option>
+                            <option value="pending_install">Pending Install</option>
+                            <option value="ongoing">Ongoing</option>
+                            <option value="completed">Completed</option>
+                            <option value="dismantle">Dismantle</option>          
+                        </select>
+                    </div>
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>Artwork by</label>
+                        <select id="inputBookingArtworkBy" class="input w-full border mt-2 select" required>
+                            <option disabled selected hidden value="">-- Select Artwork by --</option>
+                            <option value="Client">Client</option>
+                            <option value="Bluedale">Bluedale</option>
+                        </select>
+                    </div>
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>DBP Approval</label>
+                        <select id="inputBookingDBPApproval" class="input w-full border mt-2 select" required>
+                            <option disabled selected hidden value="">-- Select DBP Approval --</option>
+                            <option value="NA">Not Available</option>
+                            <option value="In Review">In Review</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
+                    </div>
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>Remarks</label>
+                        <!-- <input type="text" class="input w-full border mt-2 flex-1" id="inputBookingRemarks" value="" required> -->
+                        <textarea class="input w-full border mt-2 flex-1" id="inputBookingRemarks" rows="5" required></textarea>
+                    </div>
+                </div>
+
+                <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
+                    <button type="submit" class="button w-20 bg-theme-1 text-white" id="inputBookingSubmit">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div> 
+</div>
 <!-- Create Modal End -->
 
 
@@ -320,7 +364,7 @@
         </div>
     </div>
 </div>
-<!-- END: Service Request Reject Modal -->
+<!-- END: Billboard Booking Delete Modal -->
 
 <!-- Edit Modal -->
 <div class="modal" id="editBookingModal">
@@ -336,12 +380,14 @@
                         <option disabled selected hidden value="">-- Select Status --</option>
                         <option value="pending_payment">Pending Payment</option>
                         <option value="pending_install">Pending Install</option>
-                        <option value="ongoing">Ongoing</option>            
+                        <option value="ongoing">Ongoing</option>
+                        <option value="completed">Completed</option>
+                        <option value="dismantle">Dismantle</option>           
                     </select>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
                     <label>Remarks</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Description" id="editBookingRemarks" required>
+                    <textarea class="input w-full border mt-2 flex-1" placeholder="Remarks" id="editBookingRemarks" rows="5" required></textarea>
                 </div>
             </div>
 
@@ -512,6 +558,15 @@
             });
         }
     });
+
+    // Open modal
+    function openAltEditorModal(element) {
+        cash(element).modal('show');
+    }
+    // Close modal
+    function closeAltEditorModal(element) {
+        cash(element).modal('hide');
+    }
 
     	
     $(document).ready(function() {
@@ -930,15 +985,6 @@
                 }
             });
         }
-
-        // Open modal
-        function openAltEditorModal(element) {
-            cash(element).modal('show');
-        }
-        // Close modal
-        function closeAltEditorModal(element) {
-            cash(element).modal('hide');
-        }
  
         // Setup the in-house users datatable
         function initBillboardBookingDatatable() {
@@ -1059,11 +1105,15 @@
                         render: function(data, type, row) {
                             let element = ``
                             if (data == 'pending_payment'){
-                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-6 text-white">` + data + `</a>`;
-                            } else if (data == 'ongoing') {
-                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-18 text-black">` + data + `</a>`;
+                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-6 text-white">Pending Payment</a>`;
                             } else if (data == 'pending_install'){
-                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-1 text-white">` + data + `</a>`;
+                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-1 text-white">Pending Install</a>`;
+                            } else if (data == 'ongoing') {
+                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-12 text-black">Ongoing</a>`;
+                            } else if (data == 'completed') {
+                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-green-600 text-white">Completed</a>`;
+                            } else if (data == 'dismantle') {
+                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-13 text-white">Dismantle</a>`;
                             }
                             
                             return element;
@@ -1071,16 +1121,27 @@
                     },
                     {
                         data: "remarks",
+                        name: "remarks",
+                        render: function (data, type, row) {
+                            if (!data) return "-"; // handle empty remarks
+
+                            let shortText = data.length > 30 ? data.substr(0, 30) + "..." : data;
+
+                            return `
+                                <span class="remarks-short">${shortText}</span>
+                                ${data.length > 30 ? `<a href="javascript:void(0)" class="read-more text-blue-500 ml-2" data-full="${encodeURIComponent(data)}">Read more</a>` : ""}
+                            `;
+                        }
                     },
                     {
-                        data: "WO_detail",
+                        data: "billboard_id",
                         render: function(data, type, row) {
-                            var a = "{{ route('billboard.booking.index', ['id'=>':data'] )}}".replace(':data', data);
+                            var a = "{{ route('billboard.detail', ['id'=>':data'] )}}".replace(':data', data);
                             let element = 
                             `<div class="flex flex-row">
-                                <a href="javascript:;" id="profile-` + data + `"
+                                <a href="javascript:;" id="${data}"
                                     class="button w-24 inline-block mr-2 mb-2 bg-theme-9 text-white" data-toggle="button" onclick="window.open('${a}')" >
-                                    View Detail
+                                    Site location
                                 </a>
                             </div>`;
 
@@ -1090,28 +1151,33 @@
                     {
                         data: "id",
                         render: function(data, type, row) {
-                            let element = `
+                            return `
                             <div class="flex items-center space-x-2">
                                 <!-- Edit Button -->
-                                <a href="javascript:;" id="profile-` + data + `"
-                                    class="button w-24 inline-block mr-2 mb-2 bg-theme-1 text-white" data-toggle="button"" >
-                                    Edit
+                                <a href="javascript:;" 
+                                class="edit-booking button w-24 inline-block mr-2 mb-2 bg-theme-1 text-white" 
+                                data-id="${data}">
+                                Edit
                                 </a>
 
                                 <!-- Delete Button -->
-                                <a class="flex items-center text-theme-6" href="javascript:;" data-toggle="modal" data-target="#billboardBookingDeleteModal" id="delete-` + data + `">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 w-4 h-4 mr-1">
+                                <a class="flex items-center text-theme-6" href="javascript:;" 
+                                data-toggle="modal" data-target="#billboardBookingDeleteModal" 
+                                id="delete-${data}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" 
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" 
+                                        stroke-width="1.5" stroke-linecap="round" 
+                                        stroke-linejoin="round" class="feather feather-trash-2 w-4 h-4 mr-1">
                                         <polyline points="3 6 5 6 21 6"></polyline>
-                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4
+                                                a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                                         <line x1="10" y1="11" x2="10" y2="17"></line>
                                         <line x1="14" y1="11" x2="14" y2="17"></line>
                                     </svg> 
                                 </a>
                             </div>`;
-
-                            return element;
                         }
-                    },
+                    }
                 ],
             });
 
@@ -1160,31 +1226,59 @@
             }
 
             // Open modal to edit SR
-            editBookingModal();
+            // editBookingModal();
         };
 
         initBillboardBookingDatatable();
         setupAutoFilter();
 
+        $(document).on("click", ".read-more", function () {
+            let fullText = decodeURIComponent($(this).data("full"));
+            $("#remarksContent").val(fullText);
+
+            // Use your helper instead of jQuery modal
+            openAltEditorModal("#remarksModal");
+        });
+
+        // Open modal to edit Billboard Booking (only via Edit button)
+        $(document).on("click", ".edit-booking", function () {
+            booking_id = $(this).data("id"); // from data-id attribute
+
+            let row = $('#billboard_booking_table')
+                        .DataTable()
+                        .row($(this).closest('tr'))
+                        .data();
+
+            // Fill form fields
+            $("#editBookingStatus").val(row.status);
+            $("#editBookingRemarks").val(row.remarks);
+
+            // Open modal
+            openAltEditorModal("#editBookingModal");
+        });
+
+
+
+
         // Open modal to edit Billboard Booking
-        function editBookingModal() {
-            // Remove previous click event listeners
-            $(document).off('click', "[id^='billboard_booking_table'] tbody tr td:not(:last-child)");
+        // function editBookingModal() {
+        //     // Remove previous click event listeners
+        //     $(document).off('click', "[id^='billboard_booking_table'] tbody tr td:not(:last-child)");
 
-            $(document).on('click', "[id^='billboard_booking_table'] tbody tr td:not(:last-child)", function() {
+        //     $(document).on('click', "[id^='billboard_booking_table'] tbody tr td:not(:last-child)", function() {
 
-                // Grab row client company id
-                booking_id = $(event.target).closest('tr').find('td:nth-last-child(1) a').attr('id').split('-')[1];
+        //         // Grab row client company id
+        //         booking_id = $(event.target).closest('tr').find('td:nth-last-child(1) a').attr('id').split('-')[1];
 
-                // Place values to edit form fields in the modal
-                document.getElementById("editBookingStatus").value = $(event.target).closest('tr').find('td:nth-child(' + '8' + ')').text();
-                document.getElementById("editBookingRemarks").value = $(event.target).closest('tr').find('td:nth-child(' + '9' + ')').text();
+        //         // Place values to edit form fields in the modal
+        //         document.getElementById("editBookingStatus").value = $(event.target).closest('tr').find('td:nth-child(' + '8' + ')').text();
+        //         document.getElementById("editBookingRemarks").value = $(event.target).closest('tr').find('td:nth-child(' + '9' + ')').text();
 
-                // Open modal
-                var element = "#editBookingModal";
-                openAltEditorModal(element);
-            });
-        }
+        //         // Open modal
+        //         var element = "#editBookingModal";
+        //         openAltEditorModal(element);
+        //     });
+        // }
 
         // Delete billboard ID
         function billboardBookingDeleteButton() {

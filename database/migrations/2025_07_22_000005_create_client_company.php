@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('company_prefix', 4)->unique();
             $table->string('name')->unique();
-            $table->string('address');
+            $table->string('address')->nullable();
             $table->string('phone');
             $table->integer('status')->default(1);
             $table->dateTime('created_at', $precision = 0)->useCurrent();

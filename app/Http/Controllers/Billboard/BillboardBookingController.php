@@ -83,6 +83,7 @@ class BillboardBookingController extends Controller
             6 => 'status',
             7 => 'remarks',
             8 => 'id',
+            9 => 'billboard_id',
         );
 
         $limit              = $request->input('length');
@@ -140,6 +141,7 @@ class BillboardBookingController extends Controller
                 'created_at'            => $created_at,
                 'status'                => $d->status,
                 'id'                    => $d->id,
+                'billboard_id'          => $d->billboard_id,
             );
 
             $data[] = $nestedData;
@@ -468,6 +470,7 @@ class BillboardBookingController extends Controller
             6 => 'billboard_bookings.status',
             7 => 'billboard_bookings.remarks',
             8 => 'billboard_bookings.id',
+            9 => 'billboards.id',
         ];
 
         $orderColumnIndex = $filters['order_column_index'] ?? 8; // default to id
@@ -534,6 +537,7 @@ class BillboardBookingController extends Controller
     {
         return BillboardBooking::select(
             'billboard_bookings.*',
+            'billboards.id as billboard_id',
             'billboards.site_number as site_number',
             'client_companies.name as company_name',
             'locations.id as location_id',

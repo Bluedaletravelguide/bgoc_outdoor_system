@@ -75,6 +75,15 @@
             </div>
 
             <div class="sm:flex items-center sm:mr-4">
+                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">New/Existing</label>
+                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardSiteType">
+                    <option value="all">All</option>
+                    <option value="new">New</option>
+                    <option value="existing">Existing</option>
+                </select>
+            </div>
+
+            <div class="sm:flex items-center sm:mr-4">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Size</label>
                 <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardSize">
                     <option value="all">All</option>
@@ -137,7 +146,8 @@
                     <th>Size</th>
                     <th>Lighting</th>
                     <th>Location</th>
-                    <th>Region</th>
+                    <th>District / State</th>
+                    <th style="display:none;">GPS Coordinate</th>
                     <th>Date Created</th>
                     <th>Status</th>
                     <th class="dt-exclude-export dt-no-sort">Show Detail</th>
@@ -248,6 +258,14 @@
                                 required
                             >
                         </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>Site Type</label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardSiteType">
+                                <option value="">-- Select option --</option>
+                                <option value="new">New</option>
+                                <option value="existing">Existing</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
@@ -338,6 +356,14 @@
                             <input type="text" class="input w-full border mt-2 flex-1" id="editBillboardTrafficVolume" value="" required>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
+                            <label>Site Type</label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardSiteType">
+                                <option value="">-- Select option --</option>
+                                <option value="new">New</option>
+                                <option value="existing">Existing</option>
+                            </select>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
                             <label>Status</label>
                             <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardStatus">
                                 <option value="">-- Select option --</option>
@@ -426,6 +452,7 @@
         let state = document.getElementById('filterBillboardState')?.value || 'all';
         let district = document.getElementById('filterBillboardDistrict')?.value || 'all';
         let type = document.getElementById('filterBillboardType')?.value || 'all';
+        let site_type = document.getElementById('filterBillboardSiteType')?.value || 'all';
         let size = document.getElementById('filterBillboardSize')?.value || 'all';
         let status = document.getElementById('filterBillboardStatus')?.value || 'all';
 
@@ -454,267 +481,10 @@
 
         const table = tableElement.DataTable();
 
-        $('#filterBillboardStatus, #filterBillboardState, #filterBillboardDistrict, #filterBillboardType, #filterBillboardSize').on('change', function () {
+        $('#filterBillboardStatus, #filterBillboardState, #filterBillboardDistrict, #filterBillboardType, #filterBillboardSiteType, #filterBillboardSize').on('change', function () {
             table.ajax.reload();
         });
     }
-
-    // Add site to In Inventory
-    function siteInAdd() {
-        let html = `
-            <br><div class="siteIn">
-                <div class="mb-3">
-                    <label class="block">Site</label>
-                    <select class="input w-full border mt-2 select2" name="sites_in[]">
-                        <option selected value="">Select an option</option>
-                        @foreach ($billboards as $billboard)
-                            <option 
-                                value="{{ $billboard->id }}" 
-                                data-type="{{ $billboard->type }}" 
-                                data-size="{{ $billboard->size }}">
-                                {{ $billboard->site_number }} - {{ $billboard->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="block">Type</label>
-                    <input type="text" class="input w-full border mt-1" name="types_in[]" readonly>
-                </div>
-                <div class="mb-3">
-                    <label class="block">Size</label>
-                    <input type="text" class="input w-full border mt-1" name="sizes_in[]" readonly>
-                </div>
-                <div class="mb-3">
-                    <label class="block"><strong>Quantity In</strong></label>
-                    <input type="number" class="input w-full border mt-1" name="qtys_in[]">
-                </div>
-                <div class="mb-3">
-                    <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteIn(this)">
-                        Remove
-                    </a>
-                </div>
-            </div>`;
-
-        // Append
-        $("#siteInContainer").append(html);
-
-        // Re-init select2 for all .select2 (new + old)
-        $("#siteInContainer .select2").select2({
-            width: '100%'
-        });
-
-        updateTotalIn();
-    }
-
-    function removeSiteIn(el) {
-        el.closest(".siteIn").remove();
-        updateTotalIn();
-    }
-
-    // Add site to Out Inventory
-    function siteOutAdd() {
-        let html = `
-            <br><div class="siteOut">
-                <div class="mb-3">
-                    <label class="block">Site</label>
-                    <select class="input w-full border mt-2 select2" name="sites_out[]" required>
-                        <option selected value="">Select an option</option>
-                        @foreach ($billboards as $billboard)
-                            <option 
-                                value="{{ $billboard->id }}" 
-                                data-type="{{ $billboard->type }}" 
-                                data-size="{{ $billboard->size }}">
-                                {{ $billboard->site_number }} - {{ $billboard->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="block">Type</label>
-                    <input type="text" class="input w-full border mt-1" name="types_out[]" readonly>
-                </div>
-                <div class="mb-3">
-                    <label class="block">Size</label>
-                    <input type="text" class="input w-full border mt-1" name="sizes_out[]" readonly>
-                </div>
-                <div class="mb-3">
-                    <label class="block"><strong>Quantity Out</strong></label>
-                    <input type="number" class="input w-full border mt-1" name="qtys_out[]" required>
-                </div>
-                <div class="mb-3">
-                    <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteOut(this)">
-                        Remove
-                    </a>
-                </div>
-            </div>`;
-        
-        $("#siteOutContainer").append(html);
-
-        // Re-init select2
-        $("#siteOutContainer .select2").select2({
-            width: '100%'
-        });
-
-        updateTotalOut();
-    }
-
-    function removeSiteOut(el) {
-        el.closest(".siteOut").remove();
-        updateTotalOut();
-    }
-
-    // Add In Site (Edit)
-    function siteInEditAdd() {
-        let html = `
-            <div class="siteInEdit">
-                <div class="mb-3">
-                    <label class="block">Site</label>
-                    <select class="input w-full border mt-2 select2" name="sites_in_edit[]">
-                        <option selected value="">Select an option</option>
-                        @foreach ($billboards as $billboard)
-                            <option 
-                                value="{{ $billboard->id }}" 
-                                data-type="{{ $billboard->type }}" 
-                                data-size="{{ $billboard->size }}">
-                                {{ $billboard->site_number }} - {{ $billboard->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="block">Type</label>
-                    <input type="text" class="input w-full border mt-1" name="types_in_edit[]" readonly>
-                </div>
-                <div class="mb-3">
-                    <label class="block">Size</label>
-                    <input type="text" class="input w-full border mt-1" name="sizes_in_edit[]" readonly>
-                </div>
-                <div class="mb-3">
-                    <label class="block"><strong>Quantity In</strong></label>
-                    <input type="number" class="input w-full border mt-1" name="qtys_in_edit[]">
-                </div>
-                <div class="mb-3">
-                    <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteInEdit(this)">
-                        Remove
-                    </a>
-                </div>
-            </div>`;
-        
-        $("#siteInEditContainer").append(html);
-
-        // Re-init select2
-        $("#siteInEditContainer .select2").select2({
-            width: '100%'
-        });
-    }
-
-    function removeSiteInEdit(el) {
-        el.closest(".siteInEdit").remove();
-    }
-
-    // Add Out Site (Edit)
-    function siteOutEditAdd() {
-        let html = `
-            <div class="siteOutEdit">
-                <div class="mb-3">
-                    <label class="block">Site</label>
-                    <select class="input w-full border mt-2 select2" name="sites_out_edit[]">
-                        <option selected value="">Select an option</option>
-                        @foreach ($billboards as $billboard)
-                            <option 
-                                value="{{ $billboard->id }}" 
-                                data-type="{{ $billboard->type }}" 
-                                data-size="{{ $billboard->size }}">
-                                {{ $billboard->site_number }} - {{ $billboard->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="block">Type</label>
-                    <input type="text" class="input w-full border mt-1" name="types_out_edit[]" readonly>
-                </div>
-                <div class="mb-3">
-                    <label class="block">Size</label>
-                    <input type="text" class="input w-full border mt-1" name="sizes_out_edit[]" readonly>
-                </div>
-                <div class="mb-3">
-                    <label class="block"><strong>Quantity Out</strong></label>
-                    <input type="number" class="input w-full border mt-1" name="qtys_out_edit[]">
-                </div>
-                <div class="mb-3">
-                    <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteOutEdit(this)">
-                        Remove
-                    </a>
-                </div>
-            </div>`;
-
-        $("#siteOutEditContainer").append(html);
-
-        // Re-init select2
-        $("#siteOutEditContainer .select2").select2({
-            width: '100%'
-        });
-    }
-
-    function removeSiteOutEdit(el) {
-        el.closest(".siteOutEdit").remove();
-    }
-
-    // Handle auto-fill Type & Size for ADD modal
-    $(document).on('change', '#siteInContainer .select2, #siteOutContainer .select2', function() {
-        let selected = $(this).find(':selected');
-        let type = selected.data('type') || '';
-        let size = selected.data('size') || '';
-
-        // find the nearest .siteIn or .siteOut row
-        let row = $(this).closest('.siteIn, .siteOut');
-        row.find('input[name="types_in[]"], input[name="types_out[]"]').val(type);
-        row.find('input[name="sizes_in[]"], input[name="sizes_out[]"]').val(size);
-    });
-
-    // Handle auto-fill Type & Size for EDIT modal
-    $(document).on('change', '#siteInEditContainer .select2, #siteOutEditContainer .select2', function() {
-        let selected = $(this).find(':selected');
-        let type = selected.data('type') || '';
-        let size = selected.data('size') || '';
-
-        let row = $(this).closest('.siteInEdit, .siteOutEdit');
-        row.find('input[name="types_in_edit[]"], input[name="types_out_edit[]"]').val(type);
-        row.find('input[name="sizes_in_edit[]"], input[name="sizes_out_edit[]"]').val(size);
-    });
-
-    // Function to calculate total In
-    function updateTotalIn() {
-        let total = 0;
-        document.querySelectorAll("input[name='qtys_in[]']").forEach(function(input) {
-            let val = parseInt(input.value) || 0;
-            total += val;
-        });
-        document.getElementById("balContractor").value = total;
-    }
-
-    // Function to calculate total Out
-    function updateTotalOut() {
-        let total = 0;
-        document.querySelectorAll("input[name='qtys_out[]']").forEach(function(input) {
-            let val = parseInt(input.value) || 0;
-            total += val;
-        });
-        document.getElementById("balBgoc").value = total;
-    }
-
-    // Attach events when typing in Quantity fields
-    $(document).on("input", "input[name='qtys_in[]']", function() {
-        updateTotalIn();
-    });
-
-    $(document).on("input", "input[name='qtys_out[]']", function() {
-        updateTotalOut();
-    });
-
-    
     
     $(document).ready(function() {
         // Global variables
@@ -868,6 +638,7 @@
                         d.state     = $('#filterBillboardState').val();
                         d.district  = $('#filterBillboardDistrict').val();
                         d.type      = $('#filterBillboardType').val();
+                        d.site_type = $('#filterBillboardSiteType').val();
                         d.size      = $('#filterBillboardSize').val();
                     },
                     dataSrc: function(json) {
@@ -950,6 +721,16 @@
                         data: "region",
                     },
                     {
+                        data: "gps_latitude",   // point to a valid field
+                        name: "gps_coordinate",
+                        visible: false,         // keep hidden in UI
+                        render: function (data, type, row) {
+                            let lat = row.gps_latitude ? row.gps_latitude : "";
+                            let lng = row.gps_longitude ? row.gps_longitude : "";
+                            return (lat && lng) ? `${lat}, ${lng}` : "";
+                        }
+                    },
+                    {
                         data: "created_at",
                     },
                     {
@@ -1008,6 +789,7 @@
                                     data-gps_longitude="${row.gps_longitude}"
                                     data-traffic_volume="${row.traffic_volume}"
                                     data-status="${row.status}"
+                                    data-site_type="${row.site_type}"
                                 >
                                     Edit
                                 </a>
@@ -1082,11 +864,6 @@
                 }
             }
 
-            @if (Auth::guard('web')->user()->can('work_order.edit'))
-            // Open modal to edit Billboard
-            workOrderEditModal();
-            @endif
-
             // billboardEditModal();
         };
 
@@ -1110,6 +887,8 @@
             
             $('#editBillboardTrafficVolume').val($this.data('traffic_volume'));
             $('#editBillboardStatus').val($this.data('status'));
+            $('#editBillboardSiteType').val($this.data('site_type'));
+            
             $('#editBillboardModalId').val(billboardID);
 
             // Get IDs
@@ -1221,6 +1000,8 @@
                     location        : document.getElementById("inputBillboardLocation").value,
                     gpsCoordinate   : document.getElementById("inputGPSCoordinate").value,
                     trafficvolume   : document.getElementById("inputBillboardTrafficVolume").value,
+                    siteType        : document.getElementById("inputBillboardSiteType").value,
+                    
                 },
                 success: function(response) {
                     // Close modal after successfully edited
@@ -1241,6 +1022,7 @@
                     document.getElementById("inputBillboardLocation").value = "";
                     document.getElementById("inputGPSCoordinate").value = "";
                     document.getElementById("inputBillboardTrafficVolume").value = "";
+                    document.getElementById("inputBillboardSiteType").value = "";
 
                     // Reload table
                     $('#billboard_table').DataTable().ajax.reload();
@@ -1279,6 +1061,8 @@
                     gpsCoordinate: $('#editGPSCoordinate').val(),
                     traffic_volume: $('#editBillboardTrafficVolume').val(),
                     status: $('#editBillboardStatus').val(),
+                    site_type: $('#editBillboardSiteType').val(),
+                    
                     
                 },
                 success: function(response) {
@@ -1303,6 +1087,8 @@
                     document.getElementById("editGPSCoordinate").value = "";
                     document.getElementById("editBillboardTrafficVolume").value = "";
                     document.getElementById("editBillboardStatus").value = "";
+                    document.getElementById("editBillboardSiteType").value = "";
+                    
 
                     // Reload table
                     $('#billboard_table').DataTable().ajax.reload();
@@ -1356,6 +1142,8 @@
                 }
                 $('#editBillboardTrafficVolume').val(traffic);
                 $('#editBillboardStatus').val(status);
+                $('#editBillboardSiteType').val(site_type);
+                
 
                 // Trigger state change to load districts
                 $('#editBillboardState').val(stateID).trigger('change');

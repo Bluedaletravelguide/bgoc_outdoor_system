@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('location_id');
             // $table->unsignedBigInteger('image_id');
             $table->string('site_number');
+            $table->string('site_type')->nullable();
             $table->string('gps_latitude');
             $table->string('gps_longitude');
             $table->string('traffic_volume');
@@ -24,8 +25,8 @@ return new class extends Migration
             $table->string('prefix');
             $table->string('lighting');
             $table->string('status');
-            $table->unsignedBigInteger('created_by')->nullable();;
-            $table->unsignedBigInteger('updated_by')->nullable();;
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
             $table->dateTime('created_at', $precision = 0)->useCurrent();
             $table->dateTime('updated_at', $precision = 0)->nullable()->useCurrentOnUpdate();
 

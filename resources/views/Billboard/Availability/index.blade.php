@@ -91,6 +91,14 @@
                     @endforeach
                 </select>
             </div>
+        </form> 
+    </div>
+    <!-- Filter End -->
+
+    <!-- Billboard Booking Calendar Filter -->
+    <div class="flex flex-col sm:flex-row sm:items-end xl:items-start mb-2 mt-2">
+        <form class="xl:flex sm:mr-auto">
+            
             <div class="sm:flex items-center sm:mr-4">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Type</label>
                 <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterAvailabilityType">
@@ -98,6 +106,14 @@
                     @foreach ($types as $type)
                         <option value="{{ $type->prefix }}">{{ $type->type }}</option>
                     @endforeach
+                </select>
+            </div>
+            <div class="row sm:flex items-center sm:mr-4">
+                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">New/Existing</label>
+                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="filterAvailabilitySiteType">
+                    <option value="" selected="">All</option>
+                    <option value="new">New</option>
+                    <option value="existing">Existing</option>
                 </select>
             </div>
             <div class="row sm:flex items-center sm:mr-4">
@@ -268,144 +284,30 @@
 
 <!-- View Job Order Modal -->
     <div class="row flex flex-col sm:flex-row sm:items-end xl:items-start mb-2">
-        <div class="modal" id="viewBillboardJobOrderModal">
+        <div class="modal" id="editAvailabilityModal">
             <div class="modal__content">
                 <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
-                    <h2 class="font-medium text-base mr-auto">Job Order Detail</h2>
+                    <h2 class="font-medium text-base mr-auto">Billboard Availability</h2>
                 </div>
                 <form>
                     <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Site Number</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="SEL-0001" disabled>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Client</label>
-                            <select id="ServiceRequestAddClient" class="input w-full border mt-2 select2-client" disabled>
-                                <option disabled selected hidden value="">Select a client</option>
-                                <option value="1">ABC Corporation</option>
-                                <option value="2">BlueTech Solutions</option>
-                                <option value="3">GreenField Ltd</option>
-                                <option value="4">Visionary Co</option>
-                                <option value="5">Skyline Advertising</option>
-                            </select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Location</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="" disabled>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>District</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="" disabled>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>State</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="" disabled>
-                        </div>
-                        <div class="col-span-12 sm:col-span-6">
-                            <label for="start_date" class="form-label">Start Date</label>
-                            <input type="text" id="start_date" class="input border mt-2" placeholder="Select start date" disabled>
-                        </div>
-                        <div class="col-span-12 sm:col-span-6">
-                            <label for="end_date" class="form-label">End Date</label>
-                            <input type="text" id="end_date" class="input border mt-2" placeholder="Select end date" disabled>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Artwork by</label>
-                            <select id="ServiceRequestAddClient" class="input w-full border mt-2 select" disabled>
+                            <label>Availability Status</label>
+                            <select id="editAvailability" class="input w-full border mt-2 select">
                                 <option disabled selected hidden value="">Select an option</option>
-                                <option value="1">Client</option>
-                                <option value="2">Bluedale</option>
+                                <option value="1">Available</option>
+                                <option value="2">Not Available</option>
                             </select>
                         </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>DBP Approval</label>
-                            <select id="ServiceRequestAddClient" class="input w-full border mt-2 select" disabled>
-                                <option disabled selected hidden value="">Select an option</option>
-                                <option value="1">Yes</option>
-                                <option value="2">No</option>
-                            </select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Remarks</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="" disabled>
-                        </div>
+                    </div>
+                    <div class="px-5 py-3 border-t border-gray-200 dark:border-dark-5 text-right">
+                        <button type="submit" class="button w-20 bg-theme-1 text-white" id="saveAvailabilityButton">Save</button>
                     </div>
                 </form>
             </div>
         </div> 
     </div>
 <!-- View Modal End -->
-
-<!-- BEGIN: Service Request Reject Modal -->
-<div class="modal" id="serviceRequestRejectModal">
-    <div class="modal__content">
-        <div class="p-5 text-center"> <i data-feather="x-circle" class="w-16 h-16 text-theme-6 mx-auto mt-3"></i>
-            <div class="text-3xl mt-5">Are you sure?</div>
-            <div class="text-gray-600 mt-2">Confirm rejecting this service request? This process cannot be undone.</div>
-        </div>
-        <form>
-            <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
-                <div class="col-span-12 sm:col-span-12">
-                    <label>Reject Reason</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Reject Reason" id="serviceRequestRejectReason" required>
-                </div>
-            </div>
-
-            <!-- <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
-                <button type="submit" class="button w-20 bg-theme-1 text-white" id="serviceRequestEditButton">Update</button>
-            </div> -->
-        </form>
-
-        <div class="px-5 pb-8 text-center">
-            <button type="button" data-dismiss="modal" class="button w-24 border text-gray-700 dark:border-dark-5 dark:text-gray-300 mr-1">Cancel</button>
-            <button type="button" class="button w-24 bg-theme-6 text-white" id="serviceRequestRejectButton" onclick="serviceRequestRejectButton()">Reject</button>
-        </div>
-    </div>
-</div>
-<!-- END: Service Request Reject Modal -->
-
-<!-- BEGIN: Service Request Delete Modal -->
-<div class="modal" id="serviceRequestDeleteModal">
-    <div class="modal__content">
-        <div class="p-5 text-center"> <i data-feather="x-circle" class="w-16 h-16 text-theme-6 mx-auto mt-3"></i>
-            <div class="text-3xl mt-5">Are you sure?</div>
-            <div class="text-gray-600 mt-2">Confirm delete this service request? This process cannot be undone.</div>
-        </div>
-
-        <div class="px-5 pb-8 text-center">
-            <button type="button" data-dismiss="modal" class="button w-24 border text-gray-700 dark:border-dark-5 dark:text-gray-300 mr-1">Cancel</button>
-            <button type="button" class="button w-24 bg-theme-6 text-white" id="serviceRequestDeleteButton" onclick="serviceRequestDeleteButton()">Delete</button>
-        </div>
-    </div>
-</div>
-<!-- END: Service Request Reject Modal -->
-
-<!-- BEGIN: SR Edit Modal -->
-<div class="modal" id="serviceRequestEditModal">
-    <div class="modal__content">
-        <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
-            <h2 class="font-medium text-base mr-auto">Edit Service Request</h2>
-        </div>
-        <form>
-            <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
-                <div class="col-span-12 sm:col-span-12">
-                    <label>Description</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Description" id="serviceRequestEditDescription" required>
-                </div>
-                <div class="col-span-12 sm:col-span-12">
-                    <label>Client Remark</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Client Remark" id="serviceRequestEditClientRemark" required>
-                </div>
-            </div>
-
-            <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
-                <button type="submit" class="button w-20 bg-theme-1 text-white" id="serviceRequestEditButton">Update</button>
-            </div>
-        </form>
-    </div>
-</div>
-<!-- END: SR Edit Modal -->
 @endsection('modal_content')
 
 @section('script')
@@ -531,6 +433,7 @@
         var filterAvailabilityDistrict;
         var filterAvailabilityLocation;
         var filterAvailabilityType;
+        var filterAvailabilitySiteType;
         var filterAvailabilityStatus;
 
 
@@ -539,12 +442,6 @@
         var lastClickedLink;
         let startPicker = null;
         let endPicker = null;
-
-        // Listen to below buttons
-        document.getElementById("serviceRequestRejectButton").addEventListener("click", serviceRequestRejectButton);
-        document.getElementById("serviceRequestDeleteButton").addEventListener("click", serviceRequestDeleteButton);
-        document.getElementById("ServiceRequestAddButton").addEventListener("click", ServiceRequestAddButton);
-        // document.getElementById("openWorkOrderDetailButton").addEventListener("click", openWorkOrderDetail);
 
         $('.select2-client').select2({
             placeholder: "Select a client",
@@ -560,7 +457,7 @@
             if ($.fn.DataTable.isDataTable(tableElement)) {
                 const table = tableElement.DataTable();
 
-                $('#filterAvailabilityCompany, #filterAvailabilityState, #filterAvailabilityDistrict, #filterAvailabilityLocation, #filterAvailabilityType, #filterAvailabilityStatus, #filterAvailabilityStart, #filterAvailabilityEnd, #filterAvailabilityYear')
+                $('#filterAvailabilityCompany, #filterAvailabilityState, #filterAvailabilityDistrict, #filterAvailabilityLocation, #filterAvailabilityType, #filterAvailabilitySiteType, #filterAvailabilityStatus, #filterAvailabilityStart, #filterAvailabilityEnd, #filterAvailabilityYear')
                     .on('change', function () {
                         const selectedYear = $('#filterAvailabilityYear').val();
 
@@ -571,7 +468,7 @@
             }
 
             // Also reload monthly table if only it exists
-            $('#filterAvailabilityCompany, #filterAvailabilityState, #filterAvailabilityDistrict, #filterAvailabilityLocation, #filterAvailabilityType, #filterAvailabilityStatus, #filterAvailabilityStart, #filterAvailabilityEnd, #filterAvailabilityYear')
+            $('#filterAvailabilityCompany, #filterAvailabilityState, #filterAvailabilityDistrict, #filterAvailabilityLocation, #filterAvailabilityType, #filterAvailabilitySiteType, #filterAvailabilityStatus, #filterAvailabilityStart, #filterAvailabilityEnd, #filterAvailabilityYear')
                 .on('change', function () {
                     const selectedYear = $('#filterAvailabilityYear').val();
                     buildMonthlyBookingTableHead(selectedYear);
@@ -599,6 +496,8 @@
             headerHtml += '<th>No</th>';
             headerHtml += '<th>Site No</th>';
             headerHtml += '<th>Location</th>';
+            headerHtml += '<th>New/Existing</th>';
+            headerHtml += '<th>Type</th>';
             headerHtml += '<th>Size</th>';
 
             months.forEach(month => {
@@ -620,6 +519,7 @@
                     end_date: $('#filterAvailabilityEnd').val(),
                     year: $('#filterAvailabilityYear').val(),
                     type: $('#filterAvailabilityType').val(),
+                    site_type: $('#filterAvailabilitySiteType').val(),
                     state: $('#filterAvailabilityState').val(),
                     district: $('#filterAvailabilityDistrict').val(),
                     location: $('#filterAvailabilityLocation').val(),
@@ -639,6 +539,8 @@
                             <td class="border border-gray-300">${index + 1}</td>
                             <td class="border border-gray-300">${row.site_number}</td>
                             <td class="border border-gray-300">${row.location}</td>
+                            <td class="border border-gray-300">${row.site_type}</td>
+                            <td class="border border-gray-300">${row.type}</td>
                             <td class="border border-gray-300">${row.size}</td>`;
 
                         row.months.forEach(month => {
@@ -704,33 +606,45 @@
             });
         })();
 
-        // When any submit button is clicked
-        (function() {
-            var billboard_availability_table = $('#billboard_availability_table')[0].altEditor;
+        // Edit Billboard Availability
+        function editAvailability() {
+            var status = document.getElementById("editBookingStatus").value;
+            var remarks = document.getElementById("editBookingRemarks").value;
 
-            document.getElementById('ServiceRequestAddButton').addEventListener('click', function(e) {
-                // Prevent the default form submission behavior
-                e.preventDefault();
+            $.ajax({
+                type: 'POST',
+                url: "{{ route('billboard.booking.edit') }}",
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    status: status,
+                    remarks: remarks,
+                    booking_id: booking_id,
+                },
+                success: function(response) {
+                    // Close modal after successfully edited
+                    var element = "#editAvailabilityModal";
+                    closeAltEditorModal(element);
+
+                    // Show successful toast
+                    window.showSubmitToast("Successfully updated.", "#91C714");
+
+                    // Clean fields
+                    document.getElementById("editBookingStatus").value = "";
+                    document.getElementById("editBookingRemarks").value = "";
+
+                    // Reload table
+                    $('#billboard_availability_table').DataTable().ajax.reload();
+                },
+                error: function(xhr, status, error) {
+                    // Display the validation error message
+                    var response = JSON.parse(xhr.responseText);
+                    var error = "Error: " + response.error;
+
+                    // Show fail toast
+                    window.showSubmitToast(error, "#D32929");
+                }
             });
-
-            document.getElementById('serviceRequestRejectButton').addEventListener('click', function(e) {
-                // Prevent the default form submission behavior
-                e.preventDefault();
-            });
-
-            document.getElementById('serviceRequestDeleteButton').addEventListener('click', function(e) {
-                // Prevent the default form submission behavior
-                e.preventDefault();
-            });
-
-            document.getElementById('serviceRequestEditButton').addEventListener('click', function(e) {
-                // Prevent the default form submission behavior
-                e.preventDefault();
-
-                // Edit SR
-                editServiceRequest();
-            });
-        })();
+        }
 
         // Open modal
         function openAltEditorModal(element) {
@@ -779,7 +693,8 @@
                         d._token        = $('meta[name="csrf-token"]').attr('content');
                         d.start_date    = $('#filterAvailabilityStart').val();
                         d.end_date      = $('#filterAvailabilityEnd').val();
-                        d.type          = $('#filterAvailabilityType').val(),
+                        d.type          = $('#filterAvailabilityType').val();
+                        d.site_type     = $('#filterAvailabilitySiteType').val();
                         d.status        = $('#filterAvailabilityStatus').val();
                         d.state         = $('#filterAvailabilityState').val();
                         d.district      = $('#filterAvailabilityDistrict').val();
@@ -794,6 +709,7 @@
                             !$('#filterAvailabilityStart').val() &&
                             !$('#filterAvailabilityEnd').val() &&
                             !$('#filterAvailabilityType').val() &&
+                            !$('#filterAvailabilitySiteType').val() &&
                             !$('#filterAvailabilityState').val() &&
                             !$('#filterAvailabilityDistrict').val() &&
                             !$('#filterAvailabilityLocation').val() &&
@@ -871,36 +787,49 @@
                         }
                     },
                     {
-                        data: "is_available",
-                        type: "readonly",
+                        data: "status_label", // <-- use clean label for raw data
                         render: function(data, type, row) {
-                            let element = ``
-                            if (data == false){
-                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-6 text-white">Not Available</a>`;
-                            } else if (data == true) {
-                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-18 text-black">Available</a>`;
+                            if (row.is_available == false) {
+                                return `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-6 text-white">${data}</a>`;
+                            } else {
+                                return `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-18 text-black">${data}</a>`;
                             }
-                            
-                            return element;
                         }
                     },
                     {
                         data: "next_available",
                     },
                     {
-                        data: "WO_detail",
-                        render: function(data, type, row) {
-                            if (!data) return ''; // prevent undefined from causing crash
-                            const url = "{{ route('billboard.booking.index', ['id'=>':data']) }}".replace(':data', data);
-                            return `
-                                <div class="flex flex-row">
-                                    <a href="javascript:;" id="profile-${data}"
-                                        class="button w-24 inline-block mr-2 mb-2 bg-theme-9 text-white"
-                                        onclick="window.open('${url}')">
-                                        View Detail
-                                    </a>
-                                </div>`;
-                        }
+                        data: "id",
+                        render: (data) => `
+                            <div class="flex justify-center items-center gap-3">
+                                <!-- Edit Button -->
+                                <a href="javascript:;" 
+                                    class="button w-24 inline-block mr-2 mb-2 bg-theme-1 text-white edit-availability" 
+                                    data-id="${data}"
+                                >
+                                    Edit
+                                </a>
+
+                                <!-- Delete Icon -->
+                                <a href="javascript:;" 
+                                class="client-company-delete flex items-center justify-center w-8 h-8 text-theme-6 rounded hover:bg-gray-100" 
+                                data-id="${data}" 
+                                title="Delete">
+                                    <svg xmlns="http://www.w3.org/2000/svg" 
+                                        class="w-5 h-5" 
+                                        fill="none" 
+                                        viewBox="0 0 24 24" 
+                                        stroke="currentColor">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4
+                                                a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                                    </svg>
+                                </a>
+                            </div>
+                        `
                     },
                 ],
             });
@@ -950,11 +879,58 @@
             }
 
             // Open modal to edit SR
-            serviceRequestEditModal();
+            editAvailabilityModal();
         };
 
         initBillboardAvailabilityDatatable();
         setupAutoFilter();
+
+        $(document).off('click', '.edit-availability').on('click', '.edit-availability', function() {
+            const table = $('#billboard_availability_table').DataTable();
+            const rowData = table.row($(this).closest('tr')).data(); // full row
+
+            // Map boolean to select value
+            if (rowData.is_available) {
+                $('#editAvailability').val('1'); // Available
+            } else {
+                $('#editAvailability').val('2'); // Not Available
+            }
+
+            openAltEditorModal('#editAvailabilityModal');
+        });
+
+
+        $('#saveAvailabilityButton').on('click', function (e) {
+            e.preventDefault();
+
+            let id = $('#editAvailabilityModal').data('billboard-id');
+            let availability = $('#editAvailability').val(); // "1" or "2"
+
+            $.ajax({
+                url: '{{ route("billboard.availability.update") }}',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    id: id,
+                    is_available: availability
+                },
+                success: function(response) {
+                    // Close modal
+                    closeAltEditorModal("#editAvailabilityModal");
+
+                    // Show toast
+                    window.showSubmitToast("Availability updated.", "#91C714");
+
+                    // Reload table
+                    $('#billboard_availability_table').DataTable().ajax.reload();
+                },
+                error: function(xhr) {
+                    var response = JSON.parse(xhr.responseText);
+                    window.showSubmitToast("Error: " + response.error, "#D32929");
+                }
+            });
+        });
+
 
 
 

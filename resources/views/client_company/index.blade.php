@@ -98,7 +98,7 @@
                 </div>
                 <div class="col-span-12 sm:col-span-12">
                     <label>Client Address</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Client Address" id="clientCompanyAddAddress" required>
+                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Client Address" id="clientCompanyAddAddress">
                 </div>
                 <div class="col-span-12 sm:col-span-12">
                     <label>Phone No.</label>
@@ -166,7 +166,7 @@
                 </div>
                 <div class="col-span-12 sm:col-span-12">
                     <label>Client Address</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Client Address" id="clientCompanyEditAddress" required>
+                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Client Address" id="clientCompanyEditAddress">
                 </div>
                 <div class="col-span-12 sm:col-span-12">
                     <label>Phone No.</label>

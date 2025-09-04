@@ -159,7 +159,7 @@ class ClientCompanyController extends Controller
                     'max:255',
                 ],
                 'address' => [
-                    'required',
+                    'nullable',
                     'string',
                     'max:255',
                 ],
@@ -185,7 +185,6 @@ class ClientCompanyController extends Controller
                 'name.string' => 'The "Company Name" must be a string.',
                 'name.max' => 'The "Company Name" must not be greater than :max characters.',
 
-                'address.required' => 'The "Address" field is required.',
                 'address.string' => 'The "Address" must be a string.',
                 'address.max' => 'The "Address" must not be greater than :max characters.',
 
@@ -208,7 +207,7 @@ class ClientCompanyController extends Controller
             $company = ClientCompany::create([
                 'company_prefix'    => $prefix,
                 'name'              => $name,
-                'address'           => $address,
+                'address'           => $address ?? null,
                 'phone'             => $companyPhone,
             ]);
 
@@ -271,7 +270,7 @@ class ClientCompanyController extends Controller
                     'exists:client_companies,id,status,1', // Ensure company status is 1 (active)
                 ],
                 'address' => [
-                    'required',
+                    'nullable',
                     'string',
                     'max:255',
                 ],
@@ -295,7 +294,6 @@ class ClientCompanyController extends Controller
 
                 'id.exists' => 'The selected Client Company was deleted from the system!',
 
-                'address.required' => 'The "Address" field is required.',
                 'address.string' => 'The "Address" must be a string.',
                 'address.max' => 'The "Address" must not be greater than :max characters.',
 
