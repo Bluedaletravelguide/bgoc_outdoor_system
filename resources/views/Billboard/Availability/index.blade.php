@@ -160,6 +160,35 @@
     </div>
     <!-- Filter End -->
 
+    <!-- Legend -->
+    <div class="flex flex-wrap items-center gap-4 mb-4 text-sm">
+        <div class="flex items-center gap-2">
+            <span class="w-4 h-4 rounded-sm bg-theme-6 mr-1"></span>
+            <span class="text-gray-700">Pending Payment</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="w-4 h-4 rounded-sm bg-theme-1 mr-1"></span>
+            <span class="text-gray-700">Pending Install</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="w-4 h-4 rounded-sm bg-theme-12 mr-1"></span>
+            <span class="text-gray-700">Ongoing</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="w-4 h-4 rounded-sm bg-green-600 mr-1"></span>
+            <span class="text-gray-700">Completed</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="w-4 h-4 rounded-sm bg-theme-13 mr-1"></span>
+            <span class="text-gray-700">Dismantle</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="w-4 h-4 rounded-sm bg-gray-400 mr-1"></span>
+            <span class="text-gray-700">Other</span>
+        </div>
+    </div>
+    <!-- Legend End -->
+
     <!-- billboard availability calendar table -->
     <div class="shadow-sm rounded-lg border border-gray-200 overflow-hidden">
         <div class="monthly-booking-table-wrapper">
