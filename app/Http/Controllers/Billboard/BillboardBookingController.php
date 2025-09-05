@@ -14,6 +14,8 @@ use App\Models\Billboard;
 use App\Models\BillboardBooking;
 use App\Models\MonthlyOngoingJob;
 use App\Models\BillboardImage;
+use App\Models\Client;
+use App\Models\Contractor;
 use App\Models\State;
 use App\Models\District;
 use App\Models\Location;
@@ -58,7 +60,22 @@ class BillboardBookingController extends Controller
         $locations = Location::rightJoin('billboards', 'billboards.location_id' , 'locations.id')
         ->orderBy('name', 'ASC')->get();
 
-        return view('billboard.booking.index', compact('companies', 'states', 'districts', 'locations'));
+        // Get clients data
+        $clients = Client::leftJoin('client_companies', 'client_companies.id', '=', 'clients.company_id')
+        ->select('clients.*', 'client_companies.name as company_name')
+        ->where('clients.status', '=', '1')
+        ->get();
+
+        // Get client company data
+        $clientcompany = ClientCompany::all();
+
+        // Get contractor data
+        $contractors = Contractor::all();
+
+        // Get billboard data
+        $billboards = Billboard::leftJoin('locations', 'billboards.location_id', '=', 'locations.id')->get();
+
+        return view('billboard.booking.index', compact('companies', 'states', 'districts', 'locations', 'clients', 'contractors', 'clientcompany', 'billboards'));
     }
 
     /**

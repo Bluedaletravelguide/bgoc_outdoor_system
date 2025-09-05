@@ -398,6 +398,203 @@
     </div>
 </div>
 <!-- END: SR Edit Modal -->
+
+<!-- BEGIN: Inventory Add Modal -->
+<div class="modal items-center justify-center" id="inventoryAddModal">
+    <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-7xl p-6">
+        
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between border-b pb-3 mb-4">
+            <h2 class="text-lg font-semibold">Add Stock Inventory</h2>
+            <!-- <button type="button" onclick="closeInventoryModal()">✖</button> -->
+        </div>
+        <form id="addStockInventoryForm">
+            <div class="mb-4">
+                <label class="block font-medium">Contractor</label>
+                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputContractorName" required>
+                        <option selected value="">Select an option</option>
+                        @foreach ($contractors as $contractor)
+                            <option value="{{ $contractor->id }}">{{ $contractor->name }}</option>
+                        @endforeach
+                        </select>
+            </div>
+            <div class="grid grid-cols-2 gap-8">
+                
+                <!-- LEFT COLUMN: IN INVENTORY -->
+                <div class="bg-orange-50 p-4 rounded-lg">
+                    <h3 class="font-bold text-orange-600 mb-3">Stock In Inventory</h3>
+
+                    <div class="mb-3">
+                        <label class="block">Balance - Contractor</label>
+                        <input type="number" class="input w-full border mt-1" id="balContractor" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="block">Date In</label>
+                        <input type="date" class="input w-full border mt-1" id="inputDateIn">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="block">Remarks</label>
+                        <input type="text" class="input w-full border mt-1" id="inputRemarksIn">
+                    </div>
+                    <div class="flex items-center sm:py-3 border-gray-200 dark:border-dark-5">
+                        <h2 class="font-medium text-base mr-auto">Add Sites</h2>
+                    </div>
+                    <div id="siteInContainer">
+                        <div class="siteIn">
+                            <div class="mb-3">
+                                <label class="block">Client/Contractor</label>
+                                <select class="input w-full border mt-2 select2" name="clients_in[]">
+                                <option selected value="">Select an option</option>
+                                <!-- @foreach ($clientcompany as $clientcomp)
+                                    <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
+                                @endforeach
+                                </select> -->
+                                    <optgroup label="Clients">
+                                        @foreach ($clientcompany as $clientcomp)
+                                            <option value="client-{{ $clientcomp->id }}">
+                                                {{ $clientcomp->name }}
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+
+                                    <optgroup label="Contractors">
+                                        @foreach ($contractors as $contractor)
+                                            <option value="contractor-{{ $contractor->id }}">
+                                                {{ $contractor->name }}
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block">Site</label>
+                                <select class="input w-full border mt-2 select2" id="inputBillboardIn" name="sites_in[]">
+                                    <option selected value="">Select an option</option>
+                                    @foreach ($billboards as $billboard)
+                                        <option 
+                                            value="{{ $billboard->id }}" 
+                                            data-type="{{ $billboard->type }}" 
+                                            data-size="{{ $billboard->size }}">
+                                            {{ $billboard->site_number }} - {{ $billboard->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block">Type</label>
+                                <input type="text" class="input w-full border mt-1" name="types_in[]" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block">Size</label>
+                                <input type="text" class="input w-full border mt-1" name="sizes_in[]" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block"><strong>Quantity In</strong></label>
+                                <input type="number" class="input w-full border mt-1" name="qtys_in[]">
+                            </div>
+                            <div class="mb-3">
+                                <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteIn(this)">
+                                    Remove
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="siteInAdd()" class="bg-blue-600 text-white px-4 py-2 rounded">Add Site</button>
+                </div>
+
+                <!-- RIGHT COLUMN: OUT INVENTORY -->
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h3 class="font-bold text-green-600 mb-3">Stock Out Inventory</h3>
+
+                    <div class="mb-3">
+                        <label class="block">Bal - BGOC</label>
+                        <input type="number" class="input w-full border mt-1" id="balBgoc" readonly>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="block">Date Out</label>
+                        <input type="date" class="input w-full border mt-1" id="inputDateOut">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="block">Remarks</label>
+                        <input type="text" class="input w-full border mt-1" id="inputRemarksOut">
+                    </div>
+                    <div class="flex items-center sm:py-3 border-gray-200 dark:border-dark-5">
+                        <h2 class="font-medium text-base mr-auto">Add Sites</h2>
+                    </div>
+                    <div id="siteOutContainer">
+                        <div class="siteOut">
+                            <div class="mb-3">
+                                <label class="block">Client/Contractor</label>
+                                <select class="input w-full border mt-2 select2" name="clients_out[]">
+                                <option selected value="">Select an option</option>
+                                <!-- @foreach ($clientcompany as $clientcomp)
+                                    <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
+                                @endforeach -->
+                                    <optgroup label="Clients">
+                                        @foreach ($clientcompany as $clientcomp)
+                                            <option value="client-{{ $clientcomp->id }}">
+                                                {{ $clientcomp->name }}
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+
+                                    <optgroup label="Contractors">
+                                        @foreach ($contractors as $contractor)
+                                            <option value="contractor-{{ $contractor->id }}">
+                                                {{ $contractor->name }}
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block">Site</label>
+                                <select class="input w-full border mt-2 select2" id="inputBillboardOut" name="sites_out[]">
+                                    <option selected value="">Select an option</option>
+                                    @foreach ($billboards as $billboard)
+                                        <option 
+                                            value="{{ $billboard->id }}" 
+                                            data-type="{{ $billboard->type }}" 
+                                            data-size="{{ $billboard->size }}">
+                                            {{ $billboard->site_number }} - {{ $billboard->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block">Type</label>
+                                <input type="text" class="input w-full border mt-1" name="types_out[]" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block">Size</label>
+                                <input type="text" class="input w-full border mt-1" name="sizes_out[]" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block"><strong>Quantity Out</strong></label>
+                                <input type="number" class="input w-full border mt-1" name="qtys_out[]">
+                            </div>
+                            <div class="mb-3">
+                                <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteOut(this)">
+                                    Remove
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="siteOutAdd()" class="bg-blue-600 text-white px-4 py-2 rounded">Add Site</button>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="mt-6 text-right">
+                <button type="button" id="inventoryAddButton" class="bg-blue-600 text-white px-4 py-2 rounded">Submit</button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- END: Inventory Add Modal -->
 @endsection('modal_content')
 
 @section('script')
@@ -1113,7 +1310,15 @@
                             } else if (data == 'completed') {
                                 element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-green-600 text-white">Completed</a>`;
                             } else if (data == 'dismantle') {
-                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-13 text-white">Dismantle</a>`;
+                                element = `
+                                    <div class="flex flex-col space-y-2">
+                                        <a class="button p-2 w-32 bg-theme-13 text-white text-center">Dismantle</a>
+                                        <a href="javascript:;" 
+                                        class="button p-2 w-32 bg-theme-1 text-white stock-inventory-btn"
+                                        data-id="${row.id}">
+                                            Stock Inventory
+                                        </a>
+                                    </div>`;
                             }
                             
                             return element;
@@ -1140,7 +1345,7 @@
                             let element = 
                             `<div class="flex flex-row">
                                 <a href="javascript:;" id="${data}"
-                                    class="button w-24 inline-block mr-2 mb-2 bg-theme-9 text-white" data-toggle="button" onclick="window.open('${a}')" >
+                                    class="button w-32 inline-block mr-2 mb-2 bg-theme-9 text-white text-center" data-toggle="button" onclick="window.open('${a}')" >
                                     Site location
                                 </a>
                             </div>`;
@@ -1256,6 +1461,208 @@
             // Open modal
             openAltEditorModal("#editBookingModal");
         });
+
+        // Open modal to edit Billboard Booking (only via Edit button)
+        $(document).on("click", ".new-job-order", function () {
+            const table = $('#billboard_availability_table').DataTable();
+            const row = table.row($(this).closest('tr')).data();
+
+            if (!row) return;
+
+            // Always reset modal
+            $("#inputBookingForm")[0].reset();
+            $(".select2-client").val("").trigger("change");
+
+            // Prefill static fields
+            $("#inputBookingSiteNo").val(row.site_number);
+            $("#hiddenBookingSiteNo").val(row.site_number);
+
+            $("#inputBookingState").val(row.state_id).trigger("change");
+            $("#hiddenBookingState").val(row.state_id);
+
+            // --- Prefill district after districts load ---
+            $.ajax({
+                url: '{{ route("location.getDistricts") }}',
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    state_id: row.state_id
+                },
+                success: function (districts) {
+                    $('#inputBookingDistrict').empty().append('<option value="">-- Select District --</option>');
+                    districts.forEach(function (district) {
+                        $('#inputBookingDistrict').append(
+                            `<option value="${district.id}">${district.name}</option>`
+                        );
+                    });
+
+                    // Now set the district
+                    $("#inputBookingDistrict").val(row.district_id).trigger("change");
+                    $("#hiddenBookingDistrict").val(row.district_id);
+
+                    // --- Prefill location after locations load ---
+                    $.ajax({
+                        url: '{{ route("location.getLocations") }}',
+                        type: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            district_id: row.district_id
+                        },
+                        success: function (locations) {
+                            $('#inputBookingLocation').empty().append('<option value="">-- Select Location --</option>');
+                            locations.forEach(function (location) {
+                                $('#inputBookingLocation').append(
+                                    `<option value="${location.id}">${location.name}</option>`
+                                );
+                            });
+
+                            // Finally set the location
+                            $("#inputBookingLocation").val(row.location_id).trigger("change");
+                            $("#hiddenBookingLocation").val(row.location_id);
+                        }
+                    });
+                }
+            });
+
+            // Open modal
+            $("#addBookingModal").modal("show");
+        });
+
+        // Open Stock Inventory Modal
+        $(document).on("click", ".stock-inventory-btn", function () {
+            let bookingId     = $(this).data("id");
+            let siteNumber    = $(this).data("site-number");
+            let locationName  = $(this).data("location");
+            let size          = $(this).data("size");
+            let type          = $(this).data("type");
+
+            // Populate modal fields
+            $("#stockBookingId").val(bookingId); // hidden input if needed
+            $("#modalSiteNumber").text(siteNumber);
+            $("#modalLocation").text(locationName);
+            $("#modalSize").text(size);
+            $("#modalType").text(type);
+
+            // Reset form fields
+            $("#addStockInventoryForm")[0].reset();
+            $("#siteInContainer").empty();
+            $("#siteOutContainer").empty();
+
+            // Show modal
+            $("#inventoryAddModal").fadeIn();
+        });
+
+
+
+        // Add New Inventory
+        function inventoryAddButton() {
+            // Gather basic fields
+            let contractor_id = $("#inputContractorName").val();
+            let date_in = $("#inputDateIn").val();
+            let date_out = $("#inputDateOut").val();
+            let remarks_in = $("#inputRemarksIn").val();
+            let remarks_out = $("#inputRemarksOut").val();
+            let balance_contractor = $("#balContractor").val();
+            let balance_bgoc = $("#balBgoc").val();
+
+            // Gather site IN rows
+            let sites_in = [];
+            $("#siteInContainer .siteIn").each(function () {
+                let siteId = $(this).find("select[name='sites_in[]']").val();
+                let rawVal = $(this).find("select[name='clients_in[]']").val();
+                if (!rawVal) return; // skip empty
+
+                let clientType = null, clientId = null;
+                if (rawVal.startsWith("client-")) {
+                    clientType = "client";
+                    clientId = rawVal.replace("client-", "");
+                } else if (rawVal.startsWith("contractor-")) {
+                    clientType = "contractor";
+                    clientId = rawVal.replace("contractor-", "");
+                }
+
+                sites_in.push({
+                    id: siteId || null,
+                    client_type: clientType || null,
+                    client_id: clientId || null,
+                    type: $(this).find("input[name='types_in[]']").val(),
+                    size: $(this).find("input[name='sizes_in[]']").val(),
+                    qty: parseInt($(this).find("input[name='qtys_in[]']").val()) || 0
+                });
+            });
+            
+            // Gather site OUT rows
+            let sites_out = [];
+            $("#siteOutContainer .siteOut").each(function () {
+                let siteId = $(this).find("select[name='sites_out[]']").val();
+                let rawVal = $(this).find("select[name='clients_out[]']").val();
+                if (!rawVal) return; // skip empty
+
+                let clientType = null, clientId = null;
+                if (rawVal.startsWith("client-")) {
+                    clientType = "client";
+                    clientId = rawVal.replace("client-", "");
+                } else if (rawVal.startsWith("contractor-")) {
+                    clientType = "contractor";
+                    clientId = rawVal.replace("contractor-", "");
+                }
+
+                sites_out.push({
+                    id: siteId || null,
+                    client_type: clientType || null,
+                    client_id: clientId || null,
+                    type: $(this).find("input[name='types_out[]']").val(),
+                    size: $(this).find("input[name='sizes_out[]']").val(),
+                    qty: parseInt($(this).find("input[name='qtys_out[]']").val()) || 0
+                });
+            });
+
+            // Send request
+            $.ajax({
+                type: 'POST',
+                url: "{{ route('stockInventory.create') }}",
+                data: JSON.stringify({
+                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    contractor_id: contractor_id,
+                    date_in: date_in,
+                    date_out: date_out,
+                    remarks_in: remarks_in,
+                    remarks_out: remarks_out,
+                    sites_in: sites_in,   // ✅ contains client + site info
+                    sites_out: sites_out, // ✅ contains client + site info
+                    balance_contractor: balance_contractor,
+                    balance_bgoc: balance_bgoc
+                }),
+                contentType: "application/json",   // 👈 send JSON
+                dataType: "json",
+                success: function(response) {
+                    // Close modal after successfully edited
+                    closeAltEditorModal("#inventoryAddModal");
+
+                    // Show successful toast
+                    window.showSubmitToast("Successfully added.", "#91C714");
+
+                    // Reset form
+                    $('#inventoryAddModal input[type="text"], #inventoryAddModal input[type="number"], #inventoryAddModal input[type="date"]').val('');
+                    $('#inventoryAddModal select').val('').trigger('change');
+                    $('#siteInContainer').empty();
+                    $('#siteOutContainer').empty();
+
+                    // Reload table
+                    // $('#inventory_table').DataTable().ajax.reload();
+                    $('#inventory_table').DataTable().ajax.reload(null, false); 
+                },
+                error: function(xhr, status, error) {
+                    // Display the validation error message
+                    var response = JSON.parse(xhr.responseText);
+                    var error = "Error: " + response.error;
+
+                    // Show fail toast
+                    window.showSubmitToast(error, "#D32929");
+                }
+
+            });
+        }
 
 
 

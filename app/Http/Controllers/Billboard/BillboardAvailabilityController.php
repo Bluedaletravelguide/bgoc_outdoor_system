@@ -270,8 +270,8 @@ class BillboardAvailabilityController extends Controller
                     $colorClass = match ($booking->status) {
                         'pending_payment' => 'bg-theme-6',
                         'pending_install' => 'bg-theme-1',
-                        'ongoing'         => 'bg-theme-12',
-                        'completed'       => 'bg-green-600',
+                        'ongoing'         => 'bg-green-600',
+                        'completed'       => 'bg-theme-12',
                         'dismantle'       => 'bg-theme-13',
                         default           => 'bg-gray-400',
                     };

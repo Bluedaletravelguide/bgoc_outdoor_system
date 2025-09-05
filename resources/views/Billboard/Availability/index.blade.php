@@ -171,11 +171,11 @@
             <span class="text-gray-700">Pending Install</span>
         </div>
         <div class="flex items-center gap-2">
-            <span class="w-4 h-4 rounded-sm bg-theme-12 mr-1"></span>
+            <span class="w-4 h-4 rounded-sm bg-green-600 mr-1"></span>
             <span class="text-gray-700">Ongoing</span>
         </div>
         <div class="flex items-center gap-2">
-            <span class="w-4 h-4 rounded-sm bg-green-600 mr-1"></span>
+            <span class="w-4 h-4 rounded-sm bg-theme-12 mr-1"></span>
             <span class="text-gray-700">Completed</span>
         </div>
         <div class="flex items-center gap-2">
