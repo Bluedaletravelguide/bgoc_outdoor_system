@@ -207,80 +207,108 @@
 @endsection('app_content')
 
 @section('modal_content')
-<!-- Create Modal -->
-    <div class="row flex flex-col sm:flex-row sm:items-end xl:items-start mb-2">
-        <div class="modal" id="addBillboardBookingModal">
-            <div class="modal__content">
-                <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
-                    <h2 class="font-medium text-base mr-auto">Add New Job Order</h2>
-                </div>
-                <form>
-                    <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Site Number</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="SEL-0001" disabled>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Client</label>
-                            <select id="ServiceRequestAddClient" class="input w-full border mt-2 select2-client" required>
-                                <option disabled selected hidden value="">Select a client</option>
-                                <option value="1">ABC Corporation</option>
-                                <option value="2">BlueTech Solutions</option>
-                                <option value="3">GreenField Ltd</option>
-                                <option value="4">Visionary Co</option>
-                                <option value="5">Skyline Advertising</option>
-                            </select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Location</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="" required>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>District</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="" required>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>State</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="" required>
-                        </div>
-                        <div class="col-span-12 sm:col-span-6">
-                            <label for="start_date" class="form-label">Start Date</label>
-                            <input type="text" id="start_date" class="input border mt-2" placeholder="Select start date">
-                        </div>
-                        <div class="col-span-12 sm:col-span-6">
-                            <label for="end_date" class="form-label">End Date</label>
-                            <input type="text" id="end_date" class="input border mt-2" placeholder="Select end date">
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Artwork by</label>
-                            <select id="ServiceRequestAddClient" class="input w-full border mt-2 select" required>
-                                <option disabled selected hidden value="">Select an option</option>
-                                <option value="1">Client</option>
-                                <option value="2">Bluedale</option>
-                            </select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>DBP Approval</label>
-                            <select id="ServiceRequestAddClient" class="input w-full border mt-2 select" required>
-                                <option disabled selected hidden value="">Select an option</option>
-                                <option value="1">Yes</option>
-                                <option value="2">No</option>
-                            </select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Remarks</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="" required>
-                        </div>
-                    </div>
-
-                    <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
-                        <button type="submit" class="button w-20 bg-theme-1 text-white" id="ServiceRequestAddButton">Submit</button>
-                    </div>
-                </form>
+<!-- Create Job Order Modal -->
+<div class="row flex flex-col sm:flex-row sm:items-end xl:items-start mb-2">
+    <div class="modal" id="addBookingModal">
+        <div class="modal__content">
+            <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
+                <h2 class="font-medium text-base mr-auto">Add New Job Order</h2>
             </div>
-        </div> 
-    </div>
-<!-- Create Modal End -->
+            <form id="inputBookingForm">
+                <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>Site Number</label>
+                        <input type="text" class="input w-full border mt-2 flex-1" id="inputBookingSiteNo" value="" readonly>
+                    </div>
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>Client</label>
+                        <select id="inputBookingCompany" class="input w-full border mt-2 select2-client" required>
+                            <option value="">-- Select Client --</option>
+                            @foreach ($companies as $company)
+                                <option value="{{ $company->id }}">{{ $company->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>State</label>
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBookingState" disabled>
+                            <option value="">-- Select State --</option>
+                            @foreach ($states as $state)
+                                <option value="{{ $state->id }}">{{ $state->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>District</label>
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBookingDistrict" disabled>
+                            <option value="">-- Select District --</option>
+                        </select>
+                    </div>
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>Location</label>
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBookingLocation" disabled>
+                            <option value="">-- Select Location --</option>
+                        </select>
+                    </div>                     
+                    <div class="col-span-12 sm:col-span-6">
+                        <label for="start_date" class="form-label">Start Date</label>
+                        <input type="text" id="start_date" class="input border mt-2" placeholder="Select start date">
+                    </div>
+                    <div class="col-span-12 sm:col-span-6">
+                        <label for="end_date" class="form-label">End Date</label>
+                        <input type="text" id="end_date" class="input border mt-2" placeholder="Select end date">
+                    </div>
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>Status</label>
+                        <select id="inputBookingStatus" class="input w-full border mt-2 select" required>
+                            <option disabled selected hidden value="">-- Select Status --</option>
+                            <option value="pending_payment">Pending Payment</option>
+                            <option value="pending_install">Pending Install</option>
+                            <option value="ongoing">Ongoing</option>
+                            <option value="completed">Completed</option>
+                            <option value="dismantle">Dismantle</option>          
+                        </select>
+                    </div>
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>Artwork by</label>
+                        <select id="inputBookingArtworkBy" class="input w-full border mt-2 select" required>
+                            <option disabled selected hidden value="">-- Select Artwork by --</option>
+                            <option value="Client">Client</option>
+                            <option value="Bluedale">Bluedale</option>
+                        </select>
+                    </div>
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>DBP Approval</label>
+                        <select id="inputBookingDBPApproval" class="input w-full border mt-2 select" required>
+                            <option disabled selected hidden value="">-- Select DBP Approval --</option>
+                            <option value="NA">Not Available</option>
+                            <option value="In Review">In Review</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
+                    </div>
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>Remarks</label>
+                        <!-- <input type="text" class="input w-full border mt-2 flex-1" id="inputBookingRemarks" value="" required> -->
+                        <textarea class="input w-full border mt-2 flex-1" id="inputBookingRemarks" rows="5" required></textarea>
+                    </div>
+                </div>
+
+                <!-- hidden inputs that hold the values as disabled fields are not submitted with the form -->
+                <input type="hidden" name="site_number" id="hiddenBookingSiteNo">
+                <input type="hidden" name="state_id" id="hiddenBookingState">
+                <input type="hidden" name="district_id" id="hiddenBookingDistrict">
+                <input type="hidden" name="location_id" id="hiddenBookingLocation">
+
+
+                <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
+                    <button type="submit" class="button w-20 bg-theme-1 text-white" id="inputBookingSubmit">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div> 
+</div>
+<!-- Create Job Order End -->
 
 <!-- View Job Order Modal -->
     <div class="row flex flex-col sm:flex-row sm:items-end xl:items-start mb-2">
@@ -315,6 +343,9 @@
 <!-- searchable dropdown -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script>
     
@@ -400,27 +431,113 @@
     });
     // <!-- END: Billboard Booking List Filter -->
 
-    document.addEventListener('DOMContentLoaded', function () {
-        const startInput = document.getElementById('filterAvailabilityStart');
-        const endInput = document.getElementById('filterAvailabilityEnd');
+    // When "State" is changed in create job order form
+    $('#inputBookingState').on('change', function () {
+        let stateId = $(this).val();
 
-        // When start date changes
-        startInput.addEventListener('change', function () {
-            const startDate = startInput.value;
+        // Reset District and Location dropdowns
+        $('#inputBookingDistrict').empty().append('<option value="">-- Select District --</option>');
+        $('#inputBookingLocation').empty().append('<option value="">-- Select Location --</option>');
 
-            if (startDate) {
-                // Set the min for end date
-                endInput.min = startDate;
-
-                // Optional: clear end date if it is before start date
-                if (endInput.value && endInput.value < startDate) {
-                    endInput.value = '';
+        if (stateId !== '') {
+            $.ajax({
+                url: '{{ route("location.getDistricts") }}',
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    state_id: stateId
+                },
+                success: function (districts) {
+                    districts.forEach(function (district) {
+                        $('#inputBookingDistrict').append(`<option value="${district.id}">${district.name}</option>`);
+                    });
+                },
+                error: function () {
+                    alert('Failed to load districts.');
                 }
-            } else {
-                endInput.min = ''; // Reset if start date cleared
+            });
+        }
+    });
+
+    // When "District" is changed in add form
+    $('#inputBookingDistrict').on('change', function () {
+        let districtId = $(this).val();
+
+        // Reset Location dropdown
+        $('#inputBookingLocation').empty().append('<option value="">-- Select Location --</option>');
+
+        if (districtId !== '') {
+            $.ajax({
+                url: '{{ route("location.getLocations") }}',
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    district_id: districtId
+                },
+                success: function (locations) {
+                    locations.forEach(function (location) {
+                        $('#inputBookingLocation').append(`<option value="${location.id}">${location.name}</option>`);
+                    });
+                },
+                error: function () {
+                    alert('Failed to load locations.');
+                }
+            });
+        }
+    });
+
+    // -------------------
+    // Booking Modal Dates
+    // -------------------
+    let startPicker, endPicker; 
+
+    function initBookingDatePickers() {
+        if (startPicker && typeof startPicker.destroy === 'function') startPicker.destroy();
+        if (endPicker && typeof endPicker.destroy === 'function') endPicker.destroy();
+
+        startPicker = flatpickr("#start_date", {
+            dateFormat: "Y-m-d",
+            onChange: function (selectedDates, dateStr) {
+                if (endPicker) {
+                    endPicker.set('minDate', dateStr);
+
+                    const endDate = endPicker.selectedDates[0];
+                    if (endDate && endDate < selectedDates[0]) {
+                        endPicker.clear();
+                    }
+                }
             }
         });
+
+        endPicker = flatpickr("#end_date", {
+            dateFormat: "Y-m-d"
+        });
+    }
+
+    // -------------------
+    // Filter Dates
+    // -------------------
+    document.addEventListener('DOMContentLoaded', function () {
+        const filterStart = document.getElementById('filterAvailabilityStart');
+        const filterEnd = document.getElementById('filterAvailabilityEnd');
+
+        if (filterStart && filterEnd) {
+            filterStart.addEventListener('change', function () {
+                const startDate = filterStart.value;
+                if (startDate) {
+                    filterEnd.min = startDate;
+                    if (filterEnd.value && filterEnd.value < startDate) {
+                        filterEnd.value = '';
+                    }
+                } else {
+                    filterEnd.min = '';
+                }
+            });
+        }
+
+        initBookingDatePickers();
     });
+
 
     
 
@@ -442,6 +559,86 @@
         var lastClickedLink;
         let startPicker = null;
         let endPicker = null;
+
+        document.getElementById("inputBookingSubmit").addEventListener("click", inputBookingSubmit);
+
+        $('#inputBookingForm').on('submit', function (e) {
+            e.preventDefault(); // Prevent default form submission
+            inputBookingSubmit(); // Call your AJAX function
+        });
+
+        function inputBookingSubmit() {
+            const start_date = document.getElementById('start_date').value;
+            const end_date   = document.getElementById('end_date').value;
+
+            if (!start_date || !end_date) {
+                alert("Please select both Start and End dates.");
+                return;
+            }
+
+            document.getElementById("inputBookingSubmit").disabled = true;
+            document.getElementById('inputBookingSubmit').style.display = 'none';
+
+            $.ajax({
+                type: 'POST',
+                url: "{{ route('billboard.booking.create') }}",
+                data: {
+                    _token          : $('meta[name="csrf-token"]').attr('content'),
+                    client_id       : $("#inputBookingCompany").val(),
+                    site_number     : $("#hiddenBookingSiteNo").val(),
+                    state_id        : $("#hiddenBookingState").val(),
+                    district_id     : $("#hiddenBookingDistrict").val(),
+                    location_id     : $("#hiddenBookingLocation").val(),
+                    start_date      : start_date,
+                    end_date        : end_date,
+                    status          : $("#inputBookingStatus").val(),
+                    artwork_by      : $("#inputBookingArtworkBy").val(),
+                    dbp_approval    : $("#inputBookingDBPApproval").val(),
+                    remarks         : $("#inputBookingRemarks").val(),
+                },
+
+                success: function(response) {
+                    // Close modal
+                    const element = "#addBookingModal";
+                    closeAltEditorModal(element);
+
+                    // Success toast
+                    window.showSubmitToast("Successfully added.", "#91C714");
+
+                    // Clear inputs
+                    $('#inputBookingCompany').val('').trigger('change');
+                    $('#inputBookingSiteNo').val('');
+                    document.getElementById("inputBookingState").value = "";
+                    document.getElementById("inputBookingDistrict").value = "";
+                    document.getElementById("inputBookingLocation").value = "";
+                    document.getElementById("inputBookingStatus").value = "";
+                    document.getElementById("inputBookingArtworkBy").value = "";
+                    document.getElementById("inputBookingDBPApproval").value = "";
+                    document.getElementById("inputBookingRemarks").value = "";
+                    if (startPicker) startPicker.clear();
+                    if (endPicker) endPicker.clear();
+
+                    // Reload table
+                    // $('#billboard_availability_table').DataTable().ajax.reload();
+
+                    window.location.href = "{{ route('billboard.booking.index') }}";
+
+                    // Reset button
+                    document.getElementById("inputBookingSubmit").disabled = false;
+                    document.getElementById('inputBookingSubmit').style.display = 'inline-block';
+                },
+                error: function(xhr) {
+                    const response = JSON.parse(xhr.responseText);
+                    const error = "Error: " + response.error;
+
+                    // Show fail toast
+                    window.showSubmitToast(error, "#D32929");
+
+                    document.getElementById("inputBookingSubmit").disabled = false;
+                    document.getElementById('inputBookingSubmit').style.display = 'inline-block';
+                }
+            });
+        }
 
         $('.select2-client').select2({
             placeholder: "Select a client",
@@ -804,29 +1001,11 @@
                         render: (data) => `
                             <div class="flex justify-center items-center gap-3">
                                 <!-- Edit Button -->
-                                <a href="javascript:;" 
-                                    class="button w-24 inline-block mr-2 mb-2 bg-theme-1 text-white edit-availability" 
+                                <a href="javascript:;" data-toggle="modal" data-target="#addBookingModal"
+                                    class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-1 text-white new-job-order" 
                                     data-id="${data}"
                                 >
-                                    Edit
-                                </a>
-
-                                <!-- Delete Icon -->
-                                <a href="javascript:;" 
-                                class="client-company-delete flex items-center justify-center w-8 h-8 text-theme-6 rounded hover:bg-gray-100" 
-                                data-id="${data}" 
-                                title="Delete">
-                                    <svg xmlns="http://www.w3.org/2000/svg" 
-                                        class="w-5 h-5" 
-                                        fill="none" 
-                                        viewBox="0 0 24 24" 
-                                        stroke="currentColor">
-                                        <polyline points="3 6 5 6 21 6"></polyline>
-                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4
-                                                a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                                        <line x1="10" y1="11" x2="10" y2="17"></line>
-                                        <line x1="14" y1="11" x2="14" y2="17"></line>
-                                    </svg>
+                                    New Job Order
                                 </a>
                             </div>
                         `
@@ -879,11 +1058,80 @@
             }
 
             // Open modal to edit SR
-            editAvailabilityModal();
+            // editAvailabilityModal();
         };
 
         initBillboardAvailabilityDatatable();
         setupAutoFilter();
+
+        // Open modal to edit Billboard Booking (only via Edit button)
+        $(document).on("click", ".new-job-order", function () {
+            const table = $('#billboard_availability_table').DataTable();
+            const row = table.row($(this).closest('tr')).data();
+
+            if (!row) return;
+
+            // Always reset modal
+            $("#inputBookingForm")[0].reset();
+            $(".select2-client").val("").trigger("change");
+
+            // Prefill static fields
+            $("#inputBookingSiteNo").val(row.site_number);
+            $("#hiddenBookingSiteNo").val(row.site_number);
+
+            $("#inputBookingState").val(row.state_id).trigger("change");
+            $("#hiddenBookingState").val(row.state_id);
+
+            // --- Prefill district after districts load ---
+            $.ajax({
+                url: '{{ route("location.getDistricts") }}',
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    state_id: row.state_id
+                },
+                success: function (districts) {
+                    $('#inputBookingDistrict').empty().append('<option value="">-- Select District --</option>');
+                    districts.forEach(function (district) {
+                        $('#inputBookingDistrict').append(
+                            `<option value="${district.id}">${district.name}</option>`
+                        );
+                    });
+
+                    // Now set the district
+                    $("#inputBookingDistrict").val(row.district_id).trigger("change");
+                    $("#hiddenBookingDistrict").val(row.district_id);
+
+                    // --- Prefill location after locations load ---
+                    $.ajax({
+                        url: '{{ route("location.getLocations") }}',
+                        type: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            district_id: row.district_id
+                        },
+                        success: function (locations) {
+                            $('#inputBookingLocation').empty().append('<option value="">-- Select Location --</option>');
+                            locations.forEach(function (location) {
+                                $('#inputBookingLocation').append(
+                                    `<option value="${location.id}">${location.name}</option>`
+                                );
+                            });
+
+                            // Finally set the location
+                            $("#inputBookingLocation").val(row.location_id).trigger("change");
+                            $("#hiddenBookingLocation").val(row.location_id);
+                        }
+                    });
+                }
+            });
+
+            // Open modal
+            $("#addBookingModal").modal("show");
+        });
+
+
+
 
         $(document).off('click', '.edit-availability').on('click', '.edit-availability', function() {
             const table = $('#billboard_availability_table').DataTable();

@@ -168,8 +168,8 @@ class BillboardBookingController extends Controller
         $role = $user->roles->pluck('name')[0];
         $userID = $this->user->id;
 
-        $location           = $request->location;
-        $client            = $request->client;
+        $location_id        = $request->location_id;
+        $client_id          = $request->client_id;
         $start_date         = $request->start_date;
         $end_date           = $request->end_date;
         $status             = $request->status;
@@ -181,7 +181,7 @@ class BillboardBookingController extends Controller
 
             DB::beginTransaction();
             
-            $billboard  = Billboard::where('location_id', $location)->first();
+            $billboard  = Billboard::where('location_id', $location_id)->first();
 
             if (!$billboard ) {
                 return response()->json(['error' => 'Billboard not found for the selected location.'], 404);
@@ -216,7 +216,7 @@ class BillboardBookingController extends Controller
             //Create a new service request
             $booking = BillboardBooking::create([
                 'billboard_id'      => $billboard->id,
-                'company_id'        => $client,
+                'company_id'        => $client_id,
                 'job_order_no'      => $jobOrderNo,
                 'start_date'        => $start_date,
                 'end_date'          => $end_date,

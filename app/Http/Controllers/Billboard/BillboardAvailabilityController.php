@@ -112,16 +112,27 @@ class BillboardAvailabilityController extends Controller
             }
 
             $results[] = [
-                'id'             => $billboard->id,
-                'site_number'    => $billboard->site_number,
-                'location_name'  => $billboard->location->name,
-                'district_name'  => $billboard->location->district->name ?? '',
-                'state_name'     => $billboard->location->district->state->name ?? '',
-                'is_available'   => $isAvailable,
-                'status_label'    => $isAvailable ? 'Available' : 'Not Available', // 👈 add this
+                'id'              => $billboard->id,
+                'site_number'     => $billboard->site_number,
+
+                // location
+                'location_id'     => $billboard->location->id ?? null,
+                'location_name'   => $billboard->location->name ?? '',
+
+                // district
+                'district_id'     => $billboard->location->district->id ?? null,
+                'district_name'   => $billboard->location->district->name ?? '',
+
+                // state
+                'state_id'        => $billboard->location->district->state->id ?? null,
+                'state_name'      => $billboard->location->district->state->name ?? '',
+
+                'is_available'    => $isAvailable,
+                'status_label'    => $isAvailable ? 'Available' : 'Not Available',
                 'next_available_raw' => $isAvailable ? null : $nextAvailableDate,
-                'next_available' => $isAvailable ? null : optional($nextAvailableDate)->format('d/m/Y'),
+                'next_available'  => $isAvailable ? null : optional($nextAvailableDate)->format('d/m/Y'),
             ];
+
         }
 
         $results = $this->sortAvailability($results);

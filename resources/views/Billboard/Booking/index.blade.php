@@ -498,7 +498,7 @@
     });
     // <!-- END: Billboard Booking List Filter -->
 
-     let startPicker, endPicker;
+    let startPicker, endPicker;
 
     // init datepicker
     function initDatePickers() {
@@ -888,10 +888,10 @@
                 url: "{{ route('billboard.booking.create') }}",
                 data: {
                     _token          : $('meta[name="csrf-token"]').attr('content'),
-                    client         : document.getElementById("inputBookingCompany").value,
+                    client_id       : document.getElementById("inputBookingCompany").value,
                     state           : document.getElementById("inputBookingState").value,
                     district        : document.getElementById("inputBookingDistrict").value,
-                    location        : document.getElementById("inputBookingLocation").value,
+                    location_id     : document.getElementById("inputBookingLocation").value,
                     start_date      : start_date,
                     end_date        : end_date,
                     status          : document.getElementById("inputBookingStatus").value,
