@@ -98,9 +98,16 @@
     <div class="image-section">
         <div class="image-section-title">Images:</div><br><br><br><br>
         <div class="image-grid">
-            <img src="file://{{ public_path('storage/billboards/image1.jpg') }}" alt="Image 1">
-            <img src="file://{{ public_path('storage/billboards/map1.jpg') }}" alt="Image 2">
+            @foreach ($billboard->images as $img)
+                @php
+                    $path = public_path($img);
+                @endphp
+                @if (file_exists($path))
+                    <img src="{{ $path }}" alt="Billboard Image">
+                @endif
+            @endforeach
         </div>
+
     </div>
 </body>
 </html>

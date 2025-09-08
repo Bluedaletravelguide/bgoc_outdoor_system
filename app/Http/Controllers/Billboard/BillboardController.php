@@ -779,6 +779,17 @@ class BillboardController extends Controller
     {
         // $billboard = Billboard::with(['location.district.state', 'images'])->findOrFail($id);
 
+        // $billboard = Billboard::with([
+        //     'location' => function ($query) {
+        //         $query->with([
+        //             'district' => function ($query) {
+        //                 $query->with('state');
+        //             }
+        //         ]);
+        //     },
+        //     'images'
+        // ])->findOrFail($id);
+
         $billboard = Billboard::with([
             'location' => function ($query) {
                 $query->with([
@@ -786,9 +797,14 @@ class BillboardController extends Controller
                         $query->with('state');
                     }
                 ]);
-            },
-            'images'
+            }
         ])->findOrFail($id);
+
+        // Hardcode images for testing
+        $billboard->images = [
+            'storage/billboards/' . $billboard->site_number . '_1.png',
+            'storage/billboards/' . $billboard->site_number . '_2.png',
+        ];
 
         $pdf = PDF::loadView('billboard.export', compact('billboard'))
         ->setPaper('A4', 'landscape'); // 👈 Set orientation here
@@ -796,9 +812,59 @@ class BillboardController extends Controller
         return $pdf->download('billboard-detail-' . $billboard->site_number . '.pdf');
     }
 
+    // public function exportListPdf(Request $request)
+    // {
+    //     $query = Billboard::with(['location.district.state', 'images']);
+
+    //     if ($request->filled('state_id') && $request->state_id !== 'all') {
+    //         $query->whereHas('location.district.state', fn($q) => $q->where('id', $request->state_id));
+    //     }
+
+    //     if ($request->filled('district_id') && $request->district_id !== 'all') {
+    //         $query->whereHas('location.district', fn($q) => $q->where('id', $request->district_id));
+    //     }
+
+    //     if ($request->filled('type') && $request->type !== 'all') {
+    //         $query->where('type', $request->type);
+    //     }
+
+    //     if ($request->filled('status') && $request->status !== 'all') {
+    //         $query->where('status', $request->status);
+    //     }
+
+    //     if ($request->filled('size') && $request->size !== 'all') {
+    //         $query->where('size', $request->size);
+    //     }
+
+    //     $billboards = $query->get();
+
+    //     // Get filename based on state or district
+    //     $filename = 'billboards-master';
+    //     $date = Carbon::now()->format('Y-m-d');
+
+    //     if ($request->filled('district_id') && $request->district_id !== 'all') {
+    //         $district = District::find($request->district_id);
+    //         if ($district) {
+    //             $filename = 'billboards-' . Str::slug($district->name) . '-' . $date;
+    //         }
+    //     } elseif ($request->filled('state_id') && $request->state_id !== 'all') {
+    //         $state = State::find($request->state_id);
+    //         if ($state) {
+    //             $filename = 'billboards-' . Str::slug($state->name) . '-' . $date;
+    //         }
+    //     } else {
+    //         $filename .= '-' . $date;
+    //     }
+
+    //     $pdf = PDF::loadView('billboard.exportlist', compact('billboards'))
+    //         ->setPaper('a4', 'landscape');
+
+    //     return $pdf->download($filename . '.pdf');
+    // }
+
     public function exportListPdf(Request $request)
     {
-        $query = Billboard::with(['location.district.state', 'images']);
+        $query = Billboard::with(['location.district.state']);
 
         if ($request->filled('state_id') && $request->state_id !== 'all') {
             $query->whereHas('location.district.state', fn($q) => $q->where('id', $request->state_id));
@@ -822,9 +888,17 @@ class BillboardController extends Controller
 
         $billboards = $query->get();
 
-        // Get filename based on state or district
+        // 🔹 Attach hardcoded images for each billboard
+        foreach ($billboards as $billboard) {
+            $billboard->images = [
+                'storage/billboards/' . $billboard->site_number . '_1.png',
+                'storage/billboards/' . $billboard->site_number . '_2.png',
+            ];
+        }
+
+        // 📂 Filename
         $filename = 'billboards-master';
-        $date = Carbon::now()->format('Y-m-d');
+        $date = now()->format('Y-m-d');
 
         if ($request->filled('district_id') && $request->district_id !== 'all') {
             $district = District::find($request->district_id);
@@ -840,9 +914,14 @@ class BillboardController extends Controller
             $filename .= '-' . $date;
         }
 
-        $pdf = PDF::loadView('billboard.exportlist', compact('billboards'))
-            ->setPaper('a4', 'landscape');
+        logger('billboards: ' . $billboards);
+
+        $pdf = \Barryvdh\Snappy\Facades\SnappyPdf::loadView('billboard.exportlist', compact('billboards'))
+        ->setPaper('a4', 'landscape')
+        ->setOption('lowquality', true)
+        ->setOption('dpi', 96);
 
         return $pdf->download($filename . '.pdf');
     }
+
 }
