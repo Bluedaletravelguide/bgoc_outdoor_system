@@ -579,7 +579,7 @@
             'bg-green-600': 'FF059669',// ongoing
             'bg-theme-12': 'FFFBC500', // completed
             'bg-theme-13': 'FF7F9EB9', // dismantle
-            'bg-gray-400': 'FF6B7280', // default/other
+            'bg-white': 'FFFFFFFF' // white background
         };
 
         // Add all rows
@@ -603,9 +603,20 @@
                 } else {
                     // Data cell alignment
                     cell.alignment = { horizontal: 'center', vertical: 'middle' };
+
+                    // Apply color from _colors array
+                    if (rowData._colors) {
+                        const colorClass = rowData._colors[colNumber - 1];
+                        if (colorClass) {
+                            const bgColor = colorMap[colorClass] || 'FFFFFFFF';
+                            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } };
+                            cell.font = { color: { argb: 'FF000000' }, bold: true };
+                        }
+                    }
                 }
             });
         });
+
 
         // Apply merges and coloring for monthly bookings
         mergeInfo.forEach((rowMerges, rowIndex) => {
@@ -720,10 +731,16 @@
             if ($cells.length === 0 || $cells.first().hasClass('text-center')) return;
 
             const rowData = [];
+            const rowColors = []; // NEW: track color class for each cell
 
             // First 6 columns
             for (let i = 0; i < 6; i++) {
-                rowData.push($($cells[i]).text().trim());
+                const cellText = $($cells[i]).text().trim();
+                const classList = $($cells[i]).attr('class') || '';
+                const colorClass = classList.split(/\s+/).find(c => c.startsWith('bg-')) || 'bg-gray-400';
+
+                rowData.push(cellText);
+                rowColors.push(colorClass);
             }
 
             // Monthly columns (handle colspan)
@@ -732,26 +749,32 @@
                 const $cell = $($cells[i]);
                 const colspan = parseInt($cell.attr('colspan')) || 1;
                 const cellText = $cell.text().trim();
+                const classList = $cell.attr('class') || '';
+                const colorClass = classList.split(/\s+/).find(c => c.startsWith('bg-')) || 'bg-gray-400';
 
                 for (let j = 0; j < colspan; j++) {
                     if (monthIndex + j < 12) {
                         rowData.push(cellText);
+                        rowColors.push(colorClass); // add same color for each month in colspan
                     }
                 }
 
                 monthIndex += colspan;
             }
 
-            // Fill any missing months with empty strings
+            // Fill any missing months with empty strings and default color
             while (rowData.length < header.length) {
                 rowData.push('');
+                rowColors.push('bg-gray-400');
             }
 
+            rowData._colors = rowColors; // attach colors array to rowData
             data.push(rowData);
         });
 
         return data;
     }
+
 
 
     function prepareAvailabilityData() {
@@ -823,22 +846,33 @@
         $('#monthly-booking-body tr').each(function() {
             const rowMerges = [];
             let colIndex = 6; // start from month columns
+
             $(this).find('td').slice(6).each(function() {
                 const colspan = parseInt($(this).attr('colspan')) || 1;
                 const text = $(this).text().trim();
+
+                // Get color class (assumes only one bg-* class per td)
+                const classList = $(this).attr('class') || '';
+                const classes = classList.split(/\s+/);
+                const colorClass = classes.find(c => c.startsWith('bg-')) || 'bg-gray-400';
+
                 if (colspan > 1) {
                     rowMerges.push({
                         startCol: colIndex,
                         endCol: colIndex + colspan - 1,
-                        text: text
+                        text: text,
+                        color: colorClass
                     });
                 }
+
                 colIndex += colspan;
             });
+
             mergeInfo.push(rowMerges);
         });
         return mergeInfo;
     }
+
 
 
 
