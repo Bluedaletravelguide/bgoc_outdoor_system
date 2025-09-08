@@ -61,6 +61,12 @@
         </p>
     </div>
 
+    <!-- <button onclick="downloadAllTablesAsExcel()" 
+        class="button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white">
+    Download Excel
+</button> -->
+
+
     <!-- Billboard Booking Calendar Filter -->
     <div class="flex flex-col sm:flex-row sm:items-end xl:items-start mb-2 mt-2">
         <form class="xl:flex sm:mr-auto">
@@ -373,11 +379,19 @@
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
+<!-- download excel -->
+<script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://unpkg.com/xlsx-style@latest/dist/xlsx.full.min.js"></script>
+<script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver/dist/FileSaver.min.js"></script>
+
+
 <!-- Flatpickr JS -->
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-<script>
-    
+<script>    
     // <!-- BEGIN: Billboard Booking List Filter -->
     $('#filterAvailabilityState').on('change', function () {
         let stateId = $(this).val();
@@ -542,6 +556,582 @@
             dateFormat: "Y-m-d"
         });
     }
+
+    async function exportCombinedExcel() {
+        const dt = new Date();
+        const formattedDate = `${dt.getFullYear()}${(dt.getMonth()+1).toString().padStart(2,'0')}${dt.getDate().toString().padStart(2,'0')}`;
+        const formattedTime = `${dt.getHours()}:${dt.getMinutes()}:${dt.getSeconds()}`;
+        const fileName = `Billboard_Availability_Report_${formattedDate}_${formattedTime}.xlsx`;
+
+        const workbook = new ExcelJS.Workbook();
+
+        // =======================
+        // Sheet 1: Monthly Calendar
+        // =======================
+        const monthlySheet = workbook.addWorksheet('Monthly Calendar');
+        const monthlyData = prepareMonthlyData();      // Your function
+        const mergeInfo = getMonthlyMergeInfo();       // Your function
+
+        // Map backend color classes to ARGB
+        const colorMap = {
+            'bg-theme-6': 'FFD32929',  // pending_payment
+            'bg-theme-1': 'FF1C3FAA',  // pending_install
+            'bg-green-600': 'FF059669',// ongoing
+            'bg-theme-12': 'FFFBC500', // completed
+            'bg-theme-13': 'FF7F9EB9', // dismantle
+            'bg-gray-400': 'FF6B7280', // default/other
+        };
+
+        // Add all rows
+        monthlyData.forEach((rowData, rowIndex) => {
+            const row = monthlySheet.addRow(rowData);
+
+            row.eachCell((cell, colNumber) => {
+                // Apply borders to all cells
+                cell.border = {
+                    top: { style: 'thin', color: { argb: 'FF000000' } },
+                    bottom: { style: 'thin', color: { argb: 'FF000000' } },
+                    left: { style: 'thin', color: { argb: 'FF000000' } },
+                    right: { style: 'thin', color: { argb: 'FF000000' } }
+                };
+
+                if (rowIndex === 0) {
+                    // Header styling
+                    cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF366092' } };
+                    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                } else {
+                    // Data cell alignment
+                    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                }
+            });
+        });
+
+        // Apply merges and coloring for monthly bookings
+        mergeInfo.forEach((rowMerges, rowIndex) => {
+            rowMerges.forEach(merge => {
+                const startCol = merge.startCol + 1;
+                const endCol = merge.endCol + 1;
+                const rowNum = rowIndex + 2;
+
+                monthlySheet.mergeCells(rowNum, startCol, rowNum, endCol);
+                const topLeftCell = monthlySheet.getCell(rowNum, startCol);
+
+                // Get color from controller field
+                const bgColor = colorMap[merge.color] || 'FF6B7280';
+
+                topLeftCell.value = merge.text || '';
+                topLeftCell.alignment = { horizontal: 'center', vertical: 'middle' };
+                topLeftCell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                topLeftCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } };
+
+                // Apply borders to all merged cells
+                for (let col = startCol; col <= endCol; col++) {
+                    const c = monthlySheet.getCell(rowNum, col);
+                    c.border = {
+                        top: { style: 'thin', color: { argb: 'FF000000' } },
+                        bottom: { style: 'thin', color: { argb: 'FF000000' } },
+                        left: { style: 'thin', color: { argb: 'FF000000' } },
+                        right: { style: 'thin', color: { argb: 'FF000000' } }
+                    };
+                }
+            });
+        });
+
+
+        // Set column widths
+        const colWidths = [5,12,20,15,10,10,...Array(12).fill(15)];
+        colWidths.forEach((w, i) => monthlySheet.getColumn(i+1).width = w);
+
+        // =======================
+        // Sheet 2: Availability List
+        // =======================
+        const availabilitySheet = workbook.addWorksheet('Availability List');
+        const availabilityData = prepareAvailabilityData(); // Your function
+
+        availabilityData.forEach((rowData, rowIndex) => {
+            const row = availabilitySheet.addRow(rowData);
+
+            row.eachCell((cell, colNumber) => {
+                // Borders for all cells
+                cell.border = {
+                    top: { style: 'thin', color: { argb: 'FF000000' } },
+                    bottom: { style: 'thin', color: { argb: 'FF000000' } },
+                    left: { style: 'thin', color: { argb: 'FF000000' } },
+                    right: { style: 'thin', color: { argb: 'FF000000' } }
+                };
+
+                if(rowIndex === 0){
+                    cell.font = { bold:true, color:{argb:'FFFFFFFF'} };
+                    cell.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FF366092'} };
+                    cell.alignment = { horizontal:'center', vertical:'middle' };
+                } else {
+                    cell.alignment = { horizontal:'center', vertical:'middle' };
+
+                    // Status column
+                    if(colNumber === 5) {
+                        const text = (cell.value || '').toLowerCase();
+                        if(text.includes('not available')) {
+                            cell.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FFDC3545'} };
+                            cell.font = { color:{argb:'FFFFFFFF'} };
+                        } else if(text.includes('available')) {
+                            cell.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FF10B981'} };
+                            cell.font = { color:{argb:'FFFFFFFF'} };
+                        }
+                    }
+                }
+            });
+        });
+
+        const availWidths = [5,12,25,20,15,15];
+        availWidths.forEach((w,i)=>availabilitySheet.getColumn(i+1).width=w);
+
+        // =======================
+        // Download workbook
+        // =======================
+        const buf = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buf], { type:"application/octet-stream" });
+        saveAs(blob, fileName);
+    }
+
+
+
+
+
+    function prepareMonthlyData() {
+        const year = $('#filterAvailabilityYear').val() || new Date().getFullYear();
+        const shortYear = String(year).slice(-2);
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+        // Build header row
+        const header = [
+            'No', 'Site No', 'Location', 'New/Existing', 'Type', 'Size',
+            ...months.map(month => `${month} '${shortYear}`)
+        ];
+
+        const data = [header];
+
+        // Loop through table rows
+        $('#monthly-booking-body tr').each(function () {
+            const $row = $(this);
+            const $cells = $row.find('td');
+
+            // Skip empty rows or header-like rows
+            if ($cells.length === 0 || $cells.first().hasClass('text-center')) return;
+
+            const rowData = [];
+
+            // First 6 columns
+            for (let i = 0; i < 6; i++) {
+                rowData.push($($cells[i]).text().trim());
+            }
+
+            // Monthly columns (handle colspan)
+            let monthIndex = 0;
+            for (let i = 6; i < $cells.length; i++) {
+                const $cell = $($cells[i]);
+                const colspan = parseInt($cell.attr('colspan')) || 1;
+                const cellText = $cell.text().trim();
+
+                for (let j = 0; j < colspan; j++) {
+                    if (monthIndex + j < 12) {
+                        rowData.push(cellText);
+                    }
+                }
+
+                monthIndex += colspan;
+            }
+
+            // Fill any missing months with empty strings
+            while (rowData.length < header.length) {
+                rowData.push('');
+            }
+
+            data.push(rowData);
+        });
+
+        return data;
+    }
+
+
+    function prepareAvailabilityData() {
+        // Define header row
+        const header = ['No', 'Site #', 'Location', 'State', 'Status', 'Next Available'];
+        const data = [header];
+
+        // Get DataTable instance
+        const table = $('#billboard_availability_table').DataTable();
+        const tableData = table.data();
+
+        // Loop through DataTable rows
+        tableData.each(function (rowData, index) {
+            const row = [
+                index + 1,
+                rowData.site_number || '',
+                rowData.location_name || '',
+                `${rowData.district_name || ''}, ${rowData.state_name || ''}`,
+                rowData.status_label || '',
+                rowData.next_available || ''
+            ];
+            data.push(row);
+        });
+
+        return data;
+    }
+
+
+    function styleMonthlySheet(worksheet, data, mergeInfo = []) {
+        const range = XLSX.utils.decode_range(worksheet['!ref']);
+
+        if (!worksheet['!merges']) worksheet['!merges'] = [];
+
+        // --- Apply merges safely ---
+        for (let row = 1; row <= range.e.r; row++) {
+            const rowMerges = Array.isArray(mergeInfo[row - 1]) ? mergeInfo[row - 1] : [];
+
+            rowMerges.forEach(merge => {
+                if (!merge || merge.startCol === undefined || merge.endCol === undefined) return;
+
+                worksheet['!merges'].push({
+                    s: { r: row, c: merge.startCol },
+                    e: { r: row, c: merge.endCol }
+                });
+
+                for (let col = merge.startCol; col <= merge.endCol; col++) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+                    if (!worksheet[cellAddress]) {
+                        worksheet[cellAddress] = { v: col === merge.startCol ? (merge.text || '') : '', t: 's' };
+                    }
+                }
+            });
+        }
+
+        // --- Fill empty cells ---
+        for (let r = 0; r <= range.e.r; r++) {
+            for (let c = 0; c <= range.e.c; c++) {
+                const cellAddress = XLSX.utils.encode_cell({ r, c });
+                if (!worksheet[cellAddress]) {
+                    worksheet[cellAddress] = { v: '', t: 's' };
+                }
+            }
+        }
+    }
+
+
+    function getMonthlyMergeInfo() {
+        const mergeInfo = [];
+        $('#monthly-booking-body tr').each(function() {
+            const rowMerges = [];
+            let colIndex = 6; // start from month columns
+            $(this).find('td').slice(6).each(function() {
+                const colspan = parseInt($(this).attr('colspan')) || 1;
+                const text = $(this).text().trim();
+                if (colspan > 1) {
+                    rowMerges.push({
+                        startCol: colIndex,
+                        endCol: colIndex + colspan - 1,
+                        text: text
+                    });
+                }
+                colIndex += colspan;
+            });
+            mergeInfo.push(rowMerges);
+        });
+        return mergeInfo;
+    }
+
+
+
+
+    function styleAvailabilitySheet(worksheet) {
+        // Style header row
+        const headerRow = worksheet.getRow(1);
+        headerRow.eachCell((cell) => {
+            cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+            cell.fill = { type: 'pattern', pattern:'solid', fgColor: { argb: 'FF366092' } };
+            cell.alignment = { horizontal: 'center', vertical: 'middle' };
+            cell.border = {
+                top: { style: 'thin' },
+                bottom: { style: 'thin' },
+                left: { style: 'thin' },
+                right: { style: 'thin' }
+            };
+        });
+
+        // Style data rows
+        worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+            if (rowNumber === 1) return; // skip header
+
+            row.eachCell((cell, colNumber) => {
+                cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                cell.border = {
+                    top: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+                    bottom: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+                    left: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+                    right: { style: 'thin', color: { argb: 'FFCCCCCC' } }
+                };
+
+                // Status column (5th column)
+                if (colNumber === 5 && cell.value) {
+                    const status = String(cell.value).toLowerCase();
+                    if (status.includes('not available')) {
+                        cell.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:'FFDC3545' } };
+                        cell.font = { color:{ argb:'FFFFFFFF' } };
+                    } else if (status.includes('available')) {
+                        cell.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:'FF10B981' } };
+                        cell.font = { color:{ argb:'FFFFFFFF' } };
+                    }
+                }
+            });
+        });
+
+        // Set column widths
+        const colWidths = [5, 12, 25, 20, 15, 15];
+        colWidths.forEach((w, i) => {
+            worksheet.getColumn(i + 1).width = w;
+        });
+    }
+
+
+    function buildMonthlyBookingTableHead(selectedYear) {
+        const shortYear = String(selectedYear).slice(-2);
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        let headerHtml = '<tr>';
+        headerHtml += '<th>No</th>';
+        headerHtml += '<th>Site No</th>';
+        headerHtml += '<th>Location</th>';
+        headerHtml += '<th>New/Existing</th>';
+        headerHtml += '<th>Type</th>';
+        headerHtml += '<th>Size</th>';
+        months.forEach(month => {
+            headerHtml += `<th>${month} '${shortYear}</th>`;
+        });
+        headerHtml += '</tr>';
+        $('#monthly-booking-head').html(headerHtml);
+    }
+
+    function loadMonthlyAvailability() {
+        $.ajax({
+            url: '{{ route("billboard.monthly.availability") }}',
+            method: 'GET',
+            data: {
+                start_date: $('#filterAvailabilityStart').val(),
+                end_date: $('#filterAvailabilityEnd').val(),
+                year: $('#filterAvailabilityYear').val(),
+                type: $('#filterAvailabilityType').val(),
+                site_type: $('#filterAvailabilitySiteType').val(),
+                state: $('#filterAvailabilityState').val(),
+                district: $('#filterAvailabilityDistrict').val(),
+                location: $('#filterAvailabilityLocation').val(),
+                status: $('#filterAvailabilityStatus').val()
+            },
+            success: function (response) {
+                const tbody = $('#monthly-booking-body');
+                tbody.empty();
+
+                if (!response.data || response.data.length === 0) {
+                    tbody.append(`<tr><td colspan="16" class="text-center p-4">No data available</td></tr>`);
+                    return;
+                }
+
+                response.data.forEach((row, index) => {
+                    let html = `<tr>
+                        <td class="border border-gray-300">${index + 1}</td>
+                        <td class="border border-gray-300">${row.site_number}</td>
+                        <td class="border border-gray-300">${row.location}</td>
+                        <td class="border border-gray-300">${row.site_type}</td>
+                        <td class="border border-gray-300">${row.type}</td>
+                        <td class="border border-gray-300">${row.size}</td>`;
+
+                    row.months.forEach(month => {
+                        let cellClass = `border border-gray-300 ${month.color} text-white font-semibold`;
+                        html += `<td colspan="${month.span}" class="${cellClass}">${month.text}</td>`;
+                    });
+
+                    html += `</tr>`;
+                    tbody.append(html);
+                });
+            },
+            error: function (xhr) {
+                console.error("AJAX error:", xhr.responseText);
+            }
+        });
+    }
+
+    // Setup billboard availability datatable
+    function initBillboardAvailabilityDatatable() {
+        const dt = new Date();
+        const formattedDate = `${dt.getFullYear()}${(dt.getMonth() + 1).toString().padStart(2, '0')}${dt.getDate().toString().padStart(2, '0')}`;
+        const formattedTime = `${dt.getHours()}:${dt.getMinutes()}:${dt.getSeconds()}`;
+        const $fileName = `Billboard_Availability_List_${formattedDate}_${formattedTime}`;
+
+        const table = $('#billboard_availability_table').DataTable({
+            destroy: true,
+            debug: true,
+            processing: true,
+            searching: true,
+            serverSide: true,
+            ordering: true,
+            order: [[0, 'asc']],
+            pagingType: 'full_numbers',
+            pageLength: 25,
+            aLengthMenu: [[25, 50, 75, -1], [25, 50, 75, "All"]],
+            iDisplayLength: 25,
+            ajax: {
+                url: "{{ route('billboard.checkAvailability') }}",
+                dataType: "json",
+                type: "POST",
+                data: function(d) {
+                    d._token = $('meta[name="csrf-token"]').attr('content');
+                    d.start_date = $('#filterAvailabilityStart').val();
+                    d.end_date = $('#filterAvailabilityEnd').val();
+                    d.type = $('#filterAvailabilityType').val();
+                    d.site_type = $('#filterAvailabilitySiteType').val();
+                    d.status = $('#filterAvailabilityStatus').val();
+                    d.state = $('#filterAvailabilityState').val();
+                    d.district = $('#filterAvailabilityDistrict').val();
+                    d.location = $('#filterAvailabilityLocation').val();
+                },
+                dataSrc: function(json) {
+                    json.recordsTotal = json.recordsTotal;
+                    json.recordsFiltered = json.recordsFiltered;
+                    return json.data;
+                }
+            },
+            language: {
+                emptyTable: "No records found. Please apply at least one filter."
+            },
+            dom: "lBfrtip",
+            buttons: [
+                {
+                    text: "Combined Excel",
+                    className: "button w-32 rounded-full shadow-md mr-1 mb-2 bg-theme-9 text-white",
+                    action: function(e, dt, node, config) {
+                        exportCombinedExcel();
+                    }
+                },
+                {
+                    extend: "csv",
+                    className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
+                    title: $fileName,
+                    exportOptions: {
+                        columns: ":not(.dt-exclude-export)"
+                    },
+                    init: function(api, node, config) {
+                        $(node).removeClass('dt-button');
+                        $(node).removeClass('buttons-html5');
+                    },
+                },
+                {
+                    extend: "excel",
+                    className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
+                    title: $fileName,
+                    exportOptions: {
+                        columns: ":not(.dt-exclude-export)"
+                    },
+                    init: function(api, node, config) {
+                        $(node).removeClass('dt-button');
+                        $(node).removeClass('buttons-html5');
+                    },
+                }
+            ],
+            columns: [
+                {
+                    data: null,
+                    name: 'no',
+                    orderable: false,
+                    searchable: false,
+                    render: function (data, type, row, meta) {
+                        return meta.row + meta.settings._iDisplayStart + 1;
+                    }
+                },
+                { data: "site_number" },
+                { data: "location_name" },
+                {
+                    data: null,
+                    name: 'district_state',
+                    render: function (data, type, row) {
+                        const district = row.district_name || '';
+                        const state = row.state_name || '';
+                        return `${district}, ${state}`;
+                    }
+                },
+                {
+                    data: "status_label",
+                    render: function(data, type, row) {
+                        if (row.is_available == false) {
+                            return `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-6 text-white">${data}</a>`;
+                        } else {
+                            return `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-18 text-black">${data}</a>`;
+                        }
+                    }
+                },
+                { data: "next_available" },
+                {
+                    data: "id",
+                    render: (data) => `
+                        <div class="flex justify-center items-center gap-3">
+                            <a href="javascript:;" data-toggle="modal" data-target="#addBookingModal"
+                                class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-1 text-white new-job-order" 
+                                data-id="${data}">
+                                New Job Order
+                            </a>
+                        </div>
+                    `
+                },
+            ],
+        });
+
+        // Add classes to the "dt-buttons" div
+        var dtButtonsDiv = document.querySelector(".dt-buttons");
+        if (dtButtonsDiv) {
+            dtButtonsDiv.classList.add("mt-2");
+        }
+
+        // Update styling for the filter input
+        var filterDiv = document.getElementById("billboard_availability_table_filter");
+        if (filterDiv) {
+            filterDiv.style.float = "right";
+            filterDiv.classList.remove('dataTables_filter');
+
+            var inputElement = filterDiv.querySelector("label input");
+            if (inputElement) {
+                inputElement.classList.add("input", "border", "mt-2", "ml-2", "mr-1", "mb-5");
+            }
+        }
+
+        // Update styling for the info and paginate elements
+        var infoDiv = document.getElementById("billboard_availability_table_info");
+        var paginateDiv = document.getElementById("billboard_availability_table_paginate");
+
+        if (infoDiv) {
+            infoDiv.style.float = "left";
+            infoDiv.classList.add("mt-5");
+        }
+
+        if (paginateDiv) {
+            paginateDiv.style.float = "right";
+            paginateDiv.classList.add("mt-5");
+        }
+
+        // Update styling for the "billboard_availability_table_length" div and its select element
+        var existingDiv = document.getElementById("billboard_availability_table_length");
+        if (existingDiv) {
+            existingDiv.classList.remove('dataTables_length');
+            existingDiv.classList.add('mt-2', 'mb-1');
+
+            var existingSelect = existingDiv.querySelector('select');
+            if (existingSelect) {
+                existingSelect.className = 'input sm:w-auto border';
+            }
+        }
+
+        // Open modal to edit SR
+        // editAvailabilityModal();
+    };
+
+    
+
 
     // -------------------
     // Filter Dates
@@ -734,55 +1324,57 @@
             $('#monthly-booking-head').html(headerHtml);
         }
 
+        
 
-        function loadMonthlyAvailability() {
+
+        // function loadMonthlyAvailability() {
             
-            $.ajax({
-                url: '{{ route("billboard.monthly.availability") }}',
-                method: 'GET',
-                data: {
-                    start_date: $('#filterAvailabilityStart').val(),
-                    end_date: $('#filterAvailabilityEnd').val(),
-                    year: $('#filterAvailabilityYear').val(),
-                    type: $('#filterAvailabilityType').val(),
-                    site_type: $('#filterAvailabilitySiteType').val(),
-                    state: $('#filterAvailabilityState').val(),
-                    district: $('#filterAvailabilityDistrict').val(),
-                    location: $('#filterAvailabilityLocation').val(),
-                    status: $('#filterAvailabilityStatus').val()
-                },
-                success: function (response) {
-                    const tbody = $('#monthly-booking-body');
-                    tbody.empty();
+        //     $.ajax({
+        //         url: '{{ route("billboard.monthly.availability") }}',
+        //         method: 'GET',
+        //         data: {
+        //             start_date: $('#filterAvailabilityStart').val(),
+        //             end_date: $('#filterAvailabilityEnd').val(),
+        //             year: $('#filterAvailabilityYear').val(),
+        //             type: $('#filterAvailabilityType').val(),
+        //             site_type: $('#filterAvailabilitySiteType').val(),
+        //             state: $('#filterAvailabilityState').val(),
+        //             district: $('#filterAvailabilityDistrict').val(),
+        //             location: $('#filterAvailabilityLocation').val(),
+        //             status: $('#filterAvailabilityStatus').val()
+        //         },
+        //         success: function (response) {
+        //             const tbody = $('#monthly-booking-body');
+        //             tbody.empty();
 
-                    if (!response.data || response.data.length === 0) {
-                        tbody.append(`<tr><td colspan="16" class="text-center p-4">No data available</td></tr>`);
-                        return;
-                    }
+        //             if (!response.data || response.data.length === 0) {
+        //                 tbody.append(`<tr><td colspan="16" class="text-center p-4">No data available</td></tr>`);
+        //                 return;
+        //             }
 
-                    response.data.forEach((row, index) => {
-                        let html = `<tr>
-                            <td class="border border-gray-300">${index + 1}</td>
-                            <td class="border border-gray-300">${row.site_number}</td>
-                            <td class="border border-gray-300">${row.location}</td>
-                            <td class="border border-gray-300">${row.site_type}</td>
-                            <td class="border border-gray-300">${row.type}</td>
-                            <td class="border border-gray-300">${row.size}</td>`;
+        //             response.data.forEach((row, index) => {
+        //                 let html = `<tr>
+        //                     <td class="border border-gray-300">${index + 1}</td>
+        //                     <td class="border border-gray-300">${row.site_number}</td>
+        //                     <td class="border border-gray-300">${row.location}</td>
+        //                     <td class="border border-gray-300">${row.site_type}</td>
+        //                     <td class="border border-gray-300">${row.type}</td>
+        //                     <td class="border border-gray-300">${row.size}</td>`;
 
-                        row.months.forEach(month => {
-                            let cellClass = `border border-gray-300 ${month.color} text-white font-semibold`;
-                            html += `<td colspan="${month.span}" class="${cellClass}">${month.text}</td>`;
-                        });
+        //                 row.months.forEach(month => {
+        //                     let cellClass = `border border-gray-300 ${month.color} text-white font-semibold`;
+        //                     html += `<td colspan="${month.span}" class="${cellClass}">${month.text}</td>`;
+        //                 });
 
-                        html += `</tr>`;
-                        tbody.append(html);
-                    });
-                },
-                error: function (xhr) {
-                    console.error("AJAX error:", xhr.responseText);
-                }
-            });
-        }
+        //                 html += `</tr>`;
+        //                 tbody.append(html);
+        //             });
+        //         },
+        //         error: function (xhr) {
+        //             console.error("AJAX error:", xhr.responseText);
+        //         }
+        //     });
+        // }
 
         $(document).ready(function () {
             const selectedYear = $('#filterAvailabilityYear').val();
@@ -886,209 +1478,7 @@
 
         
     
-        // Setup billboard availability datatable
-        function initBillboardAvailabilityDatatable() {
-            const dt = new Date();
-            const formattedDate = `${dt.getFullYear()}${(dt.getMonth() + 1).toString().padStart(2, '0')}${dt.getDate().toString().padStart(2, '0')}`;
-            const formattedTime = `${dt.getHours()}:${dt.getMinutes()}:${dt.getSeconds()}`;
-            const $fileName = `Billboard_Availability_List_${formattedDate}_${formattedTime}`;
-
-            const table = $('#billboard_availability_table').DataTable({
-                // altEditor: true,
-                destroy: true,
-                debug: true,
-                processing: true,
-                searching: true,
-                serverSide: true,
-                ordering: true,
-                order: [
-                    [0, 'asc']
-                ],
-                pagingType: 'full_numbers',
-                pageLength: 25,
-                aLengthMenu: [
-                    [25, 50, 75, -1],
-                    [25, 50, 75, "All"]
-                ],
-                iDisplayLength: 25,
-                ajax: {
-                    url: "{{ route('billboard.checkAvailability') }}",
-                    dataType: "json",
-                    type: "POST",
-                    data: function(d) {
-                        d._token        = $('meta[name="csrf-token"]').attr('content');
-                        d.start_date    = $('#filterAvailabilityStart').val();
-                        d.end_date      = $('#filterAvailabilityEnd').val();
-                        d.type          = $('#filterAvailabilityType').val();
-                        d.site_type     = $('#filterAvailabilitySiteType').val();
-                        d.status        = $('#filterAvailabilityStatus').val();
-                        d.state         = $('#filterAvailabilityState').val();
-                        d.district      = $('#filterAvailabilityDistrict').val();
-                        d.location      = $('#filterAvailabilityLocation').val();
-                    },
-                    dataSrc: function(json) {
-                        json.recordsTotal = json.recordsTotal;
-                        json.recordsFiltered = json.recordsFiltered;
-
-                        // If no filters, return empty array to show "No data"
-                        const noFilters =
-                            !$('#filterAvailabilityStart').val() &&
-                            !$('#filterAvailabilityEnd').val() &&
-                            !$('#filterAvailabilityType').val() &&
-                            !$('#filterAvailabilitySiteType').val() &&
-                            !$('#filterAvailabilityState').val() &&
-                            !$('#filterAvailabilityDistrict').val() &&
-                            !$('#filterAvailabilityLocation').val() &&
-                            !$('#filterAvailabilityStatus').val();
-
-                        return json.data;
-                    }
-                },
-                 language: {
-                    emptyTable: "No records found. Please apply at least one filter."
-                },
-                dom: "lBfrtip",
-                buttons: [{
-                        extend: "csv",
-                        className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
-                        title: $fileName,
-                        exportOptions: {
-                            columns: ":not(.dt-exclude-export)"
-                        },
-                        init: function(api, node, config) {
-                            $(node).removeClass('dt-button');
-                            $(node).removeClass('buttons-html5');
-                        },
-                    },
-                    {
-                        extend: "excel",
-                        className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
-                        title: $fileName,
-                        exportOptions: {
-                            columns: ":not(.dt-exclude-export)"
-                        },
-                        init: function(api, node, config) {
-                            $(node).removeClass('dt-button');
-                            $(node).removeClass('buttons-html5');
-                        },
-                    },
-                    {
-                        extend: "print",
-                        className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
-                        title: $fileName,
-                        // including printing image
-                        exportOptions: {
-                            stripHtml: false,
-                        },
-                        init: function(api, node, config) {
-                            $(node).removeClass('dt-button');
-                            $(node).removeClass('buttons-html5');
-                        },
-                    },
-                ],
-                
-                columns: [
-                    {
-                        data: null, // <-- important
-                        name: 'no',
-                        orderable: false,
-                        searchable: false,
-                        render: function (data, type, row, meta) {
-                            return meta.row + meta.settings._iDisplayStart + 1;
-                        }
-                    },
-                    {
-                        data: "site_number",
-                    },
-                    {
-                        data: "location_name",
-                    },
-                    {
-                        data: null,
-                        name: 'district_state',
-                        render: function (data, type, row) {
-                            const district = row.district_name || '';
-                            const state = row.state_name || '';
-                            return `${district}, ${state}`; // Or use template style if preferred
-                        }
-                    },
-                    {
-                        data: "status_label", // <-- use clean label for raw data
-                        render: function(data, type, row) {
-                            if (row.is_available == false) {
-                                return `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-6 text-white">${data}</a>`;
-                            } else {
-                                return `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-18 text-black">${data}</a>`;
-                            }
-                        }
-                    },
-                    {
-                        data: "next_available",
-                    },
-                    {
-                        data: "id",
-                        render: (data) => `
-                            <div class="flex justify-center items-center gap-3">
-                                <!-- Edit Button -->
-                                <a href="javascript:;" data-toggle="modal" data-target="#addBookingModal"
-                                    class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-1 text-white new-job-order" 
-                                    data-id="${data}"
-                                >
-                                    New Job Order
-                                </a>
-                            </div>
-                        `
-                    },
-                ],
-            });
-
-            // Add classes to the "dt-buttons" div
-            var dtButtonsDiv = document.querySelector(".dt-buttons");
-            if (dtButtonsDiv) {
-                dtButtonsDiv.classList.add("mt-2");
-            }
-
-            // Update styling for the filter input
-            var filterDiv = document.getElementById("billboard_availability_table_filter");
-            if (filterDiv) {
-                filterDiv.style.float = "right";
-                filterDiv.classList.remove('dataTables_filter');
-
-                var inputElement = filterDiv.querySelector("label input");
-                if (inputElement) {
-                    inputElement.classList.add("input", "border", "mt-2", "ml-2", "mr-1", "mb-5");
-                }
-            }
-
-            // Update styling for the info and paginate elements
-            var infoDiv = document.getElementById("billboard_availability_table_info");
-            var paginateDiv = document.getElementById("billboard_availability_table_paginate");
-
-            if (infoDiv) {
-                infoDiv.style.float = "left";
-                infoDiv.classList.add("mt-5");
-            }
-
-            if (paginateDiv) {
-                paginateDiv.style.float = "right";
-                paginateDiv.classList.add("mt-5");
-            }
-
-            // Update styling for the "billboard_availability_table_length" div and its select element
-            var existingDiv = document.getElementById("billboard_availability_table_length");
-            if (existingDiv) {
-                existingDiv.classList.remove('dataTables_length');
-                existingDiv.classList.add('mt-2', 'mb-1');
-
-                var existingSelect = existingDiv.querySelector('select');
-                if (existingSelect) {
-                    existingSelect.className = 'input sm:w-auto border';
-                }
-            }
-
-            // Open modal to edit SR
-            // editAvailabilityModal();
-        };
+        
 
         initBillboardAvailabilityDatatable();
         setupAutoFilter();
@@ -1207,6 +1597,9 @@
                 }
             });
         });
+
+        
+
 
 
 
