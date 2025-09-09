@@ -617,35 +617,87 @@
 
     async function exportCombinedExcel() {
         const dt = new Date();
-        const formattedDate = `${dt.getFullYear()}${(dt.getMonth()+1).toString().padStart(2,'0')}${dt.getDate().toString().padStart(2,'0')}`;
+        const y = dt.getFullYear();
+        const formattedDate = `${y}${String(dt.getMonth() + 1).padStart(2, '0')}${String(dt.getDate()).padStart(2, '0')}`;
         const formattedTime = `${dt.getHours()}:${dt.getMinutes()}:${dt.getSeconds()}`;
         const fileName = `Billboard_Availability_Report_${formattedDate}_${formattedTime}.xlsx`;
 
         const workbook = new ExcelJS.Workbook();
-
-        // =======================
-        // Sheet 1: Monthly Calendar
-        // =======================
         const monthlySheet = workbook.addWorksheet('Monthly Calendar');
-        const monthlyData = prepareMonthlyData();      // Your function
-        const mergeInfo = getMonthlyMergeInfo();       // Your function
 
-        // Map backend color classes to ARGB
-        const colorMap = {
-            'bg-theme-6': 'FFD32929',  // pending_payment
-            'bg-theme-1': 'FF1C3FAA',  // pending_install
-            'bg-green-600': 'FF059669',// ongoing
-            'bg-theme-12': 'FFFBC500', // completed
-            'bg-theme-13': 'FF7F9EB9', // dismantle
-            'bg-white': 'FFFFFFFF' // white background
+        // Prepare data
+        const monthlyData = prepareMonthlyData();   // array of rows; row[0] is header
+        const mergeInfo   = getMonthlyMergeInfo();  // merges per row
+        const totalCols   = monthlyData[0].length;
+
+        // Helpers
+        const colLetter = (n) => {
+            let s = '';
+            while (n > 0) {
+                const m = (n - 1) % 26;
+                s = String.fromCharCode(65 + m) + s;
+                n = Math.floor((n - 1) / 26);
+            }
+            return s;
         };
 
-        // Add all rows
-        monthlyData.forEach((rowData, rowIndex) => {
-            const row = monthlySheet.addRow(rowData);
+        // ---- Title ----
+        const lastCol = colLetter(totalCols);
+        monthlySheet.mergeCells(`A1:${lastCol}1`);
+        const titleCell = monthlySheet.getCell('A1');
+        titleCell.value = `Billboard Availability Report - ${y}`;
+        titleCell.font = { size: 16, bold: true };
+        titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
-            row.eachCell((cell, colNumber) => {
-                // Apply borders to all cells
+        // ---- Legend on row 2 (H2–L2) ----
+        const legendItems = [
+            { label: 'Pending Payment', color: 'FFD32929' },
+            { label: 'Pending Install', color: 'FF1C3FAA' },
+            { label: 'Ongoing',         color: 'FF059669' },
+            { label: 'Completed',       color: 'FFFBC500' },
+            { label: 'Dismantle',       color: 'FF7F9EB9' },
+        ];
+
+        const legendRow = 2;
+        let startCol = 8; // H
+
+        legendItems.forEach((item, i) => {
+            const col = startCol + i;
+            const cell = monthlySheet.getCell(legendRow, col);
+            cell.value = item.label;
+            cell.alignment = { horizontal: 'center', vertical: 'middle' };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: item.color } };
+            const fontColor = (item.color === 'FFFBC500') ? 'FF000000' : 'FFFFFFFF';
+            cell.font = { bold: true, color: { argb: fontColor } };
+            cell.border = {
+                top: { style: 'thin' }, bottom: { style: 'thin' },
+                left: { style: 'thin' }, right: { style: 'thin' }
+            };
+            monthlySheet.getColumn(col).width = Math.max(18, monthlySheet.getColumn(col).width || 0);
+        });
+
+        // ---- Table start (row 4) ----
+        const headerRowIndex = 4;
+        const firstDataRowIndex = headerRowIndex + 1;
+
+        // Color map
+        const colorMap = {
+            'bg-theme-6':   'FFD32929', // pending_payment
+            'bg-theme-1':   'FF1C3FAA', // pending_install
+            'bg-green-600': 'FF059669', // ongoing
+            'bg-theme-12':  'FFFBC500', // completed
+            'bg-theme-13':  'FF7F9EB9', // dismantle
+            'bg-white':     'FFFFFFFF', // white background
+        };
+
+        // Write header + data
+        monthlyData.forEach((rowData, i) => {
+            const excelRow = monthlySheet.getRow(headerRowIndex + i);
+            rowData.forEach((v, colIdx) => {
+                excelRow.getCell(colIdx + 1).value = v;
+            });
+
+            excelRow.eachCell((cell, colNumber) => {
                 cell.border = {
                     top: { style: 'thin', color: { argb: 'FF000000' } },
                     bottom: { style: 'thin', color: { argb: 'FF000000' } },
@@ -653,51 +705,45 @@
                     right: { style: 'thin', color: { argb: 'FF000000' } }
                 };
 
-                if (rowIndex === 0) {
-                    // Header styling
+                if (i === 0) { // header
                     cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
                     cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF366092' } };
                     cell.alignment = { horizontal: 'center', vertical: 'middle' };
                 } else {
-                    // Data cell alignment
                     cell.alignment = { horizontal: 'center', vertical: 'middle' };
-
-                    // Apply color from _colors array
-                    if (rowData._colors) {
-                        const colorClass = rowData._colors[colNumber - 1];
-                        if (colorClass) {
-                            const bgColor = colorMap[colorClass] || 'FFFFFFFF';
-                            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } };
-                            cell.font = { color: { argb: 'FF000000' }, bold: true };
-                        }
+                    const colors = rowData._colors || [];
+                    const colorClass = colors[colNumber - 1];
+                    if (colorClass) {
+                        const bgColor = colorMap[colorClass] || 'FFFFFFFF';
+                        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } };
+                        cell.font = { color: { argb: 'FF000000' }, bold: true };
                     }
                 }
             });
+            excelRow.commit();
         });
 
-
-        // Apply merges and coloring for monthly bookings
-        mergeInfo.forEach((rowMerges, rowIndex) => {
+        // ---- Apply merges ----
+        mergeInfo.forEach((rowMerges, dataRowIdx) => {
+            const rowNum = firstDataRowIndex + dataRowIdx;
             rowMerges.forEach(merge => {
                 const startCol = merge.startCol + 1;
-                const endCol = merge.endCol + 1;
-                const rowNum = rowIndex + 2;
-
+                const endCol   = merge.endCol + 1;
                 monthlySheet.mergeCells(rowNum, startCol, rowNum, endCol);
-                const topLeftCell = monthlySheet.getCell(rowNum, startCol);
 
-                // Get color from controller field
+                const tl = monthlySheet.getCell(rowNum, startCol);
                 const bgColor = colorMap[merge.color] || 'FF6B7280';
+                tl.value = merge.text || '';
+                tl.alignment = { horizontal: 'center', vertical: 'middle' };
+                
+                // font color: black if yellow (bg-theme-12), else white
+                const fontColor = (merge.color === 'bg-theme-12') ? 'FF000000' : 'FFFFFFFF';
+                tl.font = { bold: true, color: { argb: fontColor } };
+                tl.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } };
 
-                topLeftCell.value = merge.text || '';
-                topLeftCell.alignment = { horizontal: 'center', vertical: 'middle' };
-                topLeftCell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-                topLeftCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } };
-
-                // Apply borders to all merged cells
-                for (let col = startCol; col <= endCol; col++) {
-                    const c = monthlySheet.getCell(rowNum, col);
-                    c.border = {
+                for (let c = startCol; c <= endCol; c++) {
+                    const cc = monthlySheet.getCell(rowNum, c);
+                    cc.border = {
                         top: { style: 'thin', color: { argb: 'FF000000' } },
                         bottom: { style: 'thin', color: { argb: 'FF000000' } },
                         left: { style: 'thin', color: { argb: 'FF000000' } },
@@ -707,61 +753,50 @@
             });
         });
 
+        // Column widths
+        const colWidths = [5, 12, 25, 20, 12, 10, ...Array(totalCols - 6).fill(15)];
+        colWidths.forEach((w, i) => monthlySheet.getColumn(i + 1).width = w);
 
-        // Set column widths
-        const colWidths = [5,12,20,15,10,10,...Array(12).fill(15)];
-        colWidths.forEach((w, i) => monthlySheet.getColumn(i+1).width = w);
-
-        // =======================
-        // Sheet 2: Availability List
-        // =======================
+        // ---- Availability List (2nd sheet) ----
         const availabilitySheet = workbook.addWorksheet('Availability List');
-        const availabilityData = prepareAvailabilityData(); // Your function
-
+        const availabilityData = prepareAvailabilityData();
         availabilityData.forEach((rowData, rowIndex) => {
             const row = availabilitySheet.addRow(rowData);
-
             row.eachCell((cell, colNumber) => {
-                // Borders for all cells
                 cell.border = {
                     top: { style: 'thin', color: { argb: 'FF000000' } },
                     bottom: { style: 'thin', color: { argb: 'FF000000' } },
                     left: { style: 'thin', color: { argb: 'FF000000' } },
                     right: { style: 'thin', color: { argb: 'FF000000' } }
                 };
-
-                if(rowIndex === 0){
-                    cell.font = { bold:true, color:{argb:'FFFFFFFF'} };
-                    cell.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FF366092'} };
-                    cell.alignment = { horizontal:'center', vertical:'middle' };
+                if (rowIndex === 0) {
+                    cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF366092' } };
+                    cell.alignment = { horizontal: 'center', vertical: 'middle' };
                 } else {
-                    cell.alignment = { horizontal:'center', vertical:'middle' };
-
-                    // Status column
-                    if(colNumber === 5) {
-                        const text = (cell.value || '').toLowerCase();
-                        if(text.includes('not available')) {
-                            cell.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FFDC3545'} };
-                            cell.font = { color:{argb:'FFFFFFFF'} };
-                        } else if(text.includes('available')) {
-                            cell.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FF10B981'} };
-                            cell.font = { color:{argb:'FFFFFFFF'} };
+                    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                    if (colNumber === 5 && cell.value) {
+                        const status = String(cell.value).toLowerCase();
+                        if (status.includes('not available')) {
+                            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDC3545' } };
+                            cell.font = { color: { argb: 'FFFFFFFF' } };
+                        } else if (status.includes('available')) {
+                            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF10B981' } };
+                            cell.font = { color: { argb: 'FFFFFFFF' } };
                         }
                     }
                 }
             });
         });
+        [5, 12, 25, 20, 15, 15].forEach((w, i) => availabilitySheet.getColumn(i + 1).width = w);
 
-        const availWidths = [5,12,25,20,15,15];
-        availWidths.forEach((w,i)=>availabilitySheet.getColumn(i+1).width=w);
-
-        // =======================
-        // Download workbook
-        // =======================
+        // ---- Download ----
         const buf = await workbook.xlsx.writeBuffer();
-        const blob = new Blob([buf], { type:"application/octet-stream" });
+        const blob = new Blob([buf], { type: "application/octet-stream" });
         saveAs(blob, fileName);
     }
+
+
 
 
 
@@ -1096,36 +1131,12 @@
             dom: "lBrtip",
             buttons: [
                 {
-                    text: "Combined Excel",
-                    className: "button w-32 rounded-full shadow-md mr-1 mb-2 bg-theme-9 text-white",
+                    text: "Export Excel",
+                    className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
                     action: function(e, dt, node, config) {
                         exportCombinedExcel();
                     }
                 },
-                {
-                    extend: "csv",
-                    className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
-                    title: $fileName,
-                    exportOptions: {
-                        columns: ":not(.dt-exclude-export)"
-                    },
-                    init: function(api, node, config) {
-                        $(node).removeClass('dt-button');
-                        $(node).removeClass('buttons-html5');
-                    },
-                },
-                {
-                    extend: "excel",
-                    className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
-                    title: $fileName,
-                    exportOptions: {
-                        columns: ":not(.dt-exclude-export)"
-                    },
-                    init: function(api, node, config) {
-                        $(node).removeClass('dt-button');
-                        $(node).removeClass('buttons-html5');
-                    },
-                }
             ],
             columns: [
                 {

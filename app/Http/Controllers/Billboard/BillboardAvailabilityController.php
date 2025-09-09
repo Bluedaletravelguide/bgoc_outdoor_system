@@ -236,71 +236,6 @@ class BillboardAvailabilityController extends Controller
         })->values()->all();
     }
 
-    // private function buildMonthlyBlocks($billboard, $year)
-    // {
-    //     $months = [];
-    //     $processedMonths = [];
-
-    //     for ($month = 1; $month <= 12; $month++) {
-    //         $monthKey = str_pad($month, 2, '0', STR_PAD_LEFT);
-
-    //         if (in_array($monthKey, $processedMonths)) continue;
-
-    //         $matchedBooking = null;
-
-    //         foreach ($billboard->bookings as $booking) {
-    //             $bookingStart = Carbon::parse($booking->start_date);
-    //             $bookingEnd   = Carbon::parse($booking->end_date);
-
-    //             $monthStart = Carbon::create($year, $month, 1);
-    //             $monthEnd   = $monthStart->copy()->endOfMonth();
-
-    //             if ($bookingStart->lte($monthEnd) && $bookingEnd->gte($monthStart)) {
-    //                 $matchedBooking = $booking;
-
-    //                 $startMonth = max($bookingStart->month, $month);
-    //                 $endMonth = min($bookingEnd->month, 12);
-    //                 $span = $endMonth - $startMonth + 1;
-
-    //                 for ($m = $startMonth; $m <= $endMonth; $m++) {
-    //                     $processedMonths[] = str_pad($m, 2, '0', STR_PAD_LEFT);
-    //                 }
-
-    //                 $colorClass = match ($booking->status) {
-    //                     'pending_payment' => 'bg-theme-6',
-    //                     'pending_install' => 'bg-theme-1',
-    //                     'ongoing'         => 'bg-green-600',
-    //                     'completed'       => 'bg-theme-12',
-    //                     'dismantle'       => 'bg-theme-13',
-    //                     default           => 'bg-gray-400',
-    //                 };
-
-    //                 $months[] = [
-    //                     'month' => $monthKey,
-    //                     'span'  => $span,
-    //                     'text'  => optional($booking->clientCompany)->name
-    //                         ? $booking->clientCompany->name . ' (' . $bookingStart->format('d/m') . '–' . $bookingEnd->format('d/m') . ')'
-    //                         : 'Booked (' . $bookingStart->format('d/m') . '–' . $bookingEnd->format('d/m') . ')',
-    //                     'color' => $colorClass,
-    //                 ];
-
-    //                 break;
-    //             }
-    //         }
-
-    //         if (!$matchedBooking) {
-    //             $months[] = [
-    //                 'month' => $monthKey,
-    //                 'span'  => 1,
-    //                 'text'  => '',
-    //                 'color' => '',
-    //             ];
-    //         }
-    //     }
-
-    //     return $months;
-    // }
-
     private function buildMonthlyBlocks($billboard, $year)
     {
         $months = [];
@@ -367,8 +302,6 @@ class BillboardAvailabilityController extends Controller
                 ];
             }
         }
-
-        logger('monthss: ' . json_encode($months));
 
         return $months;
     }
