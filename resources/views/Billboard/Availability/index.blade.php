@@ -616,11 +616,11 @@
     }
 
     async function exportCombinedExcel() {
+        const year = $('#filterAvailabilityYear').val() || new Date().getFullYear();
         const dt = new Date();
-        const y = dt.getFullYear();
-        const formattedDate = `${y}${String(dt.getMonth() + 1).padStart(2, '0')}${String(dt.getDate()).padStart(2, '0')}`;
+        const formattedDate = `${dt.getFullYear()}${String(dt.getMonth() + 1).padStart(2, '0')}${String(dt.getDate()).padStart(2, '0')}`;
         const formattedTime = `${dt.getHours()}:${dt.getMinutes()}:${dt.getSeconds()}`;
-        const fileName = `Billboard_Availability_Report_${formattedDate}_${formattedTime}.xlsx`;
+        const fileName = `Billboard_Availability_Report_${year}_${formattedDate}_${formattedTime}.xlsx`;
 
         const workbook = new ExcelJS.Workbook();
         const monthlySheet = workbook.addWorksheet('Monthly Calendar');
@@ -645,7 +645,7 @@
         const lastCol = colLetter(totalCols);
         monthlySheet.mergeCells(`A1:${lastCol}1`);
         const titleCell = monthlySheet.getCell('A1');
-        titleCell.value = `Billboard Availability Report - ${y}`;
+        titleCell.value = `Billboard Availability Report - ${year}`; // <-- use filter year
         titleCell.font = { size: 16, bold: true };
         titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
@@ -966,10 +966,6 @@
         return mergeInfo;
     }
 
-
-
-
-
     function styleAvailabilitySheet(worksheet) {
         // Style header row
         const headerRow = worksheet.getRow(1);
@@ -1038,13 +1034,19 @@
     }
 
     function loadMonthlyAvailability() {
+        const selectedYear = parseInt($('#filterAvailabilityYear').val()) || new Date().getFullYear();
+
+        // Build start/end of year dates
+        const startDate = `${selectedYear}-01-01`;
+        const endDate   = `${selectedYear}-12-31`;
+
         $.ajax({
             url: '{{ route("billboard.monthly.availability") }}',
             method: 'GET',
             data: {
-                start_date: $('#filterAvailabilityStart').val(),
-                end_date: $('#filterAvailabilityEnd').val(),
-                year: $('#filterAvailabilityYear').val(),
+                start_date: startDate,
+                end_date: endDate,
+                year: selectedYear,
                 type: $('#filterAvailabilityType').val(),
                 site_type: $('#filterAvailabilitySiteType').val(),
                 state: $('#filterAvailabilityState').val(),
@@ -1084,6 +1086,7 @@
             }
         });
     }
+
 
     // Setup billboard availability datatable
     function initBillboardAvailabilityDatatable() {

@@ -60,6 +60,43 @@ class BillboardAvailabilityController extends Controller
         return view('billboard.availability.index', compact('companies', 'states', 'districts', 'locations', 'types'));
     }
 
+    // public function getMonthlyBookingAvailability(Request $request)
+    // {
+    //     $filters = $this->extractFilters($request);
+    //     $billboards = $this->queryFilteredBillboards($filters);
+
+    //     $results = [];
+    //     foreach ($billboards as $index => $billboard) {
+    //         [$isAvailable, $nextAvailableDate] = $this->checkAvailability($billboard, $filters['start_date'], $filters['end_date']);
+
+    //         if (!$this->passesStatusFilter($isAvailable, $filters['status'])) {
+    //             continue;
+    //         }
+
+    //         $row = [
+    //             'site_number' => $billboard->site_number,
+    //             'location'    => $billboard->location->name,
+    //             'site_type'   => $billboard->site_type ?? '-',
+    //             'type'        => $billboard->type ?? '-',
+    //             'size'        => $billboard->size ?? '-',
+    //             'is_available' => $isAvailable,
+    //             'next_available_raw' => $isAvailable ? null : $nextAvailableDate,
+    //             'months' => $this->buildMonthlyBlocks($billboard, $filters['year'])
+    //         ];
+
+    //         $results[] = $row;
+    //     }
+
+    //     $results = $this->sortAvailability($results);
+
+    //     return response()->json([
+    //         'draw' => intval($request->input('draw')),
+    //         'recordsTotal' => count($results),
+    //         'recordsFiltered' => count($results),
+    //         'data' => $results,
+    //     ]);
+    // }
+
     public function getMonthlyBookingAvailability(Request $request)
     {
         $filters = $this->extractFilters($request);
@@ -67,35 +104,42 @@ class BillboardAvailabilityController extends Controller
 
         $results = [];
         foreach ($billboards as $index => $billboard) {
-            [$isAvailable, $nextAvailableDate] = $this->checkAvailability($billboard, $filters['start_date'], $filters['end_date']);
+
+            // Use Carbon dates from filters
+            $startDate = $filters['start_date'];
+            $endDate   = $filters['end_date'];
+
+            [$isAvailable, $nextAvailableDate] = $this->checkAvailability($billboard, $startDate, $endDate);
 
             if (!$this->passesStatusFilter($isAvailable, $filters['status'])) {
                 continue;
             }
 
-            $row = [
-                'site_number' => $billboard->site_number,
-                'location'    => $billboard->location->name,
-                'site_type'   => $billboard->site_type ?? '-',
-                'type'        => $billboard->type ?? '-',
-                'size'        => $billboard->size ?? '-',
-                'is_available' => $isAvailable,
-                'next_available_raw' => $isAvailable ? null : $nextAvailableDate,
-                'months' => $this->buildMonthlyBlocks($billboard, $filters['year'])
-            ];
+            // Build monthly blocks between start and end date
+            $months = $this->buildMonthlyBlocks($billboard, $startDate, $endDate);
 
-            $results[] = $row;
+            $results[] = [
+                'site_number'        => $billboard->site_number,
+                'location'           => $billboard->location->name,
+                'site_type'          => $billboard->site_type ?? '-',
+                'type'               => $billboard->type ?? '-',
+                'size'               => $billboard->size ?? '-',
+                'is_available'       => $isAvailable,
+                'next_available_raw' => $isAvailable ? null : $nextAvailableDate,
+                'months'             => $months,
+            ];
         }
 
         $results = $this->sortAvailability($results);
 
         return response()->json([
-            'draw' => intval($request->input('draw')),
-            'recordsTotal' => count($results),
+            'draw'            => intval($request->input('draw')),
+            'recordsTotal'    => count($results),
             'recordsFiltered' => count($results),
-            'data' => $results,
+            'data'            => $results,
         ]);
     }
+
 
     public function getBillboardAvailability(Request $request)
     {
@@ -236,16 +280,20 @@ class BillboardAvailabilityController extends Controller
         })->values()->all();
     }
 
-    private function buildMonthlyBlocks($billboard, $year)
+    private function buildMonthlyBlocks($billboard, Carbon $startDate, Carbon $endDate)
     {
         $months = [];
         $processedMonths = [];
 
-        for ($month = 1; $month <= 12; $month++) {
-            $monthKey = str_pad($month, 2, '0', STR_PAD_LEFT);
+        $current = $startDate->copy()->startOfMonth();
 
-            // Skip if already processed due to spanning booking
-            if (in_array($monthKey, $processedMonths)) continue;
+        while ($current->lte($endDate)) {
+            $monthKey = $current->format('Y-m');
+
+            if (in_array($monthKey, $processedMonths)) {
+                $current->addMonth();
+                continue;
+            }
 
             $matchedBooking = null;
 
@@ -253,23 +301,20 @@ class BillboardAvailabilityController extends Controller
                 $bookingStart = Carbon::parse($booking->start_date);
                 $bookingEnd   = Carbon::parse($booking->end_date);
 
-                $monthStart = Carbon::create($year, $month, 1);
-                $monthEnd   = $monthStart->copy()->endOfMonth();
+                $monthStart = $current->copy()->startOfMonth();
+                $monthEnd   = $current->copy()->endOfMonth();
 
-                // Check if booking overlaps this month
                 if ($bookingStart->lte($monthEnd) && $bookingEnd->gte($monthStart)) {
                     $matchedBooking = $booking;
 
-                    $startMonth = max($bookingStart->month, $month);
-                    $endMonth   = min($bookingEnd->month, 12);
-                    $span       = $endMonth - $startMonth + 1;
+                    $spanStart = max($bookingStart, $monthStart)->copy()->startOfMonth();
+                    $spanEnd   = min($bookingEnd, $endDate)->copy()->startOfMonth();
+                    $span = $spanStart->diffInMonths($spanEnd) + 1;
 
-                    // Mark these months as processed
-                    for ($m = $startMonth; $m <= $endMonth; $m++) {
-                        $processedMonths[] = str_pad($m, 2, '0', STR_PAD_LEFT);
+                    for ($m = 0; $m < $span; $m++) {
+                        $processedMonths[] = $spanStart->copy()->addMonths($m)->format('Y-m');
                     }
 
-                    // Map booking status → Tailwind color class
                     $colorClass = match ($booking->status) {
                         'pending_payment' => 'bg-theme-6 text-white',
                         'pending_install' => 'bg-theme-1 text-white',
@@ -280,31 +325,35 @@ class BillboardAvailabilityController extends Controller
                     };
 
                     $months[] = [
-                        'month' => $monthKey,
+                        'month' => $current->format('m'),
+                        'year'  => $current->year,
                         'span'  => $span,
                         'text'  => optional($booking->clientCompany)->name
-                            ? $booking->clientCompany->name . ' (' . $bookingStart->format('d/m') . '–' . $bookingEnd->format('d/m') . ')'
-                            : 'Booked (' . $bookingStart->format('d/m') . '–' . $bookingEnd->format('d/m') . ')',
+                                    ? $booking->clientCompany->name . ' (' . $bookingStart->format('d/m/Y') . '–' . $bookingEnd->format('d/m/Y') . ')'
+                                    : 'Booked (' . $bookingStart->format('d/m/Y') . '–' . $bookingEnd->format('d/m/Y') . ')',
                         'color' => $colorClass,
                     ];
 
-                    break; // don’t check other bookings for this month
+                    break;
                 }
             }
 
-            // If no booking matched → mark as Available
             if (!$matchedBooking) {
                 $months[] = [
-                    'month' => $monthKey,
+                    'month' => $current->format('m'),
+                    'year'  => $current->year,
                     'span'  => 1,
                     'text'  => '',
                     'color' => '',
                 ];
             }
+
+            $current->addMonth();
         }
 
         return $months;
     }
+
 
 
     /**
