@@ -91,7 +91,7 @@
                 <div class="text-gray-600">Billboard Type: {{ $billboard_detail->prefix }} - {{ $billboard_detail->type }} </div>
                 <div class="text-gray-600">Size: {{ $billboard_detail->size }} </div>
                 <div class="text-gray-600">Status: {{ $billboard_detail->status == 1 ? 'Active' : 'Inactive' }} </div>
-                <div class="text-gray-600">Date Registered: {{ $billboard_detail->gps_latitude }} </div>
+                <div class="text-gray-600">Date Registered: {{ $billboard_detail->created_at }} </div>
             </div>
             <br>
             <!-- <div class="mt-2 xl:mt-0">

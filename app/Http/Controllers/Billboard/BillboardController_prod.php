@@ -802,8 +802,8 @@ class BillboardController extends Controller
 
         // Hardcode images for testing
         $billboard->images = [
-            'storage/billboards/' . $billboard->site_number . '_1.png',
-            'storage/billboards/' . $billboard->site_number . '_2.png',
+            'images/billboards/' . $billboard->site_number . '_1.png',
+            'images/billboards/' . $billboard->site_number . '_2.png',
         ];
 
         $pdf = PDF::loadView('billboard.export', compact('billboard'))
@@ -891,8 +891,8 @@ class BillboardController extends Controller
         // 🔹 Attach hardcoded images for each billboard
         foreach ($billboards as $billboard) {
             $billboard->images = [
-                'storage/billboards/' . $billboard->site_number . '_1.png',
-                'storage/billboards/' . $billboard->site_number . '_2.png',
+                'images/billboards/' . $billboard->site_number . '_1.png',
+                'images/billboards/' . $billboard->site_number . '_2.png',
             ];
         }
 

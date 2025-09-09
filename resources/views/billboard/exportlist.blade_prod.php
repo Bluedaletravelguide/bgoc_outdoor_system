@@ -14,7 +14,8 @@
         .header {
             font-size: 16px;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
+            text-align: center;
         }
 
         .section {
@@ -66,19 +67,22 @@
             padding-bottom: 5px;
         }
 
-        .image-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
+        table.image-grid {
+            width: 100%;
+            border-collapse: collapse;
         }
 
-        .image-grid img {
-            flex: 1 1 48%;       /* two images per row */
-            max-width: 48%;      /* prevent overflow */
-            height: 300px;       /* fixed display box height */
-            object-fit: contain; /* keep aspect ratio */
-            border: 1px solid #ccc; /* optional: keep uniform borders */
-            page-break-inside: avoid;
+        table.image-grid td {
+            padding: 5px;
+            text-align: center;
+            vertical-align: top;
+        }
+
+        table.image-grid img {
+            max-width: 100%;
+            height: 200px;
+            object-fit: contain;
+            border: 1px solid #ccc;
         }
 
         hr {
@@ -112,24 +116,43 @@
                         <tr><td>Location:</td><td>{{ $billboard->location->name ?? '-' }}</td></tr>
                         <tr><td>District:</td><td>{{ $billboard->location->district->name ?? '-' }}</td></tr>
                         <tr><td>State:</td><td>{{ $billboard->location->district->state->name ?? '-' }}</td></tr>
-                        <tr><td>Council:</td><td>{{ $billboard->location->council->abbreviation }} - {{ $billboard->location->council->name ?? '-' }}</td></tr>
+                        <tr><td>Council:</td><td>{{ $billboard->location->council->abbreviation ?? '-' }} - {{ $billboard->location->council->name ?? '-' }}</td></tr>
                         <tr><td>GPS Coordinates:</td><td>{{ $billboard->gps_latitude }}, {{ $billboard->gps_longitude }}</td></tr>
                     </table>
                 </div>
             </div>
 
+            <!-- IMAGE SECTION -->
             <div class="image-section">
-                <div class="image-section-title">Images:</div><br><br><br><br>
-                <div class="image-grid">
-                    @foreach($billboard->images as $img)
-                        @php $path = public_path($img); @endphp
-                        @if(file_exists($path))
-                            <img src="{{ $path }}" alt="Billboard Image">
-                        @endif
+                <div class="image-section-title">Images:</div>
+                <table class="image-grid">
+                    @foreach (collect($billboard->images)->chunk(2) as $row)
+                        <tr>
+                            @foreach ($row as $img)
+                                @php
+                                    $fullPath = '/home/bluedale2/public_html/bgocoutdoor.bluedale.com.my/' . $img;
+                                    $dataUri = '';
+                                    if (file_exists($fullPath)) {
+                                        $data = file_get_contents($fullPath);
+                                        $dataUri = 'data:image/png;base64,' . base64_encode($data);
+                                    }
+                                @endphp
+                                <td width="50%">
+                                    @if($dataUri)
+                                        <img src="{{ $dataUri }}" alt="Billboard Image" style="max-width: 100%; height: auto; object-fit: contain; border: 1px solid #ccc;">
+                                    @endif
+                                </td>
+                            @endforeach
+
+                            @if(count($row) == 1)
+                                <td width="50%"></td> {{-- fill empty cell if only one image --}}
+                            @endif
+                        </tr>
                     @endforeach
-                </div>
+                </table>
             </div>
         </div>
     @endforeach
+
 </body>
 </html>

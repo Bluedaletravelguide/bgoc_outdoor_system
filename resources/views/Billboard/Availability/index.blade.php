@@ -649,6 +649,14 @@
         titleCell.font = { size: 16, bold: true };
         titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
+        // ---- UPDATE timestamp in B2 ----
+        const updateCell = monthlySheet.getCell('B2');
+        const now = new Date();
+        const formattedNow = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+        updateCell.value = `UPDATE: ${formattedNow}`;
+        updateCell.font = { italic: true, color: { argb: 'FF000000' } };
+        updateCell.alignment = { horizontal: 'left', vertical: 'middle' };
+
         // ---- Legend on row 2 (H2–L2) ----
         const legendItems = [
             { label: 'Pending Payment', color: 'FFD32929' },

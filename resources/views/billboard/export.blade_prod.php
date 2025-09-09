@@ -106,13 +106,18 @@
         <div class="image-grid">
             @foreach ($billboard->images as $img)
                 @php
-                    $path = public_path($img);
+                    $fullPath = '/home/bluedale2/public_html/bgocoutdoor.bluedale.com.my/' . $img;
+                    $dataUri = '';
+                    if (file_exists($fullPath)) {
+                        $dataUri = 'data:image/png;base64,' . base64_encode(file_get_contents($fullPath));
+                    }
                 @endphp
-                @if (file_exists($path))
-                    <img src="{{ $path }}" alt="Billboard Image">
+                @if ($dataUri)
+                    <img src="{{ $dataUri }}" alt="Billboard Image">
                 @endif
             @endforeach
         </div>
+
     </div>
 </body>
 </html>
