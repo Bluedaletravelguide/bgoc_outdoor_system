@@ -60,7 +60,6 @@
                         <tr class="bg-theme-32 text-white">
                             <th>PIC</th> <!-- for details-control -->
                             <th>No</th>
-                            <th>Client Prefix</th>
                             <th>Client Name</th>
                             <th>Address</th>
                             <th>Phone No.</th>
@@ -89,10 +88,6 @@
         <form>
             <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Client Prefix</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Client Prefix" id="clientCompanyAddPrefix" required>
-                </div>
-                <div class="col-span-12 sm:col-span-12">
                     <label>Client Name</label>
                     <input type="text" class="input w-full border mt-2 flex-1" placeholder="Client Name" id="clientCompanyAddName" required>
                 </div>
@@ -102,7 +97,7 @@
                 </div>
                 <div class="col-span-12 sm:col-span-12">
                     <label>Phone No.</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Phone No." id="clientCompanyAddPhone" required>
+                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Phone No." id="clientCompanyAddPhone">
                 </div>
             </div>
             <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
@@ -117,16 +112,16 @@
                         </div>
                         <div class="col-span-12 sm:col-span-12">
                             <label>Email</label>
-                            <input type="text" class="input w-full border mt-2" placeholder="Email" name="pic_emails[]" required>
+                            <input type="text" class="input w-full border mt-2" placeholder="Email" name="pic_emails[]">
                         </div>
                         <div class="col-span-12 sm:col-span-12">
                             <label>Phone No.</label>
-                            <input type="text" class="input w-full border mt-2" placeholder="Phone No." name="pic_phones[]" required>
+                            <input type="text" class="input w-full border mt-2" placeholder="Phone No." name="pic_phones[]">
                         </div>
                         <div class="col-span-12 sm:col-span-12">
                             <label>Designation</label>
                             <div class="flex items-center mt-2">
-                                <input type="text" class="input w-full border" placeholder="Designation" name="pic_designations[]" required>
+                                <input type="text" class="input w-full border" placeholder="Designation" name="pic_designations[]">
                             </div>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
@@ -157,10 +152,6 @@
         <form id="clientCompanyEditForm">
             <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Client Prefix</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Client Prefix" id="clientCompanyEditPrefix" required>
-                </div>
-                <div class="col-span-12 sm:col-span-12">
                     <label>Client Name</label>
                     <input type="text" class="input w-full border mt-2 flex-1" placeholder="Client Name" id="clientCompanyEditName" required>
                 </div>
@@ -170,7 +161,7 @@
                 </div>
                 <div class="col-span-12 sm:col-span-12">
                     <label>Phone No.</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Phone No." id="clientCompanyEditPhone" required>
+                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Phone No." id="clientCompanyEditPhone">
                 </div>
             </div>
             <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
@@ -453,7 +444,6 @@
                         searchable: false,
                         render: (data, type, row, meta) => meta.row + meta.settings._iDisplayStart + 1
                     },
-                    { data: "company_prefix" },
                     { data: "name" },
                     { data: "address" },
                     { data: "phone" },
@@ -569,13 +559,14 @@
             if (!pics || pics.length === 0) return '<div class="p-2">No PICs available</div>';
 
             let html = '<table class="table-auto w-full text-sm border mt-2"><div class="ml-3"><strong>PIC</strong></div>';
-            html += '<thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Action</th></tr></thead><tbody>';
+            html += '<thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Designation</th><th>Action</th></tr></thead><tbody>';
 
             pics.forEach(pic => {
                 html += `<tr>
-                    <td>${pic.designation} ${pic.name}</td>
-                    <td>${pic.email}</td>
-                    <td>${pic.phone}</td>
+                    <td>${pic.name}</td>
+                    <td>${pic.email ? pic.email : '-'}</td>
+                    <td>${pic.phone ? pic.phone : '-'}</td>
+                    <td>${pic.designation ? pic.designation : '-'}</td>
                     <td>
                         <button class="edit-pic-btn bg-theme-1 text-white px-2 py-1 rounded"
                             data-name="${pic.name}"
@@ -622,7 +613,6 @@
                 url: "{{ route('client-company.create') }}",
                 data: {
                     _token: $('meta[name="csrf-token"]').attr('content'),
-                    prefix: $('#clientCompanyAddPrefix').val(),
                     name: $('#clientCompanyAddName').val(),
                     address: $('#clientCompanyAddAddress').val(),
                     companyPhone: $('#clientCompanyAddPhone').val(),
@@ -651,10 +641,9 @@
             const $row = $(this).closest('tr');
             const cells = $row.find('td');
 
-            $('#clientCompanyEditPrefix').val(cells.eq(2).text().trim());
-            $('#clientCompanyEditName').val(cells.eq(3).text().trim());
-            $('#clientCompanyEditAddress').val(cells.eq(4).text().trim());
-            $('#clientCompanyEditPhone').val(cells.eq(5).text().trim());
+            $('#clientCompanyEditName').val(cells.eq(2).text().trim());
+            $('#clientCompanyEditAddress').val(cells.eq(3).text().trim());
+            $('#clientCompanyEditPhone').val(cells.eq(4).text().trim());
 
             openAltEditorModal('#clientCompanyEditModal');
         });
@@ -668,7 +657,6 @@
                 data: {
                     _token: $('meta[name="csrf-token"]').attr('content'),
                     id: originalCompanyId,
-                    prefix: $('#clientCompanyEditPrefix').val().trim(),
                     name: $('#clientCompanyEditName').val().trim(),
                     address: $('#clientCompanyEditAddress').val().trim(),
                     companyPhone: $('#clientCompanyEditPhone').val().trim()

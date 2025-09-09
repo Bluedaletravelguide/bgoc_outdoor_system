@@ -1306,9 +1306,9 @@
                             } else if (data == 'pending_install'){
                                 element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-1 text-white">Pending Install</a>`;
                             } else if (data == 'ongoing') {
-                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-12 text-black">Ongoing</a>`;
+                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-green-600 text-white">Ongoing</a>`;
                             } else if (data == 'completed') {
-                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-green-600 text-white">Completed</a>`;
+                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-12 text-black">Completed</a>`;
                             } else if (data == 'dismantle') {
                                 element = `
                                     <div class="flex flex-col space-y-2">

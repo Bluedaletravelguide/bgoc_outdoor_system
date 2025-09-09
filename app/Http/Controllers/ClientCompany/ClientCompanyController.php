@@ -54,18 +54,17 @@ class ClientCompanyController extends Controller
         $status = $request->input('status');
 
         $columns = [
-            0 => 'company_prefix',
-            1 => 'name',
-            2 => 'address',
-            3 => 'phone',
-            4 => 'status',
-            5 => 'id',
+            0 => 'name',
+            1 => 'address',
+            2 => 'phone',
+            3 => 'status',
+            4 => 'id',
         ];
 
         $limit = $request->input('length', 25);
         $start = $request->input('start', 0);
         $orderColumnIndex = $request->input('order.0.column', 0);
-        $orderColumnName = $columns[$orderColumnIndex] ?? 'company_prefix';
+        $orderColumnName = $columns[$orderColumnIndex] ?? 'name';
         $orderDirection = $request->input('order.0.dir', 'asc');
 
         // Build query
@@ -82,8 +81,7 @@ class ClientCompanyController extends Controller
         $searchValue = trim($request->input('search.value'));
         if (!empty($searchValue)) {
             $query->where(function ($q) use ($searchValue) {
-                $q->where('company_prefix', 'LIKE', "%{$searchValue}%")
-                ->orWhere('name', 'LIKE', "%{$searchValue}%")
+                $q->where('name', 'LIKE', "%{$searchValue}%")
                 ->orWhere('address', 'LIKE', "%{$searchValue}%")
                 ->orWhere('phone', 'LIKE', "%{$searchValue}%");
             });
@@ -102,7 +100,6 @@ class ClientCompanyController extends Controller
         $data = [];
         foreach ($companies as $company) {
             $data[] = [
-                'company_prefix' => $company->company_prefix,
                 'name'           => $company->name,
                 'address'        => $company->address,
                 'phone'          => $company->phone,
@@ -135,7 +132,6 @@ class ClientCompanyController extends Controller
      */
     public function create(Request $request)
     {
-        $prefix         = $request->prefix;
         $name           = $request->name;
         $address        = $request->address;
         $companyPhone   = $request->companyPhone;
@@ -145,13 +141,6 @@ class ClientCompanyController extends Controller
         $validator = Validator::make(
             $request->all(),
             [
-                'prefix' => [
-                    'required',
-                    'string',
-                    'max:4',
-                    'unique:client_companies,company_prefix',
-                    'regex:/^\S*$/', // No spaces allowed
-                ],
                 'name' => [
                     'required',
                     'string',
@@ -164,23 +153,17 @@ class ClientCompanyController extends Controller
                     'max:255',
                 ],
                 'companyPhone' => [
-                    'required',
+                    'nullable',
                     'regex:/^\+?[0-9]+$/',
                     'max:255',
                 ],
                 'pics' => 'required|array|min:1',
-                'pics.*.name' => 'required|string|max:255',
-                'pics.*.email' => 'required|string|email|max:255',
-                'pics.*.phone' => 'required|string|max:255',
+                'pics.*.name' => 'nullable|string|max:255',
+                'pics.*.email' => 'nullable|string|email|max:255',
+                'pics.*.phone' => 'nullable|string|max:255',
                 'pics.*.designation' => 'nullable|string|max:255',
             ],
             [
-                'prefix.required' => 'The "Company Prefix" field is required.',
-                'prefix.string' => 'The "Company Prefix" must be a string.',
-                'prefix.max' => 'The "Company Prefix" must not be greater than :max characters.',
-                'prefix.unique' => 'The "Company Prefix" is already been taken.',
-                'prefix.regex' => 'The "Company Prefix" must not contain any spaces.',
-
                 'name.required' => 'The "Company Name" field is required.',
                 'name.string' => 'The "Company Name" must be a string.',
                 'name.max' => 'The "Company Name" must not be greater than :max characters.',
@@ -188,7 +171,6 @@ class ClientCompanyController extends Controller
                 'address.string' => 'The "Address" must be a string.',
                 'address.max' => 'The "Address" must not be greater than :max characters.',
 
-                'phone.required' => 'The "Phone No." field is required.',
                 'phone.regex' => 'The "Phone No." field must only contain "+" symbol and numbers.',
                 'phone.max' => 'The "Phone No." field must not be greater than :max characters.',
             ]
@@ -205,7 +187,6 @@ class ClientCompanyController extends Controller
 
             // Insert new client company
             $company = ClientCompany::create([
-                'company_prefix'    => $prefix,
                 'name'              => $name,
                 'address'           => $address ?? null,
                 'phone'             => $companyPhone,
@@ -241,7 +222,6 @@ class ClientCompanyController extends Controller
      */
     public function edit(Request $request)
     {        
-        $prefix                 = $request->prefix;
         $name                   = $request->name;
         $id                     = $request->id;
         $address                = $request->address;
@@ -251,13 +231,6 @@ class ClientCompanyController extends Controller
         $validator = Validator::make(
             $request->all(),
             [
-                'prefix' => [
-                    'required',
-                    'string',
-                    'max:4',
-                    Rule::unique('client_companies', 'company_prefix')->ignore($id), // Exclude original value but still checks for uniqueness
-                    'regex:/^\S*$/', // No spaces allowed
-                ],
                 'name' => [
                     'required',
                     'string',
@@ -275,18 +248,12 @@ class ClientCompanyController extends Controller
                     'max:255',
                 ],
                 'companyPhone' => [
-                    'required',
+                    'nullable',
                     'regex:/^\+?[0-9]+$/',
                     'max:255',
                 ],
             ],
             [
-                'prefix.required' => 'The "Company Prefix" field is required.',
-                'prefix.string' => 'The "Company Prefix" must be a string.',
-                'prefix.max' => 'The "Company Prefix" must not be greater than :max characters.',
-                'prefix.unique' => 'The "Company Prefix" is already been taken.',
-                'prefix.regex' => 'The "Company Prefix" must not contain any spaces.',
-
                 'name.required' => 'The "Company Name" field is required.',
                 'name.string' => 'The "Company Name" must be a string.',
                 'name.max' => 'The "Company Name" must not be greater than :max characters.',
@@ -297,7 +264,6 @@ class ClientCompanyController extends Controller
                 'address.string' => 'The "Address" must be a string.',
                 'address.max' => 'The "Address" must not be greater than :max characters.',
 
-                'companyPhone.required' => 'The "Phone No." field is required.',
                 'companyPhone.regex' => 'The "Phone No." field must only contain "+" symbol and numbers.',
                 'companyPhone.max' => 'The "Phone No." field must not be greater than :max characters.',
             ]
@@ -315,7 +281,6 @@ class ClientCompanyController extends Controller
             // Update client company
             ClientCompany::where('id', $id)
                 ->update([
-                    'company_prefix'    => $prefix,
                     'name'              => $name,
                     'address'           => $address,
                     'phone'             => $phone,
@@ -400,16 +365,31 @@ class ClientCompanyController extends Controller
 
     public function picCreate(Request $request)
     {
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'company_id'  => 'required|exists:client_companies,id',
+                'name'        => 'required|string|max:255',
+                'phone'       => 'nullable|regex:/^\+?[0-9]+$/|max:50',
+                'email'       => 'nullable|email|max:255',
+                'designation' => 'nullable|string|max:100',
+            ],
+            [
+                'company_id.required' => 'The "Company ID" field is required.',
+                'company_id.exists'   => 'The selected Client Company was deleted from the system!',
+                'name.required'       => 'The "PIC Name" field is required.',
+                'name.string'         => 'The "PIC Name" must be a string.',
+                'name.max'            => 'The "PIC Name" must not be greater than :max characters.',
+                'phone.regex'         => 'The phone number may only contain digits and an optional leading +.',
+            ]
+        );
 
-        $validated = $request->validate([
-            'company_id' => 'required|exists:client_companies,id',
-            'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:50',
-            'email' => 'required|email|max:255',
-            'designation' => 'nullable|string|max:100',
-        ]);
+        // Handle failed validations
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()->first()], 422);
+        }
 
-        $pic = Client::create($validated);
+        $pic = Client::create($validator->validated());
 
         return response()->json([
             'success' => true,
@@ -420,40 +400,48 @@ class ClientCompanyController extends Controller
 
     public function picUpdate(Request $request)
     {
-        // 1️⃣ Validate request
-        $validated = $request->validate([
-            'id'          => 'required|exists:clients,id',
-            'name'        => 'required|string|max:255',
-            'phone'       => 'nullable|string|max:50',
-            'email'       => 'nullable|email|max:255',
-            'designation' => 'nullable|string|max:100',
-        ]);
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'id'          => 'required|exists:clients,id',
+                'name'        => 'required|string|max:255',
+                'phone'       => 'nullable|regex:/^\+?[0-9]+$/|max:50',
+                'email'       => 'nullable|email|max:255',
+                'designation' => 'nullable|string|max:100',
+            ],
+            [
+                'id.required'   => 'The PIC ID is required.',
+                'id.exists'     => 'The selected PIC does not exist.',
+
+                'name.required' => 'The "PIC Name" field is required.',
+                'name.string'   => 'The "PIC Name" must be a string.',
+                'name.max'      => 'The "PIC Name" must not be greater than :max characters.',
+
+                'phone.regex'   => 'The phone number may only contain digits and an optional leading +.',
+            ]
+        );
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()->first()], 422);
+        }
 
         try {
-            // 2️⃣ Find the PIC by ID
-            $pic = Client::findOrFail($validated['id']);
+            $pic = Client::findOrFail($validator->validated()['id']);
 
-            // 3️⃣ Update the fields
-            $pic->update([
-                'name'        => $validated['name'],
-                'phone'       => $validated['phone'] ?? $pic->phone,
-                'email'       => $validated['email'] ?? $pic->email,
-                'designation' => $validated['designation'] ?? $pic->designation,
-            ]);
+            $pic->update($validator->validated());
 
-            // 4️⃣ Return success response
             return response()->json([
                 'success' => true,
                 'message' => 'PIC updated successfully',
+                'pic'     => $pic
             ]);
         } catch (\Exception $e) {
-            // Optional: log the error
             \Log::error('PIC update error: '.$e->getMessage());
 
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to update PIC',
-            ]);
+            ], 500);
         }
     }
 

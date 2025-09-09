@@ -14,21 +14,15 @@
         white-space: nowrap;
     }
 
-    thead th {
-        position: sticky;
-        top: 0;
-        z-index: 10;
-    }
-
-    /* Ensure sticky header works and aligns */
+    /* Wrapper scrolls both directions */
     .monthly-booking-table-wrapper {
         max-height: 400px;
-        overflow: auto; /* scroll both vertically & horizontally */
+        overflow: auto;
     }
 
     #monthly-booking-table {
         border-collapse: collapse;
-        min-width: 1200px; /* adjust based on column count */
+        min-width: 1200px; /* adjust based on columns */
     }
 
     #monthly-booking-table th,
@@ -36,15 +30,54 @@
         border: 1px solid #d1d5db; /* Tailwind border-gray-300 */
         padding: 4px 8px;
         white-space: nowrap;
+        /* background: #fff; important for frozen cells */
     }
 
+    /* Sticky header row */
     #monthly-booking-table thead th {
         position: sticky;
         top: 0;
         background-color: #f3f4f6; /* bg-gray-100 */
-        z-index: 1;
+        z-index: 4; /* sits above normal cells */
+    }
+
+    /* ===== Freeze first 3 columns ===== */
+    #monthly-booking-table th:nth-child(1),
+    #monthly-booking-table td:nth-child(1) {
+        position: sticky;
+        left: 0;
+        min-width: 50px;   /* No */
+        background: #fff;
+        z-index: 5;
+    }
+
+    #monthly-booking-table th:nth-child(2),
+    #monthly-booking-table td:nth-child(2) {
+        position: sticky;
+        left: 30px;        /* width of col1 */
+        min-width: 120px;  /* Site No */
+        background: #fff;
+        z-index: 5;
+    }
+
+    #monthly-booking-table th:nth-child(3),
+    #monthly-booking-table td:nth-child(3) {
+        position: sticky;
+        left: 200px;       /* col1 + col2 */
+        min-width: 200px;  /* Location */
+        background: #fff;
+        z-index: 5;
+    }
+
+    /* Ensure header cells of frozen columns stay on top */
+    #monthly-booking-table thead th:nth-child(1),
+    #monthly-booking-table thead th:nth-child(2),
+    #monthly-booking-table thead th:nth-child(3) {
+        z-index: 6;
     }
 </style>
+
+
 
 <div class="intro-y flex flex-col sm:flex-row items-center mt-8">
     <h2 class="text-lg font-medium mr-auto">
@@ -61,10 +94,7 @@
         </p>
     </div>
 
-    <!-- <button onclick="downloadAllTablesAsExcel()" 
-        class="button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white">
-    Download Excel
-</button> -->
+    
 
 
     <!-- Billboard Booking Calendar Filter -->
@@ -82,7 +112,7 @@
             <div class="row sm:flex items-center sm:mr-4">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">District</label>
                 <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="filterAvailabilityDistrict">
-                    <option value="" selected="">-- Select State --</option>
+                    <option value="" selected="">-- Select District --</option>
                     @foreach ($districts as $district)
                         <option value="{{ $district->id }}">{{ $district->name }}</option>
                     @endforeach
@@ -91,7 +121,7 @@
             <div class="sm:flex items-center sm:mr-4">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Location</label>
                 <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterAvailabilityLocation">
-                    <option value="" selected="">-- Select State --</option>
+                    <option value="" selected="">-- Select Location --</option>
                     @foreach ($locations as $location)
                         <option value="{{ $location->id }}">{{ $location->name }}</option>
                     @endforeach
@@ -165,6 +195,12 @@
         </form>
     </div>
     <!-- Filter End -->
+
+    <div class="mb-4">
+        Search:<input type="text" id="globalSearchInput"
+            class="input border p-2 w-64 ml-4"
+            placeholder="Search all tables...">
+    </div>
 
     <!-- Legend -->
     <div class="flex flex-wrap items-center gap-4 mb-4 text-sm">
@@ -391,7 +427,29 @@
 <!-- Flatpickr JS -->
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-<script>    
+<script>
+
+    // Global search across both tables
+    $('#globalSearchInput').on('keyup', function () {
+        const value = $(this).val().toLowerCase();
+
+        // 🔎 Filter Monthly Booking table manually
+        $('#monthly-booking-table tbody tr').each(function () {
+            const match = $(this).text().toLowerCase().indexOf(value) > -1;
+            $(this).toggle(match);
+        });
+
+        // ✅ Re-index No column for visible rows
+        $('#monthly-booking-table tbody tr:visible').each(function (i) {
+            $(this).find('td:first').text(i + 1);
+        });
+
+        // 🔎 Filter Check Availability table via DataTable API
+        const dt = $('#billboard_availability_table').DataTable();
+        dt.search(value).draw();
+    });
+
+
     // <!-- BEGIN: Billboard Booking List Filter -->
     $('#filterAvailabilityState').on('change', function () {
         let stateId = $(this).val();
@@ -978,7 +1036,7 @@
                         <td class="border border-gray-300">${row.size}</td>`;
 
                     row.months.forEach(month => {
-                        let cellClass = `border border-gray-300 ${month.color} text-white font-semibold`;
+                        let cellClass = `border border-gray-300 ${month.color} font-semibold`;
                         html += `<td colspan="${month.span}" class="${cellClass}">${month.text}</td>`;
                     });
 
@@ -1035,7 +1093,7 @@
             language: {
                 emptyTable: "No records found. Please apply at least one filter."
             },
-            dom: "lBfrtip",
+            dom: "lBrtip",
             buttons: [
                 {
                     text: "Combined Excel",
@@ -1336,79 +1394,6 @@
                 loadMonthlyAvailability(); // this function contains your $.ajax code
             });
         }
-
-        function buildMonthlyBookingTableHead(selectedYear) {
-            const shortYear = String(selectedYear).slice(-2);
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-            let headerHtml = '<tr>';
-            headerHtml += '<th>No</th>';
-            headerHtml += '<th>Site No</th>';
-            headerHtml += '<th>Location</th>';
-            headerHtml += '<th>New/Existing</th>';
-            headerHtml += '<th>Type</th>';
-            headerHtml += '<th>Size</th>';
-
-            months.forEach(month => {
-                headerHtml += `<th>${month} '${shortYear}</th>`;
-            });
-
-            headerHtml += '</tr>';
-            $('#monthly-booking-head').html(headerHtml);
-        }
-
-        
-
-
-        // function loadMonthlyAvailability() {
-            
-        //     $.ajax({
-        //         url: '{{ route("billboard.monthly.availability") }}',
-        //         method: 'GET',
-        //         data: {
-        //             start_date: $('#filterAvailabilityStart').val(),
-        //             end_date: $('#filterAvailabilityEnd').val(),
-        //             year: $('#filterAvailabilityYear').val(),
-        //             type: $('#filterAvailabilityType').val(),
-        //             site_type: $('#filterAvailabilitySiteType').val(),
-        //             state: $('#filterAvailabilityState').val(),
-        //             district: $('#filterAvailabilityDistrict').val(),
-        //             location: $('#filterAvailabilityLocation').val(),
-        //             status: $('#filterAvailabilityStatus').val()
-        //         },
-        //         success: function (response) {
-        //             const tbody = $('#monthly-booking-body');
-        //             tbody.empty();
-
-        //             if (!response.data || response.data.length === 0) {
-        //                 tbody.append(`<tr><td colspan="16" class="text-center p-4">No data available</td></tr>`);
-        //                 return;
-        //             }
-
-        //             response.data.forEach((row, index) => {
-        //                 let html = `<tr>
-        //                     <td class="border border-gray-300">${index + 1}</td>
-        //                     <td class="border border-gray-300">${row.site_number}</td>
-        //                     <td class="border border-gray-300">${row.location}</td>
-        //                     <td class="border border-gray-300">${row.site_type}</td>
-        //                     <td class="border border-gray-300">${row.type}</td>
-        //                     <td class="border border-gray-300">${row.size}</td>`;
-
-        //                 row.months.forEach(month => {
-        //                     let cellClass = `border border-gray-300 ${month.color} text-white font-semibold`;
-        //                     html += `<td colspan="${month.span}" class="${cellClass}">${month.text}</td>`;
-        //                 });
-
-        //                 html += `</tr>`;
-        //                 tbody.append(html);
-        //             });
-        //         },
-        //         error: function (xhr) {
-        //             console.error("AJAX error:", xhr.responseText);
-        //         }
-        //     });
-        // }
 
         $(document).ready(function () {
             const selectedYear = $('#filterAvailabilityYear').val();

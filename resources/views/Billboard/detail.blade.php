@@ -117,16 +117,24 @@
         Billboard Site Images
     </h2>
     <!-- <div class="intro-y text-gray-700 dark:text-gray-600 mt-3 text-xs sm:text-sm"> {{ $billboard_detail->created_at }} </div> -->
-        <div class="intro-y mt-6">
-            <!-- <img src="{{ asset('storage/billboards/image1.jpg') }}" alt="Image 1">
-            <img src="{{ asset('storage/billboards/map1.jpg') }}" alt="Image 2"> -->
-            <img src="{{ asset('storage/billboards/' . $billboard_detail->site_number . '_1.png') }}" alt="{{ $billboard_detail->location_name }}" class="img-fluid">
-            <img src="{{ asset('storage/billboards/' . $billboard_detail->site_number . '_2.png') }}" alt="{{ $billboard_detail->location_name }}" class="img-fluid">
-
-             <!-- @foreach ($billboard_images as $img)
-                <img src="{{ asset($img->image_path) }}" alt="Billboard Image">
-            @endforeach -->
+    <div class="intro-y mt-6">
+        <div class="flex gap-4">
+            <div class="flex-1">
+                <img src="{{ asset('storage/billboards/' . $billboard_detail->site_number . '_1.png') }}"
+                    alt="{{ $billboard_detail->location_name }}"
+                    class="w-full h-auto object-contain rounded-lg shadow">
+            </div>
+            <div class="flex-1">
+                <img src="{{ asset('storage/billboards/' . $billboard_detail->site_number . '_2.png') }}"
+                    alt="{{ $billboard_detail->location_name }}"
+                    class="w-full h-auto object-contain rounded-lg shadow">
+            </div>
         </div>
+    </div>
+
+
+
+
     <!-- <div class="intro-y flex relative pt-16 sm:pt-6 items-center pb-6">
     </div> -->
     <div class="intro-y flex text-xs sm:text-sm flex-col sm:flex-row items-center mt-5 pt-5 border-t border-gray-200 dark:border-dark-5">

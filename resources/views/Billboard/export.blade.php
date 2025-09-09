@@ -62,9 +62,15 @@
             gap: 10px;
         }
 
+
+
         .image-grid img {
-            width: 48%;
-            height: auto;
+            flex: 1 1 48%;       /* two images per row */
+            max-width: 48%;      /* prevent overflow */
+            height: 300px;       /* fixed display box height */
+            object-fit: contain; /* keep aspect ratio */
+            border: 1px solid #ccc; /* optional: keep uniform borders */
+            page-break-inside: avoid;
         }
     </style>
 </head>
