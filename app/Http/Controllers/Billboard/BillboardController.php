@@ -26,6 +26,7 @@ use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\PushNotificationController;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class BillboardController extends Controller
 {
@@ -202,122 +203,6 @@ class BillboardController extends Controller
 
         return response()->json($json_data);
     }
-
-    /**
-     * Create service request and work order.
-     */
-    // public function create(Request $request)
-    // {   
-    //     $user = Auth::user();
-        
-    //     // Get user roles
-    //     $role = $user->roles->pluck('name')[0];
-    //     $userID = $this->user->id;
-
-    //     $type               = $request->type;
-    //     $size               = $request->size;
-    //     $lighting           = $request->lighting;
-    //     $state              = $request->state;
-    //     $district           = $request->district;
-    //     $council            = $request->council;
-    //     $locationName       = $request->location;
-    //     $land               = $request->land;
-    //     $gpslongitude       = $request->gpslongitude;
-    //     $gpslatitude        = $request->gpslatitude;
-    //     $trafficvolume      = $request->trafficvolume;
-
-    //     // Get the current UTC time
-    //     $current_UTC = Carbon::now('UTC');
-
-    //     DB::beginTransaction();
-
-    //     try {
-
-    //         // Step 1: Ensure location exists (or create new)
-    //         $location = Location::firstOrCreate(
-    //             [
-    //                 'name' => $locationName,
-    //                 'district_id' => $district,
-    //                 'council_id' => $council,
-    //             ],
-    //             // [
-    //             //     'created_by' => $userID
-    //             // ]
-    //         );
-
-    //         // Step 2: Fetch state code from state model (assuming you have it)
-    //         $stateCode = State::select('prefix')->where('id', $state)->first();
-
-    //         // Step 3: Count existing records for the same type and state to get the next number
-    //         $runningNumber = Billboard::leftJoin('locations', 'billboards.location_id', '=', 'locations.id')
-    //         ->leftJoin('districts', 'locations.district_id', '=', 'districts.id')
-    //         ->leftJoin('states', 'districts.state_id', '=', 'states.id')
-    //         ->where('states.id', $state)
-    //         ->count() + 1;
-
-    //         $billboardType = Billboard::select('type', 'prefix')->distinct()->where('prefix' , $type)->first();
-
-    //         // Format as 4-digit number with leading zeros
-    //         $formattedNumber = str_pad($runningNumber, 4, '0', STR_PAD_LEFT);
-
-    //         $councilAbbv = Council::find($council)->abbreviation;
-
-    //         // Step 5: Generate site_number
-    //         $siteNumber = "{$type}-{$stateCode->prefix}-{$formattedNumber}-{$councilAbbv}-{$land}";
-
-    //         // Step 6: Create a new service request
-    //         $billboard = Billboard::create([
-    //             'site_number'      => $siteNumber,
-    //             'status'            => 1,
-    //             'type'              => $billboardType->type,
-    //             'prefix'              => $billboardType->prefix,
-    //             'size'              => $size,
-    //             'lighting'          => $lighting,
-    //             'state'             => $state,
-    //             'district'          => $district,
-    //             'location_id'        => $location->id,
-    //             'gps_longitude'      => $gpslongitude,
-    //             'gps_latitude'       => $gpslatitude,
-    //             'traffic_volume'     => $trafficvolume,
-    //             'created_by'        => $userID,
-    //         ]);
-
-    //         // Generate the service request no & work order no based on prefixes and count
-    //         // $getPrefixNo = $billboard->billboardPrefixNo();
-
-    //         // Generate the service request number based on prefixes and count
-    //         // $billboard->service_request_no = $getPrefixNo[0];
-    //         $billboard->save();
-
-    //         // Validate the input
-    //         // $validator = Validator::make($request->all(), [
-    //         //     'priority' => 'required|in:1,2,3,4', // Priority must be one of the three values
-    //         //     ]);
-        
-    //         //     if ($validator->fails()) {
-    //         //     return response()->json(['error' => $validator->errors()->first()], 422);
-    //         //     }
-        
-
-        
-
-    //         // $pushNotificationController = new PushNotificationController();
-    //         // $pushNotificationController->sendEmailNewSR($serviceRequest, $workOrder);
-
-    //         // Ensure all queries successfully executed, commit the db changes
-    //         DB::commit();
-
-    //         return response()->json([
-    //             'success'   => 'success',
-    //         ], 200);
-
-    //     }catch (\Exception $e) {
-    //         // If any queries fail, undo all changes
-    //         DB::rollback();
-
-    //         return response()->json(['error' => $e->getMessage()], 422);
-    //     }
-    // }
 
     public function create(Request $request)
     {
@@ -812,56 +697,6 @@ class BillboardController extends Controller
         return $pdf->download('billboard-detail-' . $billboard->site_number . '.pdf');
     }
 
-    // public function exportListPdf(Request $request)
-    // {
-    //     $query = Billboard::with(['location.district.state', 'images']);
-
-    //     if ($request->filled('state_id') && $request->state_id !== 'all') {
-    //         $query->whereHas('location.district.state', fn($q) => $q->where('id', $request->state_id));
-    //     }
-
-    //     if ($request->filled('district_id') && $request->district_id !== 'all') {
-    //         $query->whereHas('location.district', fn($q) => $q->where('id', $request->district_id));
-    //     }
-
-    //     if ($request->filled('type') && $request->type !== 'all') {
-    //         $query->where('type', $request->type);
-    //     }
-
-    //     if ($request->filled('status') && $request->status !== 'all') {
-    //         $query->where('status', $request->status);
-    //     }
-
-    //     if ($request->filled('size') && $request->size !== 'all') {
-    //         $query->where('size', $request->size);
-    //     }
-
-    //     $billboards = $query->get();
-
-    //     // Get filename based on state or district
-    //     $filename = 'billboards-master';
-    //     $date = Carbon::now()->format('Y-m-d');
-
-    //     if ($request->filled('district_id') && $request->district_id !== 'all') {
-    //         $district = District::find($request->district_id);
-    //         if ($district) {
-    //             $filename = 'billboards-' . Str::slug($district->name) . '-' . $date;
-    //         }
-    //     } elseif ($request->filled('state_id') && $request->state_id !== 'all') {
-    //         $state = State::find($request->state_id);
-    //         if ($state) {
-    //             $filename = 'billboards-' . Str::slug($state->name) . '-' . $date;
-    //         }
-    //     } else {
-    //         $filename .= '-' . $date;
-    //     }
-
-    //     $pdf = PDF::loadView('billboard.exportlist', compact('billboards'))
-    //         ->setPaper('a4', 'landscape');
-
-    //     return $pdf->download($filename . '.pdf');
-    // }
-
     public function exportListPdf(Request $request)
     {
         $query = Billboard::with(['location.district.state']);
@@ -919,5 +754,61 @@ class BillboardController extends Controller
 
         return $pdf->download($filename . '.pdf');
     }
+
+    public function uploadImage(Request $request)
+    {
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $siteNumber = $request->input('site_number'); // pass site_number from form
+            $extension = 'png'; // force .png
+
+            // Ensure directory exists
+            $directory = 'public/billboards';
+            if (!Storage::exists($directory)) {
+                Storage::makeDirectory($directory);
+            }
+
+            // Count existing files for this site
+            $existingFiles = Storage::files($directory);
+            $siteFiles = array_filter($existingFiles, fn($f) => str_starts_with(basename($f), $siteNumber . '_'));
+
+            if (count($siteFiles) >= 2) {
+                return response()->json([
+                    'message' => 'Maximum of 2 images already uploaded for this site.'
+                ], 400);
+            }
+
+            // Sequence number
+            $sequence = count($siteFiles) + 1;
+            $filename = $siteNumber . '_' . $sequence . '.' . $extension;
+
+            // Save the file
+            $path = $file->storeAs($directory, $filename);
+            $url = Storage::url($path);
+
+            return response()->json([
+                'message' => 'File uploaded successfully',
+                'filename' => $filename,
+                'url' => $url
+            ], 200);
+        }
+
+        return response()->json(['message' => 'No file uploaded'], 400);
+    }
+
+    public function deleteImage(Request $request)
+    {
+        $filename = $request->input('filename');
+        $directory = 'public/billboards';
+        $path = $directory . '/' . $filename;
+
+        if (Storage::exists($path)) {
+            Storage::delete($path);
+            return response()->json(['message' => 'Image deleted successfully'], 200);
+        }
+
+        return response()->json(['message' => 'File not found'], 404);
+    }
+
 
 }

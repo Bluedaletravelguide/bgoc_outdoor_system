@@ -63,10 +63,9 @@ Route::group(['middleware' => ['auth']], function () {
 
     // Billboard Detail
     Route::get('/billboardDetail/{id}', [BillboardController::class, 'redirectNewTab'])->name('billboard.detail');
-    Route::post('/workOrderProfile/addActivity', [WorkOrderProfileController::class, 'create'])->name('workOrderProfile.create');
-    Route::post('/workOrderProfile/deleteComment', [WorkOrderProfileController::class, 'deleteComment'])->name('workOrderProfile.deleteComment');
-    Route::post('/workOrderProfile/store', [WorkOrderProfileController::class, 'store'])->name('workOrderProfile.store');
-    Route::post('/workOrderProfile/temp-upload', [WorkOrderProfileController::class, 'tempUpload'])->name('tempUpload');
+    Route::post('/billboardDetail/upload-img', [BillboardController::class, 'uploadImage'])->name('billboard.uploadImage');
+    Route::post('/billboardDetail/delete-img', [BillboardController::class, 'deleteImage'])->name('billboard.deleteImage');
+
     Route::get('/billboard/{id}/download', [BillboardController::class, 'downloadPdf'])->name('billboard.download');
 
     // Billboard Booking
@@ -220,7 +219,6 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/workOrderProfile/addActivity', [WorkOrderProfileController::class, 'create'])->name('workOrderProfile.create');
     Route::post('/workOrderProfile/deleteComment', [WorkOrderProfileController::class, 'deleteComment'])->name('workOrderProfile.deleteComment');
     Route::post('/workOrderProfile/store', [WorkOrderProfileController::class, 'store'])->name('workOrderProfile.store');
-    Route::post('/workOrderProfile/temp-upload', [WorkOrderProfileController::class, 'tempUpload'])->name('tempUpload');
 
     
     // Notification Controllers

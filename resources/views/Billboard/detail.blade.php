@@ -9,64 +9,21 @@
 @endsection
 
 @section('modal_content')
-<!-- Create Modal -->
-    <div class="row flex flex-col sm:flex-row sm:items-end xl:items-start mb-2">
-        <div class="modal" id="addBillboardBookingModal">
-            <div class="modal__content">
-                <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
-                    <h2 class="font-medium text-base mr-auto">Add New Billboard Booking</h2>
-                </div>
-                <form>
-                    <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Site Number</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="SEL-0001" disabled>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Location</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="LDP Taman Mayang 1" disabled>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>District</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="Petaling Jaya" disabled>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>State</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="ServiceRequestAddDescription" value="Selangor" disabled>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Client</label>
-                            <select id="ServiceRequestAddClient" class="input w-full border mt-2 select2-client" required>
-                                <option disabled selected hidden value="">Select a client</option>
-                                <option value="1">ABC Corporation</option>
-                                <option value="2">BlueTech Solutions</option>
-                                <option value="3">GreenField Ltd</option>
-                                <option value="4">Visionary Co</option>
-                                <option value="5">Skyline Advertising</option>
-                            </select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-6">
-                            <label for="start_date" class="form-label">Start Date</label>
-                            <input type="text" id="start_date" class="input border mt-2" placeholder="Select start date">
-                        </div>
-
-                        <div class="col-span-12 sm:col-span-6">
-                            <label for="end_date" class="form-label">End Date</label>
-                            <input type="text" id="end_date" class="input border mt-2" placeholder="Select end date">
-                        </div>
-                    </div>
-
-                    <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
-                        <button type="submit" class="button w-20 bg-theme-1 text-white" id="ServiceRequestAddButton">Submit</button>
-                    </div>
-                </form>
-            </div>
-        </div> 
-    </div>
-    <!-- Modal End -->
 @endsection('modal_content')
 
 @section('app_content')
+<style>
+  .dz-remove {
+    display: inline-block;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: #f87171; /* red-400 */
+    cursor: pointer;
+  }
+  .dz-remove:hover {
+    color: #b91c1c; /* red-700 */
+  }
+</style>
 
 <div class="intro-y flex flex-col sm:flex-row items-center mt-8">
     <h2 class="text-lg font-medium mr-auto">
@@ -119,15 +76,28 @@
     <!-- <div class="intro-y text-gray-700 dark:text-gray-600 mt-3 text-xs sm:text-sm"> {{ $billboard_detail->created_at }} </div> -->
     <div class="intro-y mt-6">
         <div class="flex gap-4">
-            <div class="flex-1">
-                <img src="{{ asset('storage/billboards/' . $billboard_detail->site_number . '_1.png') }}"
-                    alt="{{ $billboard_detail->location_name }}"
-                    class="w-full h-auto object-contain rounded-lg shadow">
+            <!-- Image 1 -->
+            <div class="flex-1 relative group">
+                <img src="{{ asset('storage/billboards/' . $billboard_detail->site_number . '_1.png') }}" 
+                     alt="{{ $billboard_detail->location_name }}" 
+                     class="w-full h-auto object-contain rounded-lg shadow">
+                <button 
+                    onclick="deleteImage('{{ $billboard_detail->site_number }}_1.png', this)" 
+                    class="absolute top-2 right-2 text-white bg-theme-6 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
+                    Remove
+                </button>
             </div>
-            <div class="flex-1">
-                <img src="{{ asset('storage/billboards/' . $billboard_detail->site_number . '_2.png') }}"
-                    alt="{{ $billboard_detail->location_name }}"
-                    class="w-full h-auto object-contain rounded-lg shadow">
+
+            <!-- Image 2 -->
+            <div class="flex-1 relative group">
+                <img src="{{ asset('storage/billboards/' . $billboard_detail->site_number . '_2.png') }}" 
+                     alt="{{ $billboard_detail->location_name }}" 
+                     class="w-full h-auto object-contain rounded-lg shadow">
+                <button 
+                    onclick="deleteImage('{{ $billboard_detail->site_number }}_2.png', this)" 
+                    class="absolute top-2 right-2 text-white bg-theme-6 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
+                    Remove
+                </button>
             </div>
         </div>
     </div>
@@ -144,39 +114,28 @@
             </div> -->
             <div class="ml-3 mr-auto">
                 <a href="" class="font-medium">Uploaded by:</a>
-                <div class="text-gray-600">{{ $billboard_detail->createed_by }}</div>
+                <div class="text-gray-600">{{ $billboard_detail->created_by }}</div>
                 <div class="text-gray-600"> {{ $billboard_detail->created_at }} </div>
             </div>
         </div>
     </div>
     <div class="intro-y mt-5 pt-5 border-t border-gray-200 dark:border-dark-5">
-        <!-- <div class="text-base sm:text-lg font-medium">2 Responses</div> -->
         <div class="border border-gray-200 dark:border-dark-5 rounded-md p-5 mt-5" id="fileUpload">
             <div class="mt-5">
                 <div class="mt-3">
                     <div class="flex items-center">
                         <label class="font-medium">Upload Image</label>
                     </div>
-                    <form id="fileUploadForm" action="{{ route('tempUpload') }}" method="POST" enctype="multipart/form-data" class="dropzone border-gray-200 border-dashed">
+                    <form id="fileUploadForm" action="{{ route('billboard.uploadImage') }}" method="POST" enctype="multipart/form-data" class="dropzone border-gray-200 border-dashed">
                         @csrf
+                        <input type="hidden" name="site_number" value="{{ $billboard_detail->site_number }}">
                         <div class="fallback">
                             <input name="files[]" id="fileInput" type="file" multiple />
                         </div>
                         <div class="dz-message" data-dz-message>
                             <div class="text-lg font-medium">Drop files here or click to upload.</div>
-                            <div class="text-gray-600"> This is just a demo dropzone. Selected files are <span class="font-medium">not</span> actually uploaded. </div>
+                            <div class="text-gray-600">Only 2 images per site are allowed.</div>
                         </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-        
-        <div class="news__input relative mt-5">
-            <div class="pt-5">
-                <div class="px-5 py-3 text-left dark:border-dark-5">
-                    <form id="mainForm" action="{{ route('workOrderProfile.create') }}" method="POST">
-                        @csrf
-                        <button type="submit" class="button w-20 bg-theme-1 text-white" id="WOAddButton" required>Upload</button>
                     </form>
                 </div>
             </div>
@@ -194,174 +153,94 @@
 
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-    $(document).ready(function() {
-        $('.select2-client').select2({
-            placeholder: "Select a client",
-            allowClear: true,
-            width: '100%'
-        });
-    });
-    
-    $(document).ready(function() {
-        // Global variables
-        var lastClickedLink;
-        let startPicker = null;
-        let endPicker = null;
+    Dropzone.options.fileUploadForm = {
+        paramName: "file",
+        maxFiles: 2,
+        acceptedFiles: 'image/*',
+        addRemoveLinks: true,
+        dictRemoveFile: "Remove",
+        dictMaxFilesExceeded: "You can only upload 2 images per site.",
 
-        document.getElementById("ServiceRequestAddButton").addEventListener("click", ServiceRequestAddButton);
+        init: function () {
+            let dz = this;
 
-        // Init Flatpickr only once when modal is opened
-        $('[data-target="#addBillboardBookingModal"]').on('click', function () {
-            setTimeout(() => {
-                if (!startPicker) {
-                    startPicker = flatpickr("#start_date", {
-                        dateFormat: "Y-m-d",
-                        onChange: function (selectedDates, dateStr) {
-                            if (endPicker) {
-                                endPicker.set('minDate', dateStr);
-                            }
-                        }
+            let siteNumber = "{{ $billboard_detail->site_number }}";
+            let existingImages = [
+                @if(Storage::exists('public/billboards/' . $billboard_detail->site_number . '_1.png'))
+                    { name: "{{ $billboard_detail->site_number }}_1.png", url: "{{ asset('storage/billboards/' . $billboard_detail->site_number . '_1.png') }}" },
+                @endif
+                @if(Storage::exists('public/billboards/' . $billboard_detail->site_number . '_2.png'))
+                    { name: "{{ $billboard_detail->site_number }}_2.png", url: "{{ asset('storage/billboards/' . $billboard_detail->site_number . '_2.png') }}" }
+                @endif
+            ];
+
+            existingImages.forEach(function(file) {
+                dz.emit("addedfile", file);
+                dz.emit("thumbnail", file, file.url);
+                dz.emit("complete", file);
+            });
+
+            dz.options.maxFiles = dz.options.maxFiles - existingImages.length;
+
+            // Handle remove file
+            dz.on("removedfile", function(file) {
+                if (file.name) {
+                    axios.post("{{ route('billboard.deleteImage') }}", {
+                        filename: file.name,
+                        _token: "{{ csrf_token() }}"
+                    })
+                    .then(response => {
+                        console.log(response.data.message);
+                        dz.options.maxFiles++; // free up a slot
+                    })
+                    .catch(error => {
+                        console.error(error.response.data.message || error);
+                        alert(error.response.data.message || "Failed to delete image");
                     });
                 }
+            });
+        },
 
-                if (!endPicker) {
-                    endPicker = flatpickr("#end_date", {
-                        dateFormat: "Y-m-d"
-                    });
-                }
-            }, 200); // slight delay after modal opens
-        });
+        sending: function(file, xhr, formData) {
+            formData.append('site_number', "{{ $billboard_detail->site_number }}");
+        },
 
-        // Listen to below buttons
-        document.getElementById("WOActivityDeleteButton").addEventListener("click", WOActivityDeleteButton);
+        success: function(file, response) {
+            console.log(response.message);
+        },
 
-        // Open modal
-        function openAltEditorModal(element) {
-            cash(element).modal('show');
+        error: function(file, response) {
+            alert(response.message || response);
+            dz.removeFile(file);
         }
-
-        // Close modal
-        function closeAltEditorModal(element) {
-            cash(element).modal('hide');
-        }
-
- 
-        $('#filterOnGoingWorkOrderButton').on('click', function() {
-            var sort = document.getElementById("inputOnGoingWorkOrderStatus").value;
-            var workOrderId = $('#workOrder').data('id');
-            filterWorkOrders(sort, workOrderId);
-        });
-    });
-
-    // Close modal
-    function closeAltEditorModal(element) {
-        cash(element).modal('hide');
-    }
-
-    // Store the ID of the last clicked moda when it's triggered
-    (function() {
-
-        document.getElementById('ServiceRequestAddButton').addEventListener('click', function(e) {
-            // Prevent the default form submission behavior
-            e.preventDefault();
-        });
-
-        $(document).on('click', "[data-toggle='modal']", function() {
-            lastClickedLink = $(this).attr('id').split("-")[1];
-            console.log(lastClickedLink);
-        });
-    })();
-
-    // Add New Service Request
-    function ServiceRequestAddButton() {
-
-        document.getElementById("ServiceRequestAddButton").disabled = true;
-        document.getElementById('ServiceRequestAddButton').style.display = 'none';
-        client_id: document.getElementById("ServiceRequestAddClient").value,
-
-        $.ajax({
-            type: 'POST',
-            url: "{{ route('serviceRequest.create') }}",
-            data: {
-                _token      : $('meta[name="csrf-token"]').attr('content'),
-                project     : document.getElementById("ServiceRequestAddProject").value,
-                description : document.getElementById("ServiceRequestAddDescription").value,
-                remarks     : document.getElementById("ServiceRequestAddClientRemark").value,
-                priority    : document.getElementById("ServiceRequestAddPriority").value,
-                category    : document.getElementById("ServiceRequestAddCategory").value,
-                subcategory : document.getElementById("ServiceRequestAddSubCategory").value,
-            },
-            success: function(response) {
-                // Close modal after successfully edited
-                var element = "#addServiceRequestModal";
-                closeAltEditorModal(element);
-
-                // Show successful toast
-                window.showSubmitToast("Successfully added.", "#91C714");
-
-                // Clean fields
-                document.getElementById("ServiceRequestAddProject").value = "";
-                document.getElementById("ServiceRequestAddDescription").value = "";
-                document.getElementById("ServiceRequestAddClientRemark").value = "";
-                document.getElementById("ServiceRequestAddPriority").value = "";
-                document.getElementById("ServiceRequestAddCategory").value = "";
-                document.getElementById("ServiceRequestAddSubCategory").value = "";
-
-                // Reload table
-                $('#service_request_table').DataTable().ajax.reload();
-                
-                // Reset the button visibility and enable it for next submission
-                document.getElementById("ServiceRequestAddButton").disabled = false;
-                document.getElementById('ServiceRequestAddButton').style.display = 'inline-block';  // Shows the button again
-            },
-            error: function(xhr, status, error) {
-                // Display the validation error message
-                var response = JSON.parse(xhr.responseText);
-                var error = "Error: " + response.error;
-
-                // Show fail toast
-                window.showSubmitToast(error, "#D32929");
-            }
-        });
     };
 
+    function deleteImage(filename, button) {
+        if(!confirm('Are you sure you want to delete this image?')) return;
 
-    // Delete Comment
-    function WOActivityDeleteButton() {
-        var deleteCommentId = lastClickedLink;
-        // console.log(lastClickedLink.split("-")[1]);
-
-        $.ajax({
-            type: 'POST',
-            url: "{{ route('workOrderProfile.deleteComment') }}",
-            data: {
-                _token: $('meta[name="csrf-token"]').attr('content'),
-                delete_comment_id: deleteCommentId
+        fetch('{{ route("billboard.deleteImage") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
-            success: function (response) {
-                // Close modal after successfully deleted
-                var element = "#WOActivityDeleteModal";
-                closeAltEditorModal(element);
-
-                // Show successful toast
-                window.showSubmitToast("Successfully deleted.", "#91C714");
-
-                // Reload the specific table using Ajax
-                $('#WOActivityList').load(window.location.href + ' #WOActivityList');
-
-                // Reload the entire page
-                // location.reload();
-            },
-            error: function (xhr, status, error) {
-                // Display the validation error message
-                var response = JSON.parse(xhr.responseText);
-                var error = "Error: " + response.error;
-
-                // Show fail toast
-                window.showSubmitToast(error, "#D32929");
-            }
+            body: JSON.stringify({ filename: filename })
+        })
+        .then(response => {
+            if(response.ok) return response.json();
+            throw new Error('File not found');
+        })
+        .then(data => {
+            button.closest('.flex-1').remove();
+            alert(data.message);
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Error deleting image.');
         });
     }
+
+
 
 </script>
 @endsection
