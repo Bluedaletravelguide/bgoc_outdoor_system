@@ -60,8 +60,10 @@
         Billboard Site Images
     </h2>
     @php
-        $image1Path = public_path('images/billboards/' . $billboard_detail->site_number . '_1.png');
-        $image2Path = public_path('images/billboards/' . $billboard_detail->site_number . '_2.png');
+        $imageBasePath = '/home/bluedale2/public_html/bgocoutdoor.bluedale.com.my/images/billboards/';
+        $image1Path = $imageBasePath . $billboard_detail->site_number . '_1.png';
+        $image2Path = $imageBasePath . $billboard_detail->site_number . '_2.png';
+
         $image1Exists = file_exists($image1Path);
         $image2Exists = file_exists($image2Path);
     @endphp

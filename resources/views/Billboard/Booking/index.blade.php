@@ -292,7 +292,7 @@
                     </div>
                     <div class="col-span-12 sm:col-span-12">
                         <label>Location</label>
-                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBookingLocation">
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border select2-location" id="inputBookingLocation">
                             <option value="">-- Select Location --</option>
                         </select>
                     </div>                     
@@ -831,7 +831,7 @@
                     },
                     success: function (locations) {
                         locations.forEach(function (location) {
-                            $('#inputBookingLocation').append(`<option value="${location.id}">${location.name}</option>`);
+                            $('#inputBookingLocation').append(`<option value="${location.id}">${location.site_number} - ${location.name}</option>`);
                         });
                     },
                     error: function () {
@@ -848,6 +848,12 @@
         });
 
         $('.select2-client').select2({
+            placeholder: "Select a client",
+            allowClear: true,
+            width: '100%'
+        });
+
+        $('.select2-location').select2({
             placeholder: "Select a client",
             allowClear: true,
             width: '100%'
@@ -1472,6 +1478,7 @@
             // Always reset modal
             $("#inputBookingForm")[0].reset();
             $(".select2-client").val("").trigger("change");
+            $(".select2-location").val("").trigger("change");
 
             // Prefill static fields
             $("#inputBookingSiteNo").val(row.site_number);

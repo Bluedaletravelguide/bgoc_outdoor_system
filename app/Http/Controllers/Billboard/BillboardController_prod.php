@@ -699,8 +699,8 @@ class BillboardController extends Controller
 
         // Hardcode images for testing
         $billboard->images = [
-            'storage/billboards/' . $billboard->site_number . '_1.png',
-            'storage/billboards/' . $billboard->site_number . '_2.png',
+            'images/billboards/' . $billboard->site_number . '_1.png',
+            'images/billboards/' . $billboard->site_number . '_2.png',
         ];
 
         $pdf = PDF::loadView('billboard.export', compact('billboard'))
@@ -738,8 +738,8 @@ class BillboardController extends Controller
         // 🔹 Attach hardcoded images for each billboard
         foreach ($billboards as $billboard) {
             $billboard->images = [
-                'storage/billboards/' . $billboard->site_number . '_1.png',
-                'storage/billboards/' . $billboard->site_number . '_2.png',
+                'images/billboards/' . $billboard->site_number . '_1.png',
+                'images/billboards/' . $billboard->site_number . '_2.png',
             ];
         }
 
@@ -785,9 +785,9 @@ class BillboardController extends Controller
 
             $directory = '/home/bluedale2/public_html/bgocoutdoor.bluedale.com.my/images/billboards';
 
-            if (!file_exists($directory)) {
-                mkdir($directory, 0755, true);
-            }
+            // if (!file_exists($directory)) {
+            //     mkdir($directory, 0755, true);
+            // }
 
             // Limit to 2 images
             $existingFiles = Storage::files($directory);
