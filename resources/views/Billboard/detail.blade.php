@@ -51,18 +51,9 @@
                 <div class="text-gray-600">Date Registered: {{ $billboard_detail->created_at }} </div>
             </div>
             <br>
-            <!-- <div class="mt-2 xl:mt-0">
-                <button type="button" class="button w-full sm:w-32 bg-theme-32 text-white" id="billboardBookingForm">Download</button>
-            </div> -->
             <div class="mt-2 xl:mt-0">
                 <a href="{{ route('billboard.download', $billboard_detail->id) }}" class="button bg-theme-9 text-white">Download PDF</a>
             </div>
-
-            <!-- <div class="text-center"> 
-                <a href="javascript:;" data-toggle="modal" data-target="#addBillboardBookingModal" class="button w-full sm:w-32 bg-theme-32 text-white">
-                    Add New Billboard Booking
-                </a> 
-            </div>  -->
         </div>
     </div>
 </div>
@@ -73,52 +64,45 @@
     <h2 class="intro-y font-medium text-xl sm:text-2xl">
         Billboard Site Images
     </h2>
-    <!-- <div class="intro-y text-gray-700 dark:text-gray-600 mt-3 text-xs sm:text-sm"> {{ $billboard_detail->created_at }} </div> -->
+    @php
+        $image1Exists = Storage::exists('public/billboards/' . $billboard_detail->site_number . '_1.png');
+        $image2Exists = Storage::exists('public/billboards/' . $billboard_detail->site_number . '_2.png');
+    @endphp
+
     <div class="intro-y mt-6">
         <div class="flex gap-4">
-            <!-- Image 1 -->
-            <div class="flex-1 relative group">
-                <img src="{{ asset('storage/billboards/' . $billboard_detail->site_number . '_1.png') }}" 
-                     alt="{{ $billboard_detail->location_name }}" 
-                     class="w-full h-auto object-contain rounded-lg shadow">
-                <button 
-                    onclick="deleteImage('{{ $billboard_detail->site_number }}_1.png', this)" 
-                    class="absolute top-2 right-2 text-white bg-theme-6 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
-                    Remove
-                </button>
+            <!-- Image 1 Slot -->
+            <div class="flex-1 relative group h-48 overflow-hidden rounded-lg shadow bg-gray-100">
+                @if($image1Exists)
+                    <button 
+                        onclick="deleteImage('{{ $billboard_detail->site_number }}_1.png', this)" 
+                        class="absolute top-2 right-2 text-white bg-theme-6 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
+                        X
+                    </button>
+                    <img src="{{ asset('storage/billboards/' . $billboard_detail->site_number . '_1.png') }}" 
+                        alt="{{ $billboard_detail->location_name }}" 
+                        class="w-full h-full object-cover">
+                @endif
             </div>
 
-            <!-- Image 2 -->
-            <div class="flex-1 relative group">
-                <img src="{{ asset('storage/billboards/' . $billboard_detail->site_number . '_2.png') }}" 
-                     alt="{{ $billboard_detail->location_name }}" 
-                     class="w-full h-auto object-contain rounded-lg shadow">
-                <button 
-                    onclick="deleteImage('{{ $billboard_detail->site_number }}_2.png', this)" 
-                    class="absolute top-2 right-2 text-white bg-theme-6 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
-                    Remove
-                </button>
-            </div>
-        </div>
-    </div>
-
-
-
-
-    <!-- <div class="intro-y flex relative pt-16 sm:pt-6 items-center pb-6">
-    </div> -->
-    <div class="intro-y flex text-xs sm:text-sm flex-col sm:flex-row items-center mt-5 pt-5 border-t border-gray-200 dark:border-dark-5">
-        <div class="flex items-center">
-            <!-- <div class="w-12 h-12 flex-none image-fit">
-                <img alt="Midone Tailwind HTML Admin Template" class="rounded-full" src="dist/images/profile-10.jpg">
-            </div> -->
-            <div class="ml-3 mr-auto">
-                <a href="" class="font-medium">Uploaded by:</a>
-                <div class="text-gray-600">{{ $billboard_detail->created_by }}</div>
-                <div class="text-gray-600"> {{ $billboard_detail->created_at }} </div>
+            <!-- Image 2 Slot -->
+            <div class="flex-1 relative group h-48 overflow-hidden rounded-lg shadow bg-gray-100">
+                @if($image2Exists)
+                    <button 
+                        onclick="deleteImage('{{ $billboard_detail->site_number }}_2.png', this)" 
+                        class="absolute top-2 right-2 text-white bg-theme-6 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
+                        X
+                    </button>
+                    <img src="{{ asset('storage/billboards/' . $billboard_detail->site_number . '_2.png') }}" 
+                        alt="{{ $billboard_detail->location_name }}" 
+                        class="w-full h-full object-cover">
+                @endif
             </div>
         </div>
     </div>
+
+
+
     <div class="intro-y mt-5 pt-5 border-t border-gray-200 dark:border-dark-5">
         <div class="border border-gray-200 dark:border-dark-5 rounded-md p-5 mt-5" id="fileUpload">
             <div class="mt-5">
@@ -157,6 +141,7 @@
         paramName: "file",
         maxFiles: 2,
         acceptedFiles: 'image/*',
+        maxFilesize: 10, // allow 10 MB
         addRemoveLinks: true,
         dictRemoveFile: "Remove",
         dictMaxFilesExceeded: "You can only upload 2 images per site.",
@@ -202,18 +187,22 @@
         },
 
         sending: function(file, xhr, formData) {
-            formData.append('site_number', "{{ $billboard_detail->site_number }}");
+            formData.append("_token", "{{ csrf_token() }}"); // 🔑 Add CSRF
+            formData.append("site_number", "{{ $billboard_detail->site_number }}");
         },
 
         success: function(file, response) {
-            console.log(response.message);
+            alert(data.message);
         },
 
+
         error: function(file, response) {
-            alert(response.message || response);
-            dz.removeFile(file);
+            console.error("❌ Dropzone error:", response);
+            // Don’t use dz here, just remove the file safely
+            this.removeFile(file);
         }
     };
+
 
     function deleteImage(filename, button) {
         if(!confirm('Are you sure you want to delete this image?')) return;
@@ -233,6 +222,7 @@
         .then(data => {
             button.closest('.flex-1').remove();
             alert(data.message);
+            window.location.reload(); // Refresh to update Dropzone state
         })
         .catch(err => {
             console.error(err);

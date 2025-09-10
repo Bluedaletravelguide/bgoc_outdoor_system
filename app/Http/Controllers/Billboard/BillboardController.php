@@ -27,6 +27,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\PushNotificationController;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Image;
+use Spatie\ImageOptimizer\OptimizerChainFactory;
 
 class BillboardController extends Controller
 {
@@ -303,7 +305,7 @@ class BillboardController extends Controller
                 'location_id'       => $location->id,
                 'gps_longitude'     => $gpslongitude,
                 'gps_latitude'      => $gpslatitude,
-                'traffic_volume'    => $trafficvolume,
+                'traffic_volume'    => $trafficvolume ?? 0,
                 'site_type'          => $siteType,
                 'created_by'        => $userID,
             ]);
@@ -415,38 +417,47 @@ class BillboardController extends Controller
 
 
     /**
-     * Delete billboard
+     * Delete billboard + all associated images
      */
     public function delete(Request $request)
     {   
-        $user = Auth::user();
-        
-        // // Get user roles
-        $role = $user->roles->pluck('name')[0];
-        $userID = $this->user->id;
-
         $id = $request->id;
 
         try {
-            // Ensure all queries successfully executed
             DB::beginTransaction();
 
-            // Update client company
-            Billboard::where('id', $id)->delete();
+            // Get billboard
+            $billboard = Billboard::findOrFail($id);
+            $siteNumber = $billboard->site_number;
 
-            // Ensure all queries successfully executed, commit the db changes
+            // Delete billboard record
+            $billboard->delete();
+
+            // Delete ALL associated images (dynamic cleanup)
+            $directory = 'public/billboards';
+            $files = Storage::files($directory);
+
+            foreach ($files as $file) {
+                if (str_starts_with(basename($file), $siteNumber . '_')) {
+                    Storage::delete($file);
+                }
+            }
+
             DB::commit();
 
             return response()->json([
-                "success"   => "success",
+                "success" => "Billboard and all related images deleted successfully",
             ], 200);
-        } catch (\Exception $e) {
-            // If any queries fail, undo all changes
-            DB::rollback();
 
-            return response()->json(['error' => $e->getMessage()], 422);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 422);
         }
     }
+
 
     /**
      * View billboard details
@@ -755,20 +766,28 @@ class BillboardController extends Controller
         return $pdf->download($filename . '.pdf');
     }
 
-    public function uploadImage(Request $request)
+
+
+
+
+
+
+
+
+
+    public function uploadImage(Request $request) 
     {
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $siteNumber = $request->input('site_number'); // pass site_number from form
-            $extension = 'png'; // force .png
+            $siteNumber = $request->input('site_number'); 
+            $extension = 'png';
 
-            // Ensure directory exists
             $directory = 'public/billboards';
             if (!Storage::exists($directory)) {
                 Storage::makeDirectory($directory);
             }
 
-            // Count existing files for this site
+            // Limit to 2 images
             $existingFiles = Storage::files($directory);
             $siteFiles = array_filter($existingFiles, fn($f) => str_starts_with(basename($f), $siteNumber . '_'));
 
@@ -779,18 +798,65 @@ class BillboardController extends Controller
             }
 
             // Sequence number
-            $sequence = count($siteFiles) + 1;
+            // Find available slot (1 or 2)
+            $usedNumbers = [];
+            foreach ($siteFiles as $f) {
+                if (preg_match('/_(\d+)\.png$/', $f, $m)) {
+                    $usedNumbers[] = (int)$m[1];
+                }
+            }
+
+            $sequence = null;
+            for ($i = 1; $i <= 2; $i++) {
+                if (!in_array($i, $usedNumbers)) {
+                    $sequence = $i;
+                    break;
+                }
+            }
+
+            if (!$sequence) {
+                return response()->json([
+                    'message' => 'Maximum of 2 images already uploaded for this site.'
+                ], 400);
+            }
+
             $filename = $siteNumber . '_' . $sequence . '.' . $extension;
 
-            // Save the file
-            $path = $file->storeAs($directory, $filename);
-            $url = Storage::url($path);
+            $path = storage_path('app/' . $directory . '/' . $filename);
+
+            // Check original file size in bytes
+            $fileSize = $file->getSize(); 
+            $imageData = null;
+
+            if ($fileSize > 1024 * 1024) { 
+                // > 1 MB → compress/resize
+                $imageData = (string) Image::read($file)
+                    ->scale(width: 400)   // resize if large
+                    ->toPng();
+            } else {
+                // <= 1 MB → keep as-is
+                $imageData = file_get_contents($file->getRealPath());
+            }
+
+            // Save image
+            file_put_contents($path, $imageData);
+
+            // Optimize PNG (optional, can skip if already small)
+            try {
+                $optimizer = OptimizerChainFactory::create();
+                $optimizer->optimize($path);
+            } catch (\Throwable $e) {
+                \Log::warning("PNG optimization skipped: " . $e->getMessage());
+            }
+
+            // Public URL
+            $url = Storage::url($directory . '/' . $filename);
 
             return response()->json([
-                'message' => 'File uploaded successfully',
+                'message'  => 'File uploaded successfully',
                 'filename' => $filename,
-                'url' => $url
-            ], 200);
+                'url'      => $url
+            ], 200, ['Content-Type' => 'application/json']);
         }
 
         return response()->json(['message' => 'No file uploaded'], 400);
