@@ -78,7 +78,7 @@
                         class="absolute top-2 right-2 text-white bg-theme-6 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
                         X
                     </button>
-                    <img src="{{ asset('images/billboards/' . $billboard_detail->site_number . '_1.png') }}?v={{ time() }}" 
+                    <img src="{{ url('images/billboards/' . $billboard_detail->site_number . '_1.png') }}?v={{ time() }}" 
                         alt="{{ $billboard_detail->location_name }}" 
                         class="w-full h-full object-cover">
                 @endif
@@ -92,7 +92,7 @@
                         class="absolute top-2 right-2 text-white bg-theme-6 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
                         X
                     </button>
-                    <img src="{{ asset('images/billboards/' . $billboard_detail->site_number . '_2.png') }}?v={{ time() }}" 
+                    <img src="{{ url('images/billboards/' . $billboard_detail->site_number . '_2.png') }}?v={{ time() }}" 
                         alt="{{ $billboard_detail->location_name }}" 
                         class="w-full h-full object-cover">
                 @endif
@@ -142,10 +142,10 @@
 
             let existingImages = [
                 @if($image1Exists)
-                    { name: "{{ $billboard_detail->site_number }}_1.png", url: "{{ asset('images/billboards/' . $billboard_detail->site_number . '_1.png') }}" },
+                    { name: "{{ $billboard_detail->site_number }}_1.png", url: "{{ url('images/billboards/' . $billboard_detail->site_number . '_1.png') }}" },
                 @endif
                 @if($image2Exists)
-                    { name: "{{ $billboard_detail->site_number }}_2.png", url: "{{ asset('images/billboards/' . $billboard_detail->site_number . '_2.png') }}" }
+                    { name: "{{ $billboard_detail->site_number }}_2.png", url: "{{ url('images/billboards/' . $billboard_detail->site_number . '_2.png') }}" }
                 @endif
             ];
 
