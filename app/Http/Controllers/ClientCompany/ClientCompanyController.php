@@ -157,7 +157,7 @@ class ClientCompanyController extends Controller
                     'regex:/^\+?[0-9]+$/',
                     'max:255',
                 ],
-                'pics' => 'required|array|min:1',
+                'pics' => 'nullable|array|min:1',
                 'pics.*.name' => 'nullable|string|max:255',
                 'pics.*.email' => 'nullable|string|email|max:255',
                 'pics.*.phone' => 'nullable|string|max:255',

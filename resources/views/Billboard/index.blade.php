@@ -27,79 +27,77 @@
     
     <!-- BEGIN: Billboard Filter-->
     <div class="flex flex-col sm:flex-row sm:items-end xl:items-start">
-        <form class="xl:flex sm:mr-auto">
-            <div class="sm:flex items-center sm:mr-4">
+        <form class="xl:flex flex-col sm:mr-auto">
+            <div class="sm:flex items-center sm:mr-4 mb-2">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Status</label>
                 <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardStatus">
                     <option value="all">All</option>
-                    @foreach ($billboardStatus as $status)
-                        <option value="{{ $status }}">
-                            {{ $status == 1 ? 'Active' : 'Inactive' }}
-                        </option>
-                    @endforeach
+                    <option value="1">Active</option>
+                    <option value="0">Inactive</option>
                 </select>
             </div>
 
             @if (Auth::guard('web')->user()->hasRole(['superadmin', 'admin']))
-            <div class="sm:flex items-center sm:mr-4">
-                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">State</label>
-                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardState">
-                    <option value="all">All</option>
-                    @foreach ($states as $state)
-                        <option value="{{ $state->id }}">{{ $state->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            
+            <!-- Row 1: State & District -->
+            <div class="sm:flex items-center mb-2">
+                <div class="sm:flex items-center sm:mr-4">
+                    <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">State</label>
+                    <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardState">
+                        <option value="all">All</option>
+                        @foreach ($states as $state)
+                            <option value="{{ $state->id }}">{{ $state->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
 
-            <div class="sm:flex items-center sm:mr-4">
-                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">District</label>
-                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardDistrict">
-                    <option value="all">All</option>
-                    @foreach ($districts as $district)
-                        <option value="{{ $district->id }}">{{ $district->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <br>
-
-            <div class="sm:flex items-center sm:mr-4">
-                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Type</label>
-                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardType">
-                    <option value="all">All</option>
-                    @foreach ($billboardTypes as $type)
-                        <option value="{{ $type }}">{{ $type }}</option>
-                    @endforeach
-                </select>
+                <div class="sm:flex items-center sm:mr-4">
+                    <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">District</label>
+                    <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardDistrict">
+                        <option value="all">All</option>
+                        @foreach ($districts as $district)
+                            <option value="{{ $district->id }}">{{ $district->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
 
-            <div class="sm:flex items-center sm:mr-4">
-                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">New/Existing</label>
-                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardSiteType">
-                    <option value="all">All</option>
-                    <option value="new">New</option>
-                    <option value="existing">Existing</option>
-                </select>
-            </div>
+            <!-- Row 2: Type, New/Existing, Size -->
+            <div class="sm:flex items-center mb-2">
+                <div class="sm:flex items-center sm:mr-4 mb-2 sm:mb-0">
+                    <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Type</label>
+                    <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardType">
+                        <option value="all">All</option>
+                        @foreach ($billboardTypes as $type)
+                            <option value="{{ $type }}">{{ $type }}</option>
+                        @endforeach
+                    </select>
+                </div>
 
-            <div class="sm:flex items-center sm:mr-4">
-                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Size</label>
-                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardSize">
-                    <option value="all">All</option>
-                    @foreach ($billboardSize as $size)
-                        <option value="{{ $size }}">{{ $size }}</option>
-                    @endforeach
-                </select>
+                <div class="sm:flex items-center sm:mr-4 mb-2 sm:mb-0">
+                    <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">New/Existing</label>
+                    <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardSiteType">
+                        <option value="all">All</option>
+                        <option value="new">New</option>
+                        <option value="existing">Existing</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+
+                <div class="sm:flex items-center sm:mr-4">
+                    <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Size</label>
+                    <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardSize">
+                        <option value="all">All</option>
+                        @foreach ($billboardSize as $size)
+                            <option value="{{ $size }}">{{ $size }}</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
             @endif
-
-            <!-- <div class="mt-2 xl:mt-0">
-                <button type="button" class="button w-full sm:w-16 bg-theme-32 text-white" id="filterBillboardButton">Filter</button>
-            </div> -->
         </form>
 
-        <div class="text-center"> 
+        <div class="text-center">
+            <!-- Buttons remain the same -->
             <a href="javascript:;" data-toggle="modal" data-target="#addBillboardModal" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-32 text-white">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus w-4 h-4">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -108,11 +106,7 @@
                 Add New Stock
             </a>
             <a href="#" id="exportBtn" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-9 text-white" target="_blank">
-                <svg xmlns="http://www.w3.org/2000/svg"
-                    width="24" height="24" viewBox="0 0 24 24"
-                    fill="none" stroke="currentColor"
-                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                    class="feather feather-download w-4 h-4 mr-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-download w-4 h-4 mr-2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                     <polyline points="7 10 12 15 17 10"/>
                     <line x1="12" y1="15" x2="12" y2="3"/>
@@ -120,19 +114,16 @@
                 Download Details
             </a>
             <a href="{{ route('stockInventory.index')}}" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-32 text-white">
-                <svg xmlns="http://www.w3.org/2000/svg"
-                    width="24" height="24" viewBox="0 0 24 24"
-                    fill="none" stroke="currentColor"
-                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                    class="feather feather-download w-4 h-4 mr-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-download w-4 h-4 mr-2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                     <polyline points="7 10 12 15 17 10"/>
                     <line x1="12" y1="15" x2="12" y2="3"/>
                 </svg>
                 Inventory
             </a>
-        </div> 
+        </div>
     </div>
+
     <!-- END: Billboard Filter -->
 
     <!-- BEGIN: Billboard List -->
@@ -171,8 +162,8 @@
                 <form>
                     <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Outdoor Type</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardType">
+                            <label>Outdoor Type <span style="color: red;">*</span></label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardType" required>
                                 <option value="">-- Select Outdoor Type --</option>
                                 <option value="BB">Billboard</option>
                                 <option value="TB">Tempboard</option>
@@ -181,16 +172,16 @@
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Size (H)'x(W)'</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardSize">
+                            <label>Size (H)'x(W)' <span style="color: red;">*</span></label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardSize" required>
                                 <option value="">-- Select Size --</option>
                                 <option value="15x10">15x10</option>
                                 <option value="30x20">30x20</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Lighting</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardLighting">
+                            <label>Lighting <span style="color: red;">*</span></label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardLighting" required>
                                 <option value="">-- Select Lighting --</option>
                                 <option value="None">None</option>
                                 <option value="TNB">TNB</option>
@@ -198,8 +189,8 @@
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>State</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardState">
+                            <label>State <span style="color: red;">*</span></label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardState" required>
                                 <option value="">-- Select State --</option>
                                 @foreach ($states as $state)
                                     <option value="{{ $state->id }}">{{ $state->name }}</option>
@@ -207,24 +198,24 @@
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>District</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardDistrict">
+                            <label>District <span style="color: red;">*</span></label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardDistrict" required>
                                 <option value="">-- Select District --</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Council</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardCouncil">
+                            <label>Council <span style="color: red;">*</span></label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardCouncil" required>
                                 <option value="">-- Select Council --</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Location</label>
-                            <input type="text" class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardLocation" placeholder="Enter location name">
+                            <label>Location <span style="color: red;">*</span></label>
+                            <input type="text" class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardLocation" placeholder="Enter location name" required>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>State/Private Land</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardLand">
+                            <label>State/Private Land <span style="color: red;">*</span></label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardLand" required>
                                 <option value="">-- Select option --</option>
                                 <option value="A">A - State Land</option>
                                 <option value="B">B - Private Land</option>
@@ -233,7 +224,7 @@
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label for="inputGPSCoordinate" class="form-label">GPS Coordinate</label>
+                            <label for="inputGPSCoordinate" class="form-label">GPS Coordinate <span style="color: red;">*</span></label>
                             <input 
                                 type="text" 
                                 class="input w-full border mt-2 flex-1" 
@@ -264,6 +255,7 @@
                                 <option value="">-- Select option --</option>
                                 <option value="new">New</option>
                                 <option value="existing">Existing</option>
+                                <option value="rejected">Rejected</option>
                             </select>
                         </div>
                     </div>
@@ -288,7 +280,7 @@
                     <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                         <div class="col-span-12 sm:col-span-12">
                             <input type="hidden" id="editBillboardModalId" name="id">
-                            <label>Outdoor Type</label>
+                            <label>Outdoor Type <span style="color: red;">*</span></label>
                             <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardType" disabled>
                                 <option value="">-- Select Outdoor Type --</option>
                                 <option value="BB">Billboard</option>
@@ -298,16 +290,16 @@
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Billboard Size</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardSize">
+                            <label>Billboard Size <span style="color: red;">*</span></label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardSize" required>
                                 <option value="">-- Select Size --</option>
                                 <option value="15x10">15x10</option>
                                 <option value="30x20">30x20</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Lighting</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardLighting">
+                            <label>Lighting <span style="color: red;">*</span></label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardLighting" required>
                                 <option value="">-- Select Lighting --</option>
                                 <option value="None">None</option>
                                 <option value="TNB">TNB</option>
@@ -315,7 +307,7 @@
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>State</label>
+                            <label>State <span style="color: red;">*</span></label>
                             <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardState"  disabled>
                                 <option value="">-- Select State --</option>
                                 @foreach ($states as $state)
@@ -324,23 +316,23 @@
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>District</label>
+                            <label>District <span style="color: red;">*</span></label>
                             <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardDistrict" disabled>
                                 <option value="">-- Select District --</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Council</label>
+                            <label>Council <span style="color: red;">*</span></label>
                             <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardCouncil" disabled>
                                 <option value="">-- Select Council --</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Location</label>
+                            <label>Location <span style="color: red;">*</span></label>
                             <input type="text" class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardLocation" placeholder="Enter location name">
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label for="editGPSCoordinate" class="form-label">GPS Coordinate</label>
+                            <label for="editGPSCoordinate" class="form-label">GPS Coordinate <span style="color: red;">*</span></label>
                             <input 
                                 type="text" 
                                 class="input w-full border mt-2 flex-1" 
@@ -361,6 +353,7 @@
                                 <option value="">-- Select option --</option>
                                 <option value="new">New</option>
                                 <option value="existing">Existing</option>
+                                <option value="rejected">Rejected</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">

@@ -629,12 +629,8 @@ class BillboardController extends Controller
 
             $directory = '/home/bluedale2/public_html/bgocoutdoor.bluedale.com.my/images/billboards';
 
-            // if (!file_exists($directory)) {
-            //     mkdir($directory, 0755, true);
-            // }
-
             // Limit to 2 images
-            $existingFiles = Storage::files($directory);
+            $existingFiles = glob($directory . '/' . $siteNumber . '_*.png');
             $siteFiles = array_filter($existingFiles, fn($f) => str_starts_with(basename($f), $siteNumber . '_'));
 
             if (count($siteFiles) >= 2) {
@@ -696,7 +692,7 @@ class BillboardController extends Controller
             }
 
             // Public URL
-            $url = asset('images/billboards/' . $filename);
+            $url = asset('images/billboards/' . $filename) . '?v=' . time();
 
             return response()->json([
                 'message'  => 'File uploaded successfully',

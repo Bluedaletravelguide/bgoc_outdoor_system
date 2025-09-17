@@ -63,6 +63,45 @@
     .overflow-x-auto::-webkit-scrollbar-thumb:hover {
         background-color: #4a5568; /* gray-500 */
     }
+
+    /* ===== Freeze first 3 columns ===== */
+    #monthly-ongoing-table th:nth-child(1),
+    #monthly-ongoing-table td:nth-child(1) {
+        position: sticky;
+        left: 0;
+        min-width: 50px;   /* No */
+        background: #fff;
+        z-index: 5;
+    }
+
+    #monthly-ongoing-table th:nth-child(2),
+    #monthly-ongoing-table td:nth-child(2) {
+        position: sticky;
+        left: 30px;        /* width of col1 */
+        min-width: 120px;  /* Client */
+        background: #fff;
+        z-index: 5;
+    }
+
+    #monthly-ongoing-table th:nth-child(3),
+    #monthly-ongoing-table td:nth-child(3) {
+        position: sticky;
+        left: 140px;       /* col1 + col2 */
+        min-width: 120px;  /* Location */
+        background: #fff;
+        z-index: 5;
+    }
+
+    /* Ensure header cells of frozen columns stay on top */
+    #monthly-ongoing-table thead th:nth-child(1),
+    #monthly-ongoing-table thead th:nth-child(2),
+    #monthly-ongoing-table thead th:nth-child(3) {
+        z-index: 6;
+    }
+
+    .select2-container {
+        min-width: 250px !important; /* adjust size */
+    }
 </style>
 <!-- Flatpickr CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -113,7 +152,7 @@
         <form class="xl:flex flex-wrap items-end">
             <div class="row sm:flex items-center sm:mr-4">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">State</label>
-                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardBookingState">
+                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border select2-state" id="filterBillboardBookingState">
                     <option value="" selected="">-- Select State --</option>
                     @foreach ($states as $state)
                         <option value="{{ $state->id }}">{{ $state->name }}</option>
@@ -122,7 +161,7 @@
             </div>
             <div class="row sm:flex items-center sm:mr-4">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">District</label>
-                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardBookingDistrict">
+                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border select2-district" id="filterBillboardBookingDistrict">
                     <option value="" selected="">-- Select State --</option>
                     @foreach ($districts as $district)
                         <option value="{{ $district->id }}">{{ $district->name }}</option>
@@ -131,13 +170,20 @@
             </div>
             <div class="sm:flex items-center sm:mr-4">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Location</label>
-                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardBookingLocation">
+                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border select2-location" id="filterBillboardBookingLocation">
                     <option value="" selected="">-- Select State --</option>
                     @foreach ($locations as $location)
                         <option value="{{ $location->id }}" data-site="{{ $location->site_number }}">{{ $location->name }}</option>
                     @endforeach
                 </select>
             </div>
+        </form>
+    </div>
+    <!-- Filter End -->
+
+    <!-- Monthly Ongoing Date Filter -->
+    <div class="flex flex-col sm:flex-row sm:items-end xl:items-start mb-2 mt-2">
+        <form class="xl:flex flex-wrap items-end">
             <div class="row sm:flex items-center sm:mr-4">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Status</label>
                 <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardBookingStatus">
@@ -176,6 +222,12 @@
         </form>
     </div>
     <!-- Filter End -->
+
+    <div class="mb-4">
+        Search:<input type="text" id="globalSearchInput"
+            class="input border p-2 w-64 ml-4"
+            placeholder="Search all tables...">
+    </div>
 
     <!-- billboard monthly ongoing calendar table -->
     <div class="shadow-sm rounded-lg border border-gray-200 overflow-hidden">
@@ -263,11 +315,7 @@
             <form id="inputBookingForm">
                 <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                     <div class="col-span-12 sm:col-span-12">
-                        <label>Site Number</label>
-                        <input type="text" class="input w-full border mt-2 flex-1" id="inputBookingSiteNo" value="" disabled>
-                    </div>
-                    <div class="col-span-12 sm:col-span-12">
-                        <label>Client</label>
+                        <label>Client <span style="color: red;">*</span></label>
                         <select id="inputBookingCompany" class="input w-full border mt-2 select2-client" required>
                             <option value="">-- Select Client --</option>
                             @foreach ($companies as $company)
@@ -276,7 +324,7 @@
                         </select>
                     </div>
                     <div class="col-span-12 sm:col-span-12">
-                        <label>State</label>
+                        <label>State <span style="color: red;">*</span></label>
                         <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBookingState">
                             <option value="">-- Select State --</option>
                             @foreach ($states as $state)
@@ -285,27 +333,27 @@
                         </select>
                     </div>
                     <div class="col-span-12 sm:col-span-12">
-                        <label>District</label>
+                        <label>District <span style="color: red;">*</span></label>
                         <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBookingDistrict">
                             <option value="">-- Select District --</option>
                         </select>
                     </div>
                     <div class="col-span-12 sm:col-span-12">
-                        <label>Location</label>
+                        <label>Location <span style="color: red;">*</span></label>
                         <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border select2-location" id="inputBookingLocation">
                             <option value="">-- Select Location --</option>
                         </select>
                     </div>                     
                     <div class="col-span-12 sm:col-span-6">
-                        <label for="start_date" class="form-label">Start Date</label>
+                        <label for="start_date" class="form-label">Start Date <span style="color: red;">*</span></label>
                         <input type="text" id="start_date" class="input border mt-2" placeholder="Select start date">
                     </div>
                     <div class="col-span-12 sm:col-span-6">
-                        <label for="end_date" class="form-label">End Date</label>
+                        <label for="end_date" class="form-label">End Date <span style="color: red;">*</span></label>
                         <input type="text" id="end_date" class="input border mt-2" placeholder="Select end date">
                     </div>
                     <div class="col-span-12 sm:col-span-12">
-                        <label>Status</label>
+                        <label>Status <span style="color: red;">*</span></label>
                         <select id="inputBookingStatus" class="input w-full border mt-2 select" required>
                             <option disabled selected hidden value="">-- Select Status --</option>
                             <option value="pending_payment">Pending Payment</option>
@@ -316,7 +364,7 @@
                         </select>
                     </div>
                     <div class="col-span-12 sm:col-span-12">
-                        <label>Artwork by</label>
+                        <label>Artwork by <span style="color: red;">*</span></label>
                         <select id="inputBookingArtworkBy" class="input w-full border mt-2 select" required>
                             <option disabled selected hidden value="">-- Select Artwork by --</option>
                             <option value="Client">Client</option>
@@ -324,7 +372,7 @@
                         </select>
                     </div>
                     <div class="col-span-12 sm:col-span-12">
-                        <label>DBP Approval</label>
+                        <label>DBP Approval <span style="color: red;">*</span></label>
                         <select id="inputBookingDBPApproval" class="input w-full border mt-2 select" required>
                             <option disabled selected hidden value="">-- Select DBP Approval --</option>
                             <option value="NA">Not Available</option>
@@ -334,7 +382,7 @@
                         </select>
                     </div>
                     <div class="col-span-12 sm:col-span-12">
-                        <label>Remarks</label>
+                        <label>Remarks <span style="color: red;">*</span></label>
                         <!-- <input type="text" class="input w-full border mt-2 flex-1" id="inputBookingRemarks" value="" required> -->
                         <textarea class="input w-full border mt-2 flex-1" id="inputBookingRemarks" rows="5" required></textarea>
                     </div>
@@ -375,7 +423,7 @@
         <form>
             <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Status</label>
+                    <label>Status <span style="color: red;">*</span></label>
                     <select id="editBookingStatus" class="input w-full border mt-2 select" required>
                         <option disabled selected hidden value="">-- Select Status --</option>
                         <option value="pending_payment">Pending Payment</option>
@@ -386,7 +434,7 @@
                     </select>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Remarks</label>
+                    <label>Remarks <span style="color: red;">*</span></label>
                     <textarea class="input w-full border mt-2 flex-1" placeholder="Remarks" id="editBookingRemarks" rows="5" required></textarea>
                 </div>
             </div>
@@ -612,6 +660,44 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script>
+
+    $('.select2-state').select2({
+        placeholder: "Select a state",
+        allowClear: true,
+        width: '100%'
+    });
+
+    $('.select2-district').select2({
+        placeholder: "Select a district",
+        allowClear: true,
+        width: '100%'
+    });
+
+    $('.select2-location').select2({
+        placeholder: "Select a location",
+        allowClear: true,
+        width: '100%'
+    });
+        
+    // Global search across both tables
+    $('#globalSearchInput').on('keyup', function () {
+        const value = $(this).val().toLowerCase();
+
+        // 🔎 Filter Monthly Booking table manually
+        $('#monthly-ongoing-table tbody tr').each(function () {
+            const match = $(this).text().toLowerCase().indexOf(value) > -1;
+            $(this).toggle(match);
+        });
+
+        // ✅ Re-index No column for visible rows
+        $('#monthly-ongoing-table tbody tr:visible').each(function (i) {
+            $(this).find('td:first').text(i + 1);
+        });
+
+        // 🔎 Filter Check Availability table via DataTable API
+        const dt = $('#billboard_booking_table').DataTable();
+        dt.search(value).draw();
+    });
     
     // <!-- BEGIN: Billboard Booking List Filter -->
     $('#filterBillboardBookingState').on('change', function () {
@@ -741,6 +827,36 @@
     document.addEventListener("DOMContentLoaded", function () {
         const modal = document.getElementById('addBookingModal');
 
+        function initDatePickers() {
+            const startDateInput = document.getElementById('start_date');
+            const endDateInput   = document.getElementById('end_date');
+
+            // Destroy any existing pickers before re-init
+            if (startDateInput._flatpickr) startDateInput._flatpickr.destroy();
+            if (endDateInput._flatpickr) endDateInput._flatpickr.destroy();
+
+            const endPicker = flatpickr(endDateInput, {
+                dateFormat: "d/m/Y"
+            });
+
+            const startPicker = flatpickr(startDateInput, {
+                dateFormat: "d/m/Y",
+                onChange: function (selectedDates) {
+                    if (selectedDates.length > 0) {
+                        endPicker.set('minDate', selectedDates[0]);
+                        if (endDateInput.value) {
+                            const endDate = endPicker.parseDate(endDateInput.value, "d/m/Y");
+                            if (endDate < selectedDates[0]) {
+                                endDateInput.value = "";
+                            }
+                        }
+                    } else {
+                        endPicker.set('minDate', null);
+                    }
+                }
+            });
+        }
+
         if (modal) {
             const observer = new MutationObserver(() => {
                 const isVisible = !modal.classList.contains('hidden');
@@ -854,7 +970,7 @@
         });
 
         $('.select2-location').select2({
-            placeholder: "Select a client",
+            placeholder: "Select location",
             allowClear: true,
             width: '100%'
         });
@@ -1112,7 +1228,6 @@
 
                     // Clear inputs
                     $('#inputBookingCompany').val('').trigger('change');
-                    $('#inputBookingSiteNo').val('');
                     document.getElementById("inputBookingState").value = "";
                     document.getElementById("inputBookingDistrict").value = "";
                     document.getElementById("inputBookingLocation").value = "";
@@ -1142,12 +1257,6 @@
                 }
             });
         }
-
-        $('#inputBookingLocation').on('change', function () {
-            const selectedOption = $(this).find('option:selected');
-            const siteNumber = selectedOption.data('site_number') || '';
-            $('#inputBookingSiteNo').val(siteNumber);
-        });
 
         // Edit Billboard Booking
         function editBooking() {
@@ -1234,7 +1343,7 @@
                         return json.data;
                     }
                 },
-                dom: "lBfrtip",
+                dom: "lBrtip",
                 buttons: [{
                         extend: "csv",
                         className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
@@ -1479,10 +1588,6 @@
             $("#inputBookingForm")[0].reset();
             $(".select2-client").val("").trigger("change");
             $(".select2-location").val("").trigger("change");
-
-            // Prefill static fields
-            $("#inputBookingSiteNo").val(row.site_number);
-            $("#hiddenBookingSiteNo").val(row.site_number);
 
             $("#inputBookingState").val(row.state_id).trigger("change");
             $("#hiddenBookingState").val(row.state_id);

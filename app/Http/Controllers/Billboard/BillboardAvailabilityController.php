@@ -60,43 +60,6 @@ class BillboardAvailabilityController extends Controller
         return view('billboard.availability.index', compact('companies', 'states', 'districts', 'locations', 'types'));
     }
 
-    // public function getMonthlyBookingAvailability(Request $request)
-    // {
-    //     $filters = $this->extractFilters($request);
-    //     $billboards = $this->queryFilteredBillboards($filters);
-
-    //     $results = [];
-    //     foreach ($billboards as $index => $billboard) {
-    //         [$isAvailable, $nextAvailableDate] = $this->checkAvailability($billboard, $filters['start_date'], $filters['end_date']);
-
-    //         if (!$this->passesStatusFilter($isAvailable, $filters['status'])) {
-    //             continue;
-    //         }
-
-    //         $row = [
-    //             'site_number' => $billboard->site_number,
-    //             'location'    => $billboard->location->name,
-    //             'site_type'   => $billboard->site_type ?? '-',
-    //             'type'        => $billboard->type ?? '-',
-    //             'size'        => $billboard->size ?? '-',
-    //             'is_available' => $isAvailable,
-    //             'next_available_raw' => $isAvailable ? null : $nextAvailableDate,
-    //             'months' => $this->buildMonthlyBlocks($billboard, $filters['year'])
-    //         ];
-
-    //         $results[] = $row;
-    //     }
-
-    //     $results = $this->sortAvailability($results);
-
-    //     return response()->json([
-    //         'draw' => intval($request->input('draw')),
-    //         'recordsTotal' => count($results),
-    //         'recordsFiltered' => count($results),
-    //         'data' => $results,
-    //     ]);
-    // }
-
     public function getMonthlyBookingAvailability(Request $request)
     {
         $filters = $this->extractFilters($request);
@@ -120,7 +83,8 @@ class BillboardAvailabilityController extends Controller
 
             $results[] = [
                 'site_number'        => $billboard->site_number,
-                'location'           => $billboard->location->name,
+                'location'           => $billboard->location?->name ?? '',
+                'area'               => $billboard->location->district->name . ', ' . $billboard->location->district->state->name,
                 'site_type'          => $billboard->site_type ?? '-',
                 'type'               => $billboard->type ?? '-',
                 'size'               => $billboard->size ?? '-',
@@ -208,37 +172,47 @@ class BillboardAvailabilityController extends Controller
 
     private function queryFilteredBillboards(array $filters)
     {
-        $columns = [0 => 'site_number', 1 => 'location_id', 2 => 'size'];
-        $orderColumn = $columns[$filters['order_column_index']] ?? 'site_number';
-
-        return Billboard::with([
-                'location.district.state',
-                'bookings' => function ($q) use ($filters) {
-                    $q->where(function ($query) use ($filters) {
-                        $query->where('start_date', '<=', $filters['end_date'])
-                            ->where('end_date', '>=', $filters['start_date']);
-                    });
-                },
-                'bookings.clientCompany'
-            ])
-            ->when($filters['state'], fn($q) => $q->whereHas('location.district.state', fn($q2) => $q2->where('id', $filters['state'])))
-            ->when($filters['district'], fn($q) => $q->whereHas('location.district', fn($q2) => $q2->where('id', $filters['district'])))
-            ->when($filters['location'], fn($q) => $q->where('location_id', $filters['location']))
-            ->when($filters['type'], fn($q) => $q->where('prefix', $filters['type']))
-            ->when($filters['site_type'], fn($q) => $q->where('billboards.site_type', $filters['site_type']))
-            ->when(!empty($filters['search_value']), function ($query) use ($filters) {
-                $search = $filters['search_value'];
-
-                $query->where(function ($q) use ($search) {
-                    $q->where('billboards.site_number', 'LIKE', "%{$search}%")
-                        ->orWhereHas('location', fn($q) => $q->where('name', 'LIKE', "%{$search}%"))
-                        ->orWhereHas('location.district', fn($q) => $q->where('name', 'LIKE', "%{$search}%"))
-                        ->orWhereHas('location.district.state', fn($q) => $q->where('name', 'LIKE', "%{$search}%"));
+        $billboards = Billboard::with([
+            'location.district.state',
+            'bookings' => function ($q) use ($filters) {
+                $q->where(function ($query) use ($filters) {
+                    $query->where('start_date', '<=', $filters['end_date'])
+                        ->where('end_date', '>=', $filters['start_date']);
                 });
-            })
-            ->orderBy($orderColumn, $filters['order_dir'])
-            ->get();
+            },
+            'bookings.clientCompany'
+        ])
+        ->when($filters['state'], fn($q) => $q->whereHas('location.district.state', fn($q2) => $q2->where('id', $filters['state'])))
+        ->when($filters['district'], fn($q) => $q->whereHas('location.district', fn($q2) => $q2->where('id', $filters['district'])))
+        ->when($filters['location'], fn($q) => $q->where('location_id', $filters['location']))
+        ->when($filters['type'], fn($q) => $q->where('prefix', $filters['type']))
+        ->when($filters['site_type'], fn($q) => $q->where('billboards.site_type', $filters['site_type']))
+        ->when(!empty($filters['search_value']), function ($q) use ($filters) {
+            $search = $filters['search_value'];
+            $q->where(function ($q2) use ($search) {
+                $q2->where('billboards.site_number', 'LIKE', "%{$search}%")
+                ->orWhereHas('location', fn($q3) => $q3->where('name', 'LIKE', "%{$search}%"))
+                ->orWhereHas('location.district', fn($q3) => $q3->where('name', 'LIKE', "%{$search}%"))
+                ->orWhereHas('location.district.state', fn($q3) => $q3->where('name', 'LIKE', "%{$search}%"));
+            });
+        })
+        ->get();
+
+        // --- PHP sort by main + sub location ---
+        $billboards = $billboards->sort(function ($a, $b) {
+            [$aMain, $aSub] = array_map('trim', explode(',', $a->location->name . ','));
+            [$bMain, $bSub] = array_map('trim', explode(',', $b->location->name . ','));
+
+            $cmp = strcmp($aMain, $bMain);
+            return $cmp !== 0 ? $cmp : strcmp($aSub, $bSub);
+        });
+
+        return $billboards->values();
     }
+
+
+
+
 
     private function checkAvailability($billboard, Carbon $startDate, Carbon $endDate)
     {
@@ -272,13 +246,25 @@ class BillboardAvailabilityController extends Controller
 
     private function sortAvailability(array $items)
     {
-        return collect($items)->sortBy(function ($item) {
-            return [
-                $item['is_available'] ? 1 : 0,
-                $item['next_available_raw'] ?? now()->addYears(10)
-            ];
-        })->values()->all();
+        return collect($items)
+            ->sort(function ($a, $b) {
+                // 1️⃣ Not available first
+                $availabilityA = $a['is_available'] ? 1 : 0;
+                $availabilityB = $b['is_available'] ? 1 : 0;
+                if ($availabilityA !== $availabilityB) {
+                    return $availabilityA <=> $availabilityB;
+                }
+
+                // 2️⃣ Sort by location name safely
+                $locA = $a['location'] ?? '';
+                $locB = $b['location'] ?? '';
+                return strcmp($locA, $locB);
+            })
+            ->values()
+            ->all();
     }
+
+
 
     private function buildMonthlyBlocks($billboard, Carbon $startDate, Carbon $endDate)
     {

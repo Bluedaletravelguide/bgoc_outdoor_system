@@ -88,7 +88,7 @@
         <form>
             <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Client Name</label>
+                    <label>Client Name <span style="color: red;">*</span></label>
                     <input type="text" class="input w-full border mt-2 flex-1" placeholder="Client Name" id="clientCompanyAddName" required>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
@@ -152,7 +152,7 @@
         <form id="clientCompanyEditForm">
             <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Client Name</label>
+                    <label>Client Name <span style="color: red;">*</span></label>
                     <input type="text" class="input w-full border mt-2 flex-1" placeholder="Client Name" id="clientCompanyEditName" required>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
@@ -205,7 +205,7 @@
                     <input type="text"  title="Please enter client designation" placeholder="Enter a Designation" class="input w-full border mt-2 flex-1" id="picAddDesignation" required>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Client Name</label>
+                    <label>Client Name <span style="color: red;">*</span></label>
                     <input type="text" placeholder="Enter a Client Name" class="input w-full border mt-2 flex-1" id="picAddName" required>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
@@ -239,7 +239,7 @@
                     <input type="text" class="input w-full border mt-2 flex-1" placeholder="Designation" id="picEditDesignation" required>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
-                    <label>PIC Name</label>
+                    <label>PIC Name <span style="color: red;">*</span></label>
                     <input type="text" class="input w-full border mt-2 flex-1" placeholder="PIC Name" id="picEditName" required>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
@@ -556,14 +556,23 @@
         }
 
         function formatPICs(pics, companyId) {
-            if (!pics || pics.length === 0) return '<div class="p-2">No PICs available</div>';
+            if (!pics || pics.length === 0) {
+                return `
+                    <div class="p-2">No PICs available</div>
+                    <div class="flex justify-end mb-2 mt-2">
+                        <button class="bg-theme-1 text-white px-5 py-1 rounded add-pic-btn" data-company-id="${companyId}">
+                            + Add PIC
+                        </button>
+                    </div>
+                `;
+            }
 
             let html = '<table class="table-auto w-full text-sm border mt-2"><div class="ml-3"><strong>PIC</strong></div>';
             html += '<thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Designation</th><th>Action</th></tr></thead><tbody>';
 
             pics.forEach(pic => {
                 html += `<tr>
-                    <td>${pic.name}</td>
+                    <td>${pic.name ? pic.name : '-'}</td>
                     <td>${pic.email ? pic.email : '-'}</td>
                     <td>${pic.phone ? pic.phone : '-'}</td>
                     <td>${pic.designation ? pic.designation : '-'}</td>

@@ -78,7 +78,7 @@
                         class="absolute top-2 right-2 text-white bg-theme-6 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
                         X
                     </button>
-                    <img src="{{ asset('images/billboards/' . $billboard_detail->site_number . '_1.png') }}" 
+                    <img src="{{ asset('images/billboards/' . $billboard_detail->site_number . '_1.png') }}?v={{ time() }}" 
                         alt="{{ $billboard_detail->location_name }}" 
                         class="w-full h-full object-cover">
                 @endif
@@ -92,7 +92,7 @@
                         class="absolute top-2 right-2 text-white bg-theme-6 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
                         X
                     </button>
-                    <img src="{{ asset('images/billboards/' . $billboard_detail->site_number . '_2.png') }}" 
+                    <img src="{{ asset('images/billboards/' . $billboard_detail->site_number . '_2.png') }}?v={{ time() }}" 
                         alt="{{ $billboard_detail->location_name }}" 
                         class="w-full h-full object-cover">
                 @endif
@@ -182,7 +182,16 @@
 
         success: function(file, response) {
             alert(response.message);
-            window.location.reload();
+
+            // Update image directly without full reload
+            let imgSelector = `img[src*='${response.filename.split('.')[0]}']`;
+            let img = document.querySelector(imgSelector);
+
+            if (img) {
+                img.src = response.url; // already has ?v=timestamp
+            } else {
+                window.location.reload(); // fallback
+            }
         },
 
         error: function(file, response) {

@@ -50,7 +50,7 @@
                     </div>
                     <div class="sm:flex items-center sm:mr-4">
                         <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Client</label>
-                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterStockClient">
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border select2" id="filterStockClient">
                         <option selected value="">Select an option</option>
                         @foreach ($clientcompany as $clientcomp)
                             <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>

@@ -75,6 +75,10 @@
     #monthly-booking-table thead th:nth-child(3) {
         z-index: 6;
     }
+
+    .select2-container {
+        min-width: 250px !important; /* adjust size */
+    }
 </style>
 
 
@@ -102,7 +106,7 @@
         <form class="xl:flex sm:mr-auto">
             <div class="row sm:flex items-center sm:mr-4">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">State</label>
-                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="filterAvailabilityState">
+                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border select2-state" id="filterAvailabilityState">
                     <option value="" selected="">-- Select State --</option>
                     @foreach ($states as $state)
                         <option value="{{ $state->id }}">{{ $state->name }}</option>
@@ -111,7 +115,7 @@
             </div>
             <div class="row sm:flex items-center sm:mr-4">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">District</label>
-                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="filterAvailabilityDistrict">
+                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border select2-district" id="filterAvailabilityDistrict">
                     <option value="" selected="">-- Select District --</option>
                     @foreach ($districts as $district)
                         <option value="{{ $district->id }}">{{ $district->name }}</option>
@@ -120,7 +124,7 @@
             </div>
             <div class="sm:flex items-center sm:mr-4">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Location</label>
-                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterAvailabilityLocation">
+                <select class="input w-64 mt-2 sm:mt-0 border select2-location" id="filterAvailabilityLocation">
                     <option value="" selected="">-- Select Location --</option>
                     @foreach ($locations as $location)
                         <option value="{{ $location->id }}">{{ $location->name }}</option>
@@ -150,6 +154,7 @@
                     <option value="" selected="">All</option>
                     <option value="new">New</option>
                     <option value="existing">Existing</option>
+                    <option value="rejected">Rejected</option>
                 </select>
             </div>
             <div class="row sm:flex items-center sm:mr-4">
@@ -288,11 +293,11 @@
             <form id="inputBookingForm">
                 <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                     <div class="col-span-12 sm:col-span-12">
-                        <label>Site Number</label>
+                        <label>Site Number <span style="color: red;">*</span></label>
                         <input type="text" class="input w-full border mt-2 flex-1" id="inputBookingSiteNo" value="" readonly>
                     </div>
                     <div class="col-span-12 sm:col-span-12">
-                        <label>Client</label>
+                        <label>Client <span style="color: red;">*</span></label>
                         <select id="inputBookingCompany" class="input w-full border mt-2 select2-client" required>
                             <option value="">-- Select Client --</option>
                             @foreach ($companies as $company)
@@ -301,7 +306,7 @@
                         </select>
                     </div>
                     <div class="col-span-12 sm:col-span-12">
-                        <label>State</label>
+                        <label>State <span style="color: red;">*</span></label>
                         <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBookingState" disabled>
                             <option value="">-- Select State --</option>
                             @foreach ($states as $state)
@@ -310,27 +315,27 @@
                         </select>
                     </div>
                     <div class="col-span-12 sm:col-span-12">
-                        <label>District</label>
+                        <label>District <span style="color: red;">*</span></label>
                         <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBookingDistrict" disabled>
                             <option value="">-- Select District --</option>
                         </select>
                     </div>
                     <div class="col-span-12 sm:col-span-12">
-                        <label>Location</label>
+                        <label>Location <span style="color: red;">*</span></label>
                         <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBookingLocation" disabled>
                             <option value="">-- Select Location --</option>
                         </select>
                     </div>                     
                     <div class="col-span-12 sm:col-span-6">
-                        <label for="start_date" class="form-label">Start Date</label>
+                        <label for="start_date" class="form-label">Start Date <span style="color: red;">*</span></label>
                         <input type="text" id="start_date" class="input border mt-2" placeholder="Select start date">
                     </div>
                     <div class="col-span-12 sm:col-span-6">
-                        <label for="end_date" class="form-label">End Date</label>
+                        <label for="end_date" class="form-label">End Date <span style="color: red;">*</span></label>
                         <input type="text" id="end_date" class="input border mt-2" placeholder="Select end date">
                     </div>
                     <div class="col-span-12 sm:col-span-12">
-                        <label>Status</label>
+                        <label>Status <span style="color: red;">*</span></label>
                         <select id="inputBookingStatus" class="input w-full border mt-2 select" required>
                             <option disabled selected hidden value="">-- Select Status --</option>
                             <option value="pending_payment">Pending Payment</option>
@@ -341,7 +346,7 @@
                         </select>
                     </div>
                     <div class="col-span-12 sm:col-span-12">
-                        <label>Artwork by</label>
+                        <label>Artwork by <span style="color: red;">*</span></label>
                         <select id="inputBookingArtworkBy" class="input w-full border mt-2 select" required>
                             <option disabled selected hidden value="">-- Select Artwork by --</option>
                             <option value="Client">Client</option>
@@ -349,7 +354,7 @@
                         </select>
                     </div>
                     <div class="col-span-12 sm:col-span-12">
-                        <label>DBP Approval</label>
+                        <label>DBP Approval <span style="color: red;">*</span></label>
                         <select id="inputBookingDBPApproval" class="input w-full border mt-2 select" required>
                             <option disabled selected hidden value="">-- Select DBP Approval --</option>
                             <option value="NA">Not Available</option>
@@ -359,7 +364,7 @@
                         </select>
                     </div>
                     <div class="col-span-12 sm:col-span-12">
-                        <label>Remarks</label>
+                        <label>Remarks <span style="color: red;">*</span></label>
                         <!-- <input type="text" class="input w-full border mt-2 flex-1" id="inputBookingRemarks" value="" required> -->
                         <textarea class="input w-full border mt-2 flex-1" id="inputBookingRemarks" rows="5" required></textarea>
                     </div>
@@ -617,10 +622,18 @@
 
     async function exportCombinedExcel() {
         const year = $('#filterAvailabilityYear').val() || new Date().getFullYear();
+        let billboardTypeVal  = $('#filterAvailabilityType').val();   // e.g. TB
+        let billboardType     = $('#filterAvailabilityType option:selected').text(); // e.g. Tempboard
+
+        // If no type selected, fallback to "Billboard"
+        if (!billboardTypeVal) {
+            billboardType = 'Billboard';
+        }
+        
         const dt = new Date();
         const formattedDate = `${dt.getFullYear()}${String(dt.getMonth() + 1).padStart(2, '0')}${String(dt.getDate()).padStart(2, '0')}`;
         const formattedTime = `${dt.getHours()}:${dt.getMinutes()}:${dt.getSeconds()}`;
-        const fileName = `Billboard_Availability_Report_${year}_${formattedDate}_${formattedTime}.xlsx`;
+        const fileName = `${billboardType}_Availability_Report_${year}_${formattedDate}_${formattedTime}.xlsx`;
 
         const workbook = new ExcelJS.Workbook();
         const monthlySheet = workbook.addWorksheet('Monthly Calendar');
@@ -645,8 +658,8 @@
         const lastCol = colLetter(totalCols);
         monthlySheet.mergeCells(`A1:${lastCol}1`);
         const titleCell = monthlySheet.getCell('A1');
-        titleCell.value = `Billboard Availability Report - ${year}`; // <-- use filter year
-        titleCell.font = { size: 16, bold: true };
+        titleCell.value = `${billboardType} Availability Report - ${year}`; // <-- use filter year
+        titleCell.font = { size: 16, bold: true };  
         titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
         // ---- UPDATE timestamp in B2 ----
@@ -701,11 +714,13 @@
         // Write header + data
         monthlyData.forEach((rowData, i) => {
             const excelRow = monthlySheet.getRow(headerRowIndex + i);
+
             rowData.forEach((v, colIdx) => {
                 excelRow.getCell(colIdx + 1).value = v;
             });
 
             excelRow.eachCell((cell, colNumber) => {
+                // Apply borders to all cells
                 cell.border = {
                     top: { style: 'thin', color: { argb: 'FF000000' } },
                     bottom: { style: 'thin', color: { argb: 'FF000000' } },
@@ -713,23 +728,43 @@
                     right: { style: 'thin', color: { argb: 'FF000000' } }
                 };
 
-                if (i === 0) { // header
+                if (i === 0) {
+                    // Header row styling
                     cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
                     cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF366092' } };
                     cell.alignment = { horizontal: 'center', vertical: 'middle' };
                 } else {
-                    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                    // Alignment for specific columns
+                    if (colNumber === 3 || colNumber === 4) {
+                        cell.alignment = { horizontal: 'left', vertical: 'middle' };
+                    } else {
+                        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                    }
+
                     const colors = rowData._colors || [];
                     const colorClass = colors[colNumber - 1];
-                    if (colorClass) {
+
+                    if (colNumber <= 8) {
+                        // Force first 8 columns to black font
+                        cell.font = { color: { argb: 'FF000000' } };
+                    } else if (colorClass) {
+                        // Booking / colored cell
                         const bgColor = colorMap[colorClass] || 'FFFFFFFF';
                         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } };
-                        cell.font = { color: { argb: 'FF000000' }, bold: true };
+                        const fontColor = (colorClass === 'bg-theme-12') ? 'FF000000' : 'FFFFFFFF';
+                        cell.font = { bold: true, color: { argb: fontColor } };
+                    } else {
+                        // Monthly columns with no booking: white font
+                        cell.font = { color: { argb: 'FFFFFFFF' } };
                     }
                 }
             });
+
             excelRow.commit();
         });
+
+
+
 
         // ---- Apply merges ----
         mergeInfo.forEach((rowMerges, dataRowIdx) => {
@@ -804,12 +839,6 @@
         saveAs(blob, fileName);
     }
 
-
-
-
-
-
-
     function prepareMonthlyData() {
         const year = $('#filterAvailabilityYear').val() || new Date().getFullYear();
         const shortYear = String(year).slice(-2);
@@ -817,7 +846,7 @@
 
         // Build header row
         const header = [
-            'No', 'Site No', 'Location', 'New/Existing', 'Type', 'Size',
+            'No', 'Site No', 'Location', 'Area', 'New/Existing', 'Type', 'Size',
             ...months.map(month => `${month} '${shortYear}`)
         ];
 
@@ -875,8 +904,6 @@
 
         return data;
     }
-
-
 
     function prepareAvailabilityData() {
         // Define header row
@@ -1031,6 +1058,7 @@
         headerHtml += '<th>No</th>';
         headerHtml += '<th>Site No</th>';
         headerHtml += '<th>Location</th>';
+        headerHtml += '<th>Area</th>';
         headerHtml += '<th>New/Existing</th>';
         headerHtml += '<th>Type</th>';
         headerHtml += '<th>Size</th>';
@@ -1076,6 +1104,7 @@
                         <td class="border border-gray-300">${index + 1}</td>
                         <td class="border border-gray-300">${row.site_number}</td>
                         <td class="border border-gray-300">${row.location}</td>
+                        <td class="border border-gray-300">${row.area}</td>
                         <td class="border border-gray-300">${row.site_type}</td>
                         <td class="border border-gray-300">${row.type}</td>
                         <td class="border border-gray-300">${row.size}</td>`;
@@ -1251,25 +1280,31 @@
     // Filter Dates
     // -------------------
     document.addEventListener('DOMContentLoaded', function () {
-        const filterStart = document.getElementById('filterAvailabilityStart');
-        const filterEnd = document.getElementById('filterAvailabilityEnd');
+        const startDateInput = document.getElementById('start_date');
+        const endDateInput   = document.getElementById('end_date');
 
-        if (filterStart && filterEnd) {
-            filterStart.addEventListener('change', function () {
-                const startDate = filterStart.value;
-                if (startDate) {
-                    filterEnd.min = startDate;
-                    if (filterEnd.value && filterEnd.value < startDate) {
-                        filterEnd.value = '';
+        const startPicker = flatpickr(startDateInput, {
+            dateFormat: "d/m/Y",   // show DD/MM/YYYY
+            onChange: function (selectedDates) {
+                if (selectedDates.length > 0) {
+                    endPicker.set('minDate', selectedDates[0]);
+                    if (endDateInput.value) {
+                        const endDate = endPicker.parseDate(endDateInput.value, "d/m/Y");
+                        if (endDate < selectedDates[0]) {
+                            endDateInput.value = "";
+                        }
                     }
                 } else {
-                    filterEnd.min = '';
+                    endPicker.set('minDate', null);
                 }
-            });
-        }
+            }
+        });
 
-        initBookingDatePickers();
+        const endPicker = flatpickr(endDateInput, {
+            dateFormat: "d/m/Y"
+        });
     });
+
 
 
     
@@ -1375,6 +1410,24 @@
 
         $('.select2-client').select2({
             placeholder: "Select a client",
+            allowClear: true,
+            width: '100%'
+        });
+
+        $('.select2-state').select2({
+            placeholder: "Select a state",
+            allowClear: true,
+            width: '100%'
+        });
+
+        $('.select2-district').select2({
+            placeholder: "Select a district",
+            allowClear: true,
+            width: '100%'
+        });
+
+        $('.select2-location').select2({
+            placeholder: "Select a location",
             allowClear: true,
             width: '100%'
         });

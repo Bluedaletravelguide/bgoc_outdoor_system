@@ -12,12 +12,12 @@
             </a>
         </li>
 
-        <!-- billboard master -->
+        <!-- billboard Stock Inventory -->
         @if (Auth::guard('web')->user()->can('billboard.view'))
         <li>
             <a href="{{ route('billboard.index') }}" class="side-menu {{ request()->routeIs('billboard.index', 'billboard.index') ? 'side-menu--active' : '' }}">
                 <div class="side-menu__icon"> <i data-feather="layers"></i> </div>
-                <div class="side-menu__title"> Billboard Master</div>
+                <div class="side-menu__title"> Billboard Stock Inventory</div>
             </a>
         </li>
         @endif
@@ -52,7 +52,7 @@
                     <div class="side-menu__sub-icon"> <i data-feather="chevron-down"></i> </div>
                 </div>
             </a>
-            <ul class="{{ request()->routeIs('users') || request()->routeIs('clients.index') || request()->routeIs('contractors.index') || request()->routeIs('stockInventory.index') ? 'side-menu__sub-open' : '' }}">
+            <ul class="{{ request()->routeIs('users') || request()->routeIs('client-company.index') || request()->routeIs('contractors.index') || request()->routeIs('stockInventory.index') ? 'side-menu__sub-open' : '' }}">
                 <!-- users -->
                 @if (Auth::guard('web')->user()->can('user.view'))
                     <li>
@@ -64,7 +64,7 @@
                 @endif
 
                 <!-- clients -->
-                @if (Auth::guard('web')->user()->can('client.view'))
+                @if (Auth::guard('web')->user()->can('client-company.view'))
                     <li>
                         <a href="{{ route('client-company.index') }}" class="side-menu {{ request()->routeIs('client-company.index') ? 'side-menu--active' : '' }}">
                             <div class="side-menu__icon"> <i data-feather="user"></i> </div>
@@ -86,19 +86,10 @@
                         <a href="{{ route('stockInventory.index') }}" 
                         class="side-menu {{ request()->routeIs('stockInventory.index') ? 'side-menu--active' : '' }}">
                             <div class="side-menu__icon"> <i data-feather="box"></i> </div>
-                            <div class="side-menu__title"> Stock Inventory </div>
+                            <div class="side-menu__title"> Vendor Stock Inventory </div>
                         </a>
                     </li>
                 @endif
-
-                    <!-- @if (Auth::guard('web')->user()->can('role.view'))
-                    <li>
-                        <a href="{{ route('roles.index') }}" class="side-menu {{ request()->routeIs('roles.index') ? 'side-menu--active' : '' }}">
-                            <div class="side-menu__icon"> <i data-feather="server"></i> </div>
-                            <div class="side-menu__title"> Roles </div>
-                        </a>
-                    </li>
-                    @endif -->
             </ul>
         </li>
         @endif
