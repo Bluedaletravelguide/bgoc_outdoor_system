@@ -133,14 +133,14 @@
                 <tr class="bg-theme-1 text-white">
                     <th>No</th>
                     <th>Site #</th>
+                    <th>New/Existing</th>
                     <th>Type</th>
                     <th>Size</th>
                     <th>Lighting</th>
                     <th>Location</th>
-                    <th>District / State</th>
+                    <th>Area</th>
                     <th style="display:none;">GPS Coordinate</th>
-                    <th>Date Created</th>
-                    <th>Status</th>
+                    <!-- <th>Status</th> -->
                     <th class="dt-exclude-export dt-no-sort">Show Detail</th>
                     <th class="dt-exclude-export dt-no-sort">Actions</th>
                 </tr>
@@ -454,6 +454,7 @@
             state_id: state,
             district_id: district,
             type: type,
+            site_type: site_type,
             size: size,
             status: status
         }).toString();
@@ -642,45 +643,30 @@
                     }
                 },
                 dom: "lBfrtip",
-                buttons: [{
-                        extend: "csv",
-                        className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
-                        title: $fileName,
-                        exportOptions: {
-                            columns: ":not(.dt-exclude-export)"
-                        },
-                        init: function(api, node, config) {
-                            $(node).removeClass('dt-button');
-                            $(node).removeClass('buttons-html5');
-                        },
-                    },
+                buttons: [
                     {
-                        extend: "excel",
+                        text: "Export Excel",
                         className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
-                        title: $fileName,
-                        exportOptions: {
-                            columns: ":not(.dt-exclude-export)"
-                        },
-                        init: function(api, node, config) {
-                            $(node).removeClass('dt-button');
-                            $(node).removeClass('buttons-html5');
-                        },
-                    },
-                    {
-                        extend: "print",
-                        className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
-                        title: $fileName,
-                        // including printing image
-                        exportOptions: {
-                            columns: ":not(.dt-exclude-export)",
-                            stripHtml: false,
-                        },
-                        init: function(api, node, config) {
-                            $(node).removeClass('dt-button');
-                            $(node).removeClass('buttons-html5');
-                        },
-                    },
+                        action: function () {
+                            let form = $('<form>', {
+                                method: 'POST',
+                                action: "{{ route('billboards.export') }}"
+                            });
+
+                            // Add filters as hidden inputs
+                            form.append($('<input>', {type: 'hidden', name: '_token', value: $('meta[name="csrf-token"]').attr('content')}));
+                            form.append($('<input>', {type: 'hidden', name: 'status', value: $('#filterBillboardStatus').val()}));
+                            form.append($('<input>', {type: 'hidden', name: 'state', value: $('#filterBillboardState').val()}));
+                            form.append($('<input>', {type: 'hidden', name: 'district', value: $('#filterBillboardDistrict').val()}));
+                            form.append($('<input>', {type: 'hidden', name: 'type', value: $('#filterBillboardType').val()}));
+                            form.append($('<input>', {type: 'hidden', name: 'site_type', value: $('#filterBillboardSiteType').val()}));
+                            form.append($('<input>', {type: 'hidden', name: 'size', value: $('#filterBillboardSize').val()}));
+
+                            form.appendTo('body').submit().remove();
+                        }
+                    }
                 ],
+
                 columnDefs: [{
                     targets: 'dt-no-sort',
                     orderable: false
@@ -697,6 +683,9 @@
                     },
                     {
                         data: "site_number",
+                    },
+                    {
+                        data: "site_type",
                     },
                     {
                         data: "type",
@@ -721,23 +710,6 @@
                             let lat = row.gps_latitude ? row.gps_latitude : "";
                             let lng = row.gps_longitude ? row.gps_longitude : "";
                             return (lat && lng) ? `${lat}, ${lng}` : "";
-                        }
-                    },
-                    {
-                        data: "created_at",
-                    },
-                    {
-                        data: "status",
-                        type: "readonly",
-                        render: function(data, type, row) {
-                            let element = ``
-                            if (data == 1){
-                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-9 text-white">ACTIVE</a>`;
-                            } else if (data == 0){
-                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-6 text-white">INACTIVE</a>`;
-                            }
-                            
-                            return element;
                         }
                     },
                     {

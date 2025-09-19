@@ -3,19 +3,78 @@
 <head>
     <title>Billboard List</title>
     <style>
+        
         body {
             font-family: DejaVu Sans, sans-serif;
-            font-size: 12px;
+            font-size: 13px;
             line-height: 1.2;
             margin: 0;
-            padding: 20px;
+            padding: 0;
         }
 
         .header {
-            font-size: 16px;
+            font-size: 20px;
             font-weight: bold;
-            margin-bottom: 20px;
-            text-align: center;
+            margin-bottom: -80px;
+        }
+
+        /* ✅ Logo top right (fixed) */
+        .logo {
+            position: fixed;
+            top: -20px;
+            right: 20px;
+            width: 180px;
+        }
+
+        /* ✅ Fixed footer: remarks + confirmation */
+        .footer {
+            position: fixed;
+            bottom: 130px;
+            left: 20px;
+            right: 20px;
+            width: calc(100% - 40px);
+            font-size: 11px;
+            page-break-inside: avoid;
+        }
+
+        .footer td {
+            vertical-align: top;
+            padding: 5px;
+        }
+
+        .remarks-col {
+            width: 60%;
+            font-style: italic;
+            color: #555;
+        }
+
+        .confirmation-box {
+            border: 1px solid #000;
+            padding: 6px;
+            font-size: 12px;
+            line-height: 1;
+            width: 95%;
+        }
+
+
+       .sitetype-box {
+            position: fixed;       /* fixed so it stays at the bottom */
+            right: 33px;           /* match footer's right padding */
+            bottom: 79px;         /* adjust so it's just above the footer (footer bottom: 130px + gap) */
+            border: 1px solid #000;
+            padding: 0;
+            font-size: 13px;
+            line-height: 1;
+            width: 100px;          /* adjust as needed */
+            background: #fff;      /* optional: make sure it doesn’t overlap other content */
+            text-align: center;     /* optional: align content to the right */
+        }
+
+
+        /* ✅ Main content area (with spacing for header + footer) */
+        .content {
+            margin: 40px 20px 20px 20px; /* top, right, bottom, left */
+            position: relative;
         }
 
         .section {
@@ -31,6 +90,7 @@
         .info-container {
             display: table;
             width: 100%;
+            margin-top: 30px;
         }
 
         .info-column {
@@ -56,46 +116,34 @@
         }
 
         .image-section {
-            margin-top: 10px;
+            margin-top: 80px;
             clear: both;
         }
 
-        .image-section-title {
-            font-weight: bold;
-            margin-bottom: 10px;
-            display: block;
-            padding-bottom: 5px;
+        .image-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
-        table.image-grid {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        table.image-grid td {
-            padding: 5px;
-            text-align: center;
-            vertical-align: top;
-        }
-
-        table.image-grid img {
-            max-width: 100%;
-            height: 200px;
-            object-fit: contain;
-            border: 1px solid #ccc;
-        }
-
-        hr {
-            border: none;
-            border-top: 1px solid #ccc;
-            margin: 30px 0;
+        .image-grid img {
+            flex: 1 1 48%;       /* two images per row */
+            max-width: 48%;      /* prevent overflow */
+            height: 330px;       /* fixed display box height */
+            object-fit: contain; /* keep aspect ratio */
+            border: 1px solid #ccc; /* optional: keep uniform borders */
+            page-break-inside: avoid;
         }
     </style>
 </head>
 <body>
 
+    <!-- ✅ Logo -->
+    <img src="{{ public_path('images/bluedalemedia.jpg') }}" class="logo" alt="Company Logo">
+
     <div class="header">Billboard List</div>
 
+    <div class="content">
     @foreach($billboards as $billboard)
         <div class="section">
             <div class="info-container">
@@ -116,15 +164,13 @@
                         <tr><td>Location:</td><td>{{ $billboard->location->name ?? '-' }}</td></tr>
                         <tr><td>District:</td><td>{{ $billboard->location->district->name ?? '-' }}</td></tr>
                         <tr><td>State:</td><td>{{ $billboard->location->district->state->name ?? '-' }}</td></tr>
-                        <tr><td>Council:</td><td>{{ $billboard->location->council->abbreviation ?? '-' }} - {{ $billboard->location->council->name ?? '-' }}</td></tr>
+                        <tr><td>Council:</td><td>{{ $billboard->location->council->abbreviation }} - {{ $billboard->location->council->name ?? '-' }}</td></tr>
                         <tr><td>GPS Coordinates:</td><td>{{ $billboard->gps_latitude }}, {{ $billboard->gps_longitude }}</td></tr>
                     </table>
                 </div>
             </div>
 
-            <!-- IMAGE SECTION -->
             <div class="image-section">
-                <div class="image-section-title">Images:</div>
                 <table class="image-grid">
                     @foreach (collect($billboard->images)->chunk(2) as $row)
                         <tr>
@@ -151,8 +197,40 @@
                     @endforeach
                 </table>
             </div>
-        </div>
+
+            <!-- New box: Site Number -->
+            <div class="sitetype-box">
+                <p><strong>{{ strtoupper($billboard->site_type ?? 'N/A') }}</strong></p>
+            </div>
+
+
+            <!-- ✅ Footer for this section -->
+            <table class="footer">
+                <tr>
+                    <td class="remarks-col">
+                        <strong>REMARK:</strong><br>
+                        The site is dependent on availability and council approval and safety regulations. If the proposed sites are unavailable 
+                        on the installation day due to reasons such as changes in local council regulations, upgrades to the site to a protocol road, 
+                        existing boards from other parties, or safety regulations issues. Bluedale will install the board approximately at the original 
+                        location or suggest an alternative site. Once the bunting has been installed, no replacements will be made if it goes missing. 
+                        Photos will be provided as proof of installation.
+                    </td>
+                    <td style="width: 40%;">
+                        <!-- Existing Confirmation box -->
+                        <div class="confirmation-box">
+                            <p><strong>Confirmation / Accepted by</strong></p>
+                            <p>Name:</p>
+                            <p>Address:</p>
+                            <p>Tel No:</p>
+                            <p>Company Cop & Sign:</p>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div> <!-- /.section -->
     @endforeach
+</div>
+
 
 </body>
 </html>

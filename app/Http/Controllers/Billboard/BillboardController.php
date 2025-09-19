@@ -27,8 +27,11 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\PushNotificationController;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Image;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 use Spatie\ImageOptimizer\OptimizerChainFactory;
+use App\Exports\BillboardExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class BillboardController extends Controller
 {
@@ -161,8 +164,13 @@ class BillboardController extends Controller
         // Get total filtered records count
         $totalFiltered = $query->count();
 
-        // Apply pagination
-        $filteredData = $query->skip($start)->take($limit)->get();
+        if ($limit == -1) {
+            // Export: get all filtered data (no pagination)
+            $filteredData = $query->get();
+        } else {
+            // Normal request: paginate
+            $filteredData = $query->skip($start)->take($limit)->get();
+        }
 
         $data = array();
 
@@ -710,6 +718,9 @@ class BillboardController extends Controller
 
     public function exportListPdf(Request $request)
     {
+        // ↑ Increase PHP memory limit right at the start
+        ini_set('memory_limit', '512M');
+
         $query = Billboard::with(['location.district.state']);
 
         if ($request->filled('state_id') && $request->state_id !== 'all') {
@@ -724,6 +735,10 @@ class BillboardController extends Controller
             $query->where('type', $request->type);
         }
 
+        if ($request->filled('site_type') && $request->site_type !== 'all') {
+            $query->where('type', $request->site_type);
+        }
+
         if ($request->filled('status') && $request->status !== 'all') {
             $query->where('status', $request->status);
         }
@@ -734,12 +749,29 @@ class BillboardController extends Controller
 
         $billboards = $query->get();
 
-        // 🔹 Attach hardcoded images for each billboard
+        // ✅ Create image manager (GD driver is default in most servers)
+        $manager = new ImageManager(new Driver());
+
         foreach ($billboards as $billboard) {
-            $billboard->images = [
-                'storage/billboards/' . $billboard->site_number . '_1.png',
-                'storage/billboards/' . $billboard->site_number . '_2.png',
+            $resizedImages = [];
+
+            $imagePaths = [
+                public_path('storage/billboards/' . $billboard->site_number . '_1.png'),
+                public_path('storage/billboards/' . $billboard->site_number . '_2.png'),
             ];
+
+            foreach ($imagePaths as $fullPath) {
+                if (file_exists($fullPath)) {
+                    // Resize and compress
+                    $resized = $manager->read($fullPath)
+                        ->scale(width: 600)   // auto keeps aspect ratio
+                        ->toJpeg(70);         // compress quality
+
+                    $resizedImages[] = 'data:image/jpeg;base64,' . base64_encode($resized->toString());
+                }
+            }
+
+            $billboard->images = $resizedImages;
         }
 
         // 📂 Filename
@@ -765,6 +797,25 @@ class BillboardController extends Controller
 
         return $pdf->download($filename . '.pdf');
     }
+
+    public function exportExcel(Request $request)
+    {
+        $filters = $request->only(['status','state','district','type','site_type','size']);
+
+        // ✅ Base name logic (match title rules in BillboardExport)
+        $baseName = "Billboard_List";
+        if (!empty($filters['site_type']) && $filters['site_type'] !== "all") {
+            $baseName = ucfirst($filters['site_type']) . "_Stock_Inventory_List";
+        } elseif (!empty($filters['type']) && $filters['type'] !== "all") {
+            $baseName = ucfirst($filters['type']) . "_Stock_Inventory_List";
+        }
+
+        // ✅ Final filename
+        $fileName = $baseName . "_" . now()->format('dmY') . ".xlsx";
+
+        return Excel::download(new BillboardExport($filters), $fileName);
+    }
+
 
 
 

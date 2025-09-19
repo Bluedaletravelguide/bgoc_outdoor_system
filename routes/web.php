@@ -59,6 +59,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/billboard/update', [BillboardController::class, 'update'])->name('billboard.update');
     // Route::get('/notification', [PushNotificationController::class, 'notificationHistory']);
     Route::get('/billboards/export/pdf', [BillboardController::class, 'exportListPdf'])->name('billboards.export.pdf');
+    Route::post('/billboards/export', [BillboardController::class, 'exportExcel'])->name('billboards.export');
+
 
 
     // Billboard Detail
