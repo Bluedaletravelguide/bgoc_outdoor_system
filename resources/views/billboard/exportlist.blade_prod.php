@@ -115,24 +115,20 @@
             width: 130px;
         }
 
-        .image-section {
-            margin-top: 80px;
-            clear: both;
+        .image-grid {
+            border-collapse: collapse;
+            margin-top: 20px;
         }
 
-        .image-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
+        .image-grid td {
+            padding: 5px;
         }
 
         .image-grid img {
-            flex: 1 1 48%;       /* two images per row */
-            max-width: 48%;      /* prevent overflow */
-            height: 330px;       /* fixed display box height */
-            object-fit: contain; /* keep aspect ratio */
-            border: 1px solid #ccc; /* optional: keep uniform borders */
-            page-break-inside: avoid;
+            max-width: 100%;
+            max-height: 360px;
+            border: 1px solid #ccc;
+            object-fit: contain;
         }
     </style>
 </head>
@@ -170,37 +166,36 @@
                 </div>
             </div>
 
-            <div class="image-section">
-                <table class="image-grid">
-                    @foreach (collect($billboard->images)->chunk(2) as $row)
-                        <tr>
-                            @foreach ($row as $img)
-                                @php
-                                    $fullPath = '/home/bluedale2/public_html/bgocoutdoor.bluedale.com.my/' . $img;
-                                    $dataUri = '';
-                                    if (file_exists($fullPath)) {
-                                        $data = file_get_contents($fullPath);
-                                        $dataUri = 'data:image/png;base64,' . base64_encode($data);
-                                    }
-                                @endphp
-                                <td width="50%">
-                                    @if($dataUri)
-                                        <img src="{{ $dataUri }}" alt="Billboard Image" style="max-width: 100%; height: auto; object-fit: contain; border: 1px solid #ccc;">
-                                    @endif
-                                </td>
-                            @endforeach
+            <!-- ✅ Billboard Images -->
+            @if(!empty($billboard->images))
+                <div class="image-section">
+                    <table class="image-grid" width="100%">
+                        <tbody>
+                            @foreach (collect($billboard->images)->chunk(2) as $row)
+                                <tr style="height: 380px;"> {{-- increase row height --}}
+                                    @foreach ($row as $img)
+                                        <td width="50%" align="center" valign="middle">
+                                            <img src="{{ $img }}"
+                                                alt="Billboard Image"
+                                                style="width: 100%; height: 100%; object-fit: cover; border: 1px solid #ccc;">
+                                        </td>
+                                    @endforeach
 
-                            @if(count($row) == 1)
-                                <td width="50%"></td> {{-- fill empty cell if only one image --}}
-                            @endif
-                        </tr>
-                    @endforeach
-                </table>
-            </div>
+                                    @if(count($row) == 1)
+                                        <td width="50%"></td>
+                                    @endif
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+
+
 
             <!-- New box: Site Number -->
             <div class="sitetype-box">
-                <p><strong>{{ strtoupper($billboard->site_type ?? 'N/A') }}</strong></p>
+                <p><strong>{{ strtoupper($billboard->site_type ?? '-') }}</strong></p>
             </div>
 
 

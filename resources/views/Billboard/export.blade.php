@@ -183,7 +183,7 @@
 
             <!-- New box: Site Number -->
             <div class="sitetype-box">
-                <p><strong>{{ strtoupper($billboard->site_type ?? 'N/A') }}</strong></p>
+                <p><strong>{{ strtoupper($billboard->site_type ?? '-') }}</strong></p>
             </div>
 
 

@@ -565,7 +565,10 @@ class BillboardController extends Controller
     public function exportListPdf(Request $request)
     {
         // ↑ Increase PHP memory limit right at the start
-        ini_set('memory_limit', '512M');
+        ini_set('memory_limit', '1024M'); // 1GB
+        ini_set('max_execution_time', 300); // 5 minutes
+        set_time_limit(300);
+
 
         $query = Billboard::with(['location.district.state']);
 
