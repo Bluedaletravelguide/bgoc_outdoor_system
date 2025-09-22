@@ -234,6 +234,9 @@
             <span class="text-gray-700">Other</span>
         </div>
     </div>
+    <div class="flex flex-wrap items-center gap-4 mb-4 text-sm">
+        <p class="italic text-gray-500">*Click on the colored cells in the table to edit status</p>
+    </div>
     <!-- Legend End -->
 
     <!-- billboard availability calendar table -->
@@ -386,31 +389,47 @@
 </div>
 <!-- Create Job Order End -->
 
-<!-- View Job Order Modal -->
-    <div class="row flex flex-col sm:flex-row sm:items-end xl:items-start mb-2">
-        <div class="modal" id="editAvailabilityModal">
-            <div class="modal__content">
-                <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
-                    <h2 class="font-medium text-base mr-auto">Billboard Availability</h2>
+<!-- Edit Status Modal -->
+<div class="modal" id="editStatusModal">
+    <div class="modal__content">
+        <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
+            <h2 class="font-medium text-base mr-auto">Edit Status</h2>
+        </div>
+        <form>
+            <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
+                <!-- Client Name -->
+                <div class="col-span-12">
+                    <label>Client</label>
+                    <p id="editBookingClient" class="mt-2 font-medium text-gray-700"></p>
                 </div>
-                <form>
-                    <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Availability Status</label>
-                            <select id="editAvailability" class="input w-full border mt-2 select">
-                                <option disabled selected hidden value="">Select an option</option>
-                                <option value="1">Available</option>
-                                <option value="2">Not Available</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="px-5 py-3 border-t border-gray-200 dark:border-dark-5 text-right">
-                        <button type="submit" class="button w-20 bg-theme-1 text-white" id="saveAvailabilityButton">Save</button>
-                    </div>
-                </form>
+
+                <!-- Booking Dates -->
+                <div class="col-span-12">
+                    <label>Booking Period</label>
+                    <p id="editBookingDates" class="mt-2 font-medium text-gray-700"></p>
+                </div>
+
+                <!-- Status Dropdown -->
+                <div class="col-span-12">
+                    <label>Status <span style="color: red;">*</span></label>
+                    <select id="editBookingStatus" class="input w-full border mt-2 select" required>
+                        <option disabled selected hidden value="">-- Select Status --</option>
+                        <option value="pending_payment">Pending Payment</option>
+                        <option value="pending_install">Pending Install</option>
+                        <option value="ongoing">Ongoing</option>
+                        <option value="completed">Completed</option>
+                        <option value="dismantle">Dismantle</option>           
+                    </select>
+                </div>
             </div>
-        </div> 
+
+            <!-- Buttons -->
+            <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
+                <button type="submit" class="button w-20 bg-theme-1 text-white" id="editBookingButton">Update</button>
+            </div>
+        </form>
     </div>
+</div>
 <!-- View Modal End -->
 @endsection('modal_content')
 
@@ -1100,7 +1119,7 @@
                 }
 
                 response.data.forEach((row, index) => {
-                    let html = `<tr>
+                    let html = `<tr data-id="${row.id}" class="cursor-pointer hover:bg-gray-100"> 
                         <td class="border border-gray-300">${index + 1}</td>
                         <td class="border border-gray-300">${row.site_number}</td>
                         <td class="border border-gray-300">${row.location}</td>
@@ -1108,10 +1127,25 @@
                         <td class="border border-gray-300">${row.site_type}</td>
                         <td class="border border-gray-300">${row.type}</td>
                         <td class="border border-gray-300">${row.size}</td>`;
+                    
+                    // row.months.forEach(month => {
+                    //     let cellClass = `border border-gray-300 ${month.color} font-semibold`;
+                    //     html += `<td colspan="${month.span}" class="${cellClass}">${month.text}</td>`;
+                    // });
 
                     row.months.forEach(month => {
-                        let cellClass = `border border-gray-300 ${month.color} font-semibold`;
-                        html += `<td colspan="${month.span}" class="${cellClass}">${month.text}</td>`;
+                        let bookingAttr = "";
+                        if (month.booking_id) {
+                            bookingAttr = `
+                                data-booking-id="${month.booking_id}" 
+                                data-status="${month.status}" 
+                                data-client="${month.client || ''}" 
+                                data-start-date="${month.start_date || ''}" 
+                                data-end-date="${month.end_date || ''}"
+                            `;
+                        }
+
+                        html += `<td colspan="${month.span}" class="border border-gray-300 ${month.color}" ${bookingAttr}>${month.text}</td>`;
                     });
 
                     html += `</tr>`;
@@ -1272,6 +1306,10 @@
         // Open modal to edit SR
         // editAvailabilityModal();
     };
+
+    
+
+
 
     
 
@@ -1517,6 +1555,71 @@
                 lastClickedLink = $(this).attr('id');
             });
         })();
+
+        // Row click event
+        $(document).on("click", "#monthly-booking-body td[data-booking-id]", function() {
+            const bookingId = $(this).data("booking-id");
+            const client = $(this).data("client");
+            const start = $(this).data("start-date");
+            const end = $(this).data("end-date");
+            const status = $(this).data("status");
+
+            if (!bookingId) return;
+
+            $("#editStatusModal").data("booking-id", bookingId);
+
+            $("#editBookingClient").text(client || "N/A");
+            $("#editBookingDates").text(start && end ? `${start} – ${end}` : "N/A");
+            $("#editBookingStatus").val(status);
+
+            openAltEditorModal("#editStatusModal");
+        });
+
+
+        $(document).on("click", "#cancelModal", function() {
+            $("#editStatusModal").addClass("hidden").removeClass("flex");
+        });
+
+        $("#editStatusModal form").on("submit", function(e) {
+            e.preventDefault();
+
+            const bookingId = $("#editStatusModal").data("booking-id");
+            const status = $("#editBookingStatus").val();
+            const remarks = $("#editBookingRemarks").val();
+
+            $.ajax({
+                url: "{{ route('billboard.update.status') }}",
+                type: "POST",
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    id: bookingId,
+                    status: status,
+                    remarks: remarks
+                },
+                success: function(response) {
+                    $("#editStatusModal").addClass("hidden").removeClass("flex");
+                    location.reload(); // reload table
+                },
+                error: function(xhr) {
+                    alert("Failed to update status");
+                    console.error(xhr.responseText);
+                }
+            });
+        });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         // Edit Billboard Availability
         function editAvailability() {

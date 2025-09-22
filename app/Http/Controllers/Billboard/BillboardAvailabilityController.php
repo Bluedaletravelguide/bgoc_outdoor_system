@@ -265,7 +265,6 @@ class BillboardAvailabilityController extends Controller
     }
 
 
-
     private function buildMonthlyBlocks($billboard, Carbon $startDate, Carbon $endDate)
     {
         $months = [];
@@ -311,13 +310,18 @@ class BillboardAvailabilityController extends Controller
                     };
 
                     $months[] = [
-                        'month' => $current->format('m'),
-                        'year'  => $current->year,
-                        'span'  => $span,
-                        'text'  => optional($booking->clientCompany)->name
-                                    ? $booking->clientCompany->name . ' (' . $bookingStart->format('d/m/Y') . '–' . $bookingEnd->format('d/m/Y') . ')'
-                                    : 'Booked (' . $bookingStart->format('d/m/Y') . '–' . $bookingEnd->format('d/m/Y') . ')',
-                        'color' => $colorClass,
+                        'month'      => $current->format('m'),
+                        'year'       => $current->year,
+                        'span'       => $span,
+                        'text'       => optional($booking->clientCompany)->name
+                                        ? $booking->clientCompany->name . ' (' . $bookingStart->format('d/m/Y') . '–' . $bookingEnd->format('d/m/Y') . ')'
+                                        : 'Booked (' . $bookingStart->format('d/m/Y') . '–' . $bookingEnd->format('d/m/Y') . ')',
+                        'color'      => $colorClass,
+                        'booking_id' => $booking->id, // ✅ Add booking_id here
+                        'status'     => $booking->status, // optional: helpful for frontend
+                        'client'      => optional($booking->clientCompany)->name ?? null, // ✅ client name
+                        'start_date'  => $bookingStart->format('d/m/Y'), // ✅ booking start
+                        'end_date'    => $bookingEnd->format('d/m/Y'),   // ✅ booking end
                     ];
 
                     break;
@@ -326,11 +330,16 @@ class BillboardAvailabilityController extends Controller
 
             if (!$matchedBooking) {
                 $months[] = [
-                    'month' => $current->format('m'),
-                    'year'  => $current->year,
-                    'span'  => 1,
-                    'text'  => '',
-                    'color' => '',
+                    'month'      => $current->format('m'),
+                    'year'       => $current->year,
+                    'span'       => 1,
+                    'text'       => '',
+                    'color'      => '',
+                    'booking_id' => null, // ✅ explicitly null for empty cells
+                    'status'     => null,
+                    'client'     => null,
+                    'start_date' => null,
+                    'end_date'   => null,
                 ];
             }
 
@@ -342,25 +351,17 @@ class BillboardAvailabilityController extends Controller
 
 
 
+
     /**
      * Update status of work order
      */
-    public function update(Request $request){
+    public function updateStatus(Request $request)
+    {
+        $billboard = BillboardBooking::findOrFail($request->id);
+        $billboard->status = $request->status;
+        $billboard->save();
 
-        $statusUpdated = $request->update_status;
-
-        //Point to relevant function based on the new work order status need to assign 
-        if($statusUpdated == 'STARTED') {
-            $result = $this->updateStatus_AssignTechnician($request) ;
-
-        } elseif($statusUpdated == 'COMPLETED') {
-            $result = $this->updateStatus_Completed($request) ;
-
-        } else {
-            return response()->json(['error' => 'Incorrect process or no value is applied.' ], 422); 
-        }
-         
-        return $result;
+        return response()->json(['success' => true]);
     }
 
 
