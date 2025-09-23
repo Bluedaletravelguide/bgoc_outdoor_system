@@ -275,6 +275,7 @@ class BillboardController extends Controller
                     $query->where('id', $state);
                 })
                 ->orderBy('id', 'desc')
+                ->lockForUpdate()
                 ->first();
 
             if ($lastBillboard) {
@@ -585,7 +586,7 @@ class BillboardController extends Controller
         }
 
         if ($request->filled('site_type') && $request->site_type !== 'all') {
-            $query->where('type', $request->site_type);
+            $query->where('site_type', $request->site_type);
         }
 
         if ($request->filled('status') && $request->status !== 'all') {
