@@ -80,6 +80,9 @@
                         <option value="new">New</option>
                         <option value="existing">Existing</option>
                         <option value="rejected">Rejected</option>
+                        <option value="existing_1">Existing 1</option>
+                        <option value="existing_2">Existing 2</option>
+                        <option value="existing_3">Existing 3</option>
                     </select>
                 </div>
 
@@ -105,14 +108,6 @@
                 </svg>
                 Add New Stock
             </a>
-            <a href="#" id="exportBtn" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-9 text-white" target="_blank">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-download w-4 h-4 mr-2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                    <polyline points="7 10 12 15 17 10"/>
-                    <line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
-                Download Details
-            </a>
             <a href="{{ route('stockInventory.index')}}" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-32 text-white">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-download w-4 h-4 mr-2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -121,6 +116,23 @@
                 </svg>
                 Inventory
             </a>
+            <a href="#" id="exportBtnClient" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-12 text-black" target="_blank">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-download w-4 h-4 mr-2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Download Details [CLIENT]
+            </a>
+            <a href="#" id="exportBtn" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-9 text-black" target="_blank">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-download w-4 h-4 mr-2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Download Details [INTERNAL]
+            </a>
+            
         </div>
     </div>
 
@@ -256,6 +268,9 @@
                                 <option value="new">New</option>
                                 <option value="existing">Existing</option>
                                 <option value="rejected">Rejected</option>
+                                <option value="existing_1">Existing 1</option>
+                                <option value="existing_2">Existing 2</option>
+                                <option value="existing_3">Existing 3</option>
                             </select>
                         </div>
                     </div>
@@ -354,6 +369,9 @@
                                 <option value="new">New</option>
                                 <option value="existing">Existing</option>
                                 <option value="rejected">Rejected</option>
+                                <option value="existing_1">Existing 1</option>
+                                <option value="existing_2">Existing 2</option>
+                                <option value="existing_3">Existing 3</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
@@ -461,6 +479,32 @@
 
         // Redirect with query string
         let exportUrl = '{{ route("billboards.export.pdf") }}' + '?' + query;
+        window.open(exportUrl, '_blank');
+    });
+
+    document.getElementById('exportBtnClient').addEventListener('click', function (e) {
+        e.preventDefault();
+
+        // Read values from your filter fields
+        let state = document.getElementById('filterBillboardState')?.value || 'all';
+        let district = document.getElementById('filterBillboardDistrict')?.value || 'all';
+        let type = document.getElementById('filterBillboardType')?.value || 'all';
+        let site_type = document.getElementById('filterBillboardSiteType')?.value || 'all';
+        let size = document.getElementById('filterBillboardSize')?.value || 'all';
+        let status = document.getElementById('filterBillboardStatus')?.value || 'all';
+
+        // Build query string
+        let query = new URLSearchParams({
+            state_id: state,
+            district_id: district,
+            type: type,
+            site_type: site_type,
+            size: size,
+            status: status
+        }).toString();
+
+        // Redirect with query string
+        let exportUrl = '{{ route("billboards.export.pdf.client") }}' + '?' + query;
         window.open(exportUrl, '_blank');
     });
 

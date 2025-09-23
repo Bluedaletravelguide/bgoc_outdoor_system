@@ -128,7 +128,7 @@
 
         .image-grid img {
             max-width: 48%;        /* two images per row */
-            height: 370px;         /* fixed height */
+            height: 400px;         /* fixed height */
             object-fit: contain;   /* maintain aspect ratio */
             border: 1px solid #ccc;
             page-break-inside: avoid;
@@ -152,8 +152,6 @@
                         <tr><td>Site Number:</td><td>{{ $billboard->site_number }}</td></tr>
                         <tr><td>Type:</td><td>{{ $billboard->type }}</td></tr>
                         <tr><td>Size:</td><td>{{ $billboard->size }}</td></tr>
-                        <tr><td>Lighting:</td><td>{{ $billboard->lighting }}</td></tr>
-                        <tr><td>Traffic Volume:</td><td>{{ $billboard->traffic_volume }}</td></tr>
                     </table>
                 </div>
 
@@ -162,8 +160,6 @@
                     <table class="info-table">
                         <tr><td>Location:</td><td>{{ $billboard->location->name ?? '-' }}</td></tr>
                         <tr><td>District:</td><td>{{ $billboard->location->district->name ?? '-' }}</td></tr>
-                        <tr><td>State:</td><td>{{ $billboard->location->district->state->name ?? '-' }}</td></tr>
-                        <tr><td>Council:</td><td>{{ $billboard->location->council->abbreviation }} - {{ $billboard->location->council->name ?? '-' }}</td></tr>
                         <tr>
                             <td>GPS Coordinates:</td>
                             <td>

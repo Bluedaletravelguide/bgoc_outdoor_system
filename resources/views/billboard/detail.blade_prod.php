@@ -49,7 +49,9 @@
             </div>
             <br>
             <div class="mt-2 xl:mt-0">
-                <a href="{{ route('billboard.download', $billboard_detail->id) }}" class="button bg-theme-9 text-white">Download PDF</a>
+                <a href="{{ route('billboard.download', $billboard_detail->id) }}" class="button bg-theme-9 text-black">Download PDF [INTERNAL]</a>
+                <a href="{{ route('billboard.download.client', $billboard_detail->id) }}" class="button bg-theme-12 text-black">Download PDF [CLIENT]</a>
+                <a href="https://www.google.com/maps?q={{ $billboard_detail->gps_latitude }},{{ $billboard_detail->gps_longitude }}" target="_blank" class="button bg-theme-1 text-white">Show on Maps</a>
             </div>
         </div>
     </div>

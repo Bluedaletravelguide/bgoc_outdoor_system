@@ -59,6 +59,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/billboard/update', [BillboardController::class, 'update'])->name('billboard.update');
     // Route::get('/notification', [PushNotificationController::class, 'notificationHistory']);
     Route::get('/billboards/export/pdf', [BillboardController::class, 'exportListPdf'])->name('billboards.export.pdf');
+    Route::get('/billboards/export/pdf/client', [BillboardController::class, 'exportListPdfClient'])->name('billboards.export.pdf.client');
     Route::post('/billboards/export', [BillboardController::class, 'exportExcel'])->name('billboards.export');
 
 
@@ -69,6 +70,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/billboardDetail/delete-img', [BillboardController::class, 'deleteImage'])->name('billboard.deleteImage');
 
     Route::get('/billboard/{id}/download', [BillboardController::class, 'downloadPdf'])->name('billboard.download');
+    Route::get('/billboard/{id}/download/client', [BillboardController::class, 'downloadPdfClient'])->name('billboard.download.client');
 
     // Billboard Booking
     Route::get('/billboardBooking', [BillboardBookingController::class, 'index'])->name('billboard.booking.index');

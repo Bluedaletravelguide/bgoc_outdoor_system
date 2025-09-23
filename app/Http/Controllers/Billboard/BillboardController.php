@@ -339,7 +339,13 @@ class BillboardController extends Controller
      */
     public function update(Request $request)
     {
+        logger('miau');
+        logger()->info('ini dia request:', $request->all());
+
+        
         $billboard = Billboard::find($request->id);
+
+        
 
         if (!$billboard) {
             return response()->json([
@@ -485,10 +491,14 @@ class BillboardController extends Controller
             ->select(
                 'billboards.*',
                 'locations.name as location_name',
+                'locations.id as location_id',
                 'districts.name as district_name',
+                'districts.id as district_id',
                 'councils.name as council_name',
+                'councils.id as council_id',
                 'councils.abbreviation as council_abbrv',
                 'states.name as state_name',
+                'states.id as state_id',
                 'billboard_images.image_path as billboard_image'
             )
             ->where('billboards.id', $request->id)
@@ -496,85 +506,19 @@ class BillboardController extends Controller
 
         $billboard_images = BillboardImage::where('billboard_id', $request->id)->get();
 
+        $states = State::orderBy('name', 'ASC')->get();
+        $districts = District::orderBy('name', 'ASC')->get();
+        $councils = Council::orderBy('name', 'ASC')->get();
+        $locations = Location::orderBy('name', 'ASC')->get();
 
-            // Convert to Dubai time
-            // $dubaiTime = Carbon::parse($open_WO_DetailId->created_dt);
-
-            // Add new formatted date, month, and year fields to the object
-            // $open_WO_DetailId->created_dt = $dubaiTime->format('F j, Y \a\t g:i A');
-
-        // if ($open_WO_DetailId !== null) {
-
-        //     $woActivities = WorkOrderActivity::select(
-        //         'work_order_activity.id as comment_id',
-        //         'comments',
-        //         'comment_by',
-        //         'work_order_activity.created_at as created_at',
-        //         'name',
-        //     )
-        //     ->leftJoin('users', 'users.id', 'work_order_activity.comment_by')
-        //     ->where('work_order_id', '=', $request->id);
-
-            // if($filter){
-            //     if ($filter == 'new') {
-            //         $woActivities->orderBy('created_at', 'desc');
-            //     } elseif ($filter == 'old'){
-            //         $woActivities->orderBy('created_at', 'asc');
-            //     }
-            // }
-            // // ->get();
-
-            // $woActivities = $woActivities->get();
-
-            // $woActivities->transform(function ($woActivity) {
-            //     // Convert to Dubai time
-            //     $created_dt = Carbon::parse($woActivity->created_at);
-    
-            //     // Add new formatted date, month, and year fields to the object
-            //     $woActivity->created_dt = $created_dt->format('F j, Y \a\t g:i A');
-
-            //     // Fetch related attachments
-            //     $attachments = WorkOrderActivityAttachment::select('id', 'url')
-            //     ->where('wo_activity_id', '=', $woActivity->comment_id)
-            //     ->get();
-
-            //     // Add attachments to the activity
-            //     $woActivity->attachments = $attachments;
-    
-            //     return $woActivity;
-            // });
-
-            // $gg = $woActivities->get();
-
-            // $WoOrHistory = WorkOrderHistory::select(
-            //     'work_order_history.id',
-            //     'work_order_history.status',
-            //     'work_order_history.status_changed_by',
-            //     'work_order_history.assigned_teamleader',
-            //     'work_order_history.assign_to_technician',
-            //     'users.id as user_id',
-            //     'users.name as user_name',
-            // )
-            // ->leftJoin('users', 'users.id', '=', DB::raw('CASE 
-            //         WHEN work_order_history.status = "NEW" THEN work_order_history.status_changed_by 
-            //         WHEN work_order_history.status = "ACCEPTED" THEN work_order_history.status_changed_by 
-            //         WHEN work_order_history.status = "ASSIGNED_SP" THEN work_order_history.status_changed_by                     
-            //         WHEN work_order_history.status = "ACCEPTED_TECHNICIAN" THEN work_order_history.assign_to_technician
-            //         WHEN work_order_history.status = "STARTED" THEN work_order_history.assign_to_technician
-            //         WHEN work_order_history.status = "COMPLETED" THEN work_order_history.assign_to_technician
-            //         ELSE NULL 
-            //     END'))
-            // ->where('work_order_history.work_order_id', '=', $request->id)
-            // ->get();
-
-            // return view('workOrderProfile.index', compact('open_WO_DetailId', 'imageData', 'WoOrObImageBefore', 'WoOrObImageAfter', 'WoOrHistory'));
-            return view('billboard.detail', compact('billboard_detail', 'billboard_images'));
-            
-        // } else {
-        //     // Handle the case when no record is found
-        //     // You can return an error message or redirect the user
-        //     return response()->json(['error' => 'No record found with the provided ID'], 404);
-        // }
+        return view('billboard.detail', compact(
+            'billboard_detail',
+            'billboard_images',
+            'states',
+            'districts',
+            'councils',
+            'locations'
+        ));
     }
 
     public function viewMap(Request $request)
@@ -717,6 +661,30 @@ class BillboardController extends Controller
         return $pdf->download('billboard-detail-' . $billboard->site_number . '.pdf');
     }
 
+    public function downloadPdfClient($id)
+    {
+        $billboard = Billboard::with([
+            'location' => function ($query) {
+                $query->with([
+                    'district' => function ($query) {
+                        $query->with('state');
+                    }
+                ]);
+            }
+        ])->findOrFail($id);
+
+        // Hardcode images for testing
+        $billboard->images = [
+            'storage/billboards/' . $billboard->site_number . '_1.png',
+            'storage/billboards/' . $billboard->site_number . '_2.png',
+        ];
+
+        $pdf = PDF::loadView('billboard.export_client', compact('billboard'))
+        ->setPaper('A4', 'landscape'); // 👈 Set orientation here
+
+        return $pdf->download('billboard-detail-' . $billboard->site_number . '.pdf');
+    }
+
     public function exportListPdf(Request $request)
     {
         // ↑ Increase PHP memory limit right at the start
@@ -794,6 +762,88 @@ class BillboardController extends Controller
         }
 
         $pdf = PDF::loadView('billboard.exportlist', compact('billboards'))
+        ->setPaper('A4', 'landscape'); // 👈 Set orientation here
+
+        return $pdf->download($filename . '.pdf');
+    }
+
+    public function exportListPdfClient(Request $request)
+    {
+        // ↑ Increase PHP memory limit right at the start
+        ini_set('memory_limit', '512M');
+
+        $query = Billboard::with(['location.district.state']);
+
+        if ($request->filled('state_id') && $request->state_id !== 'all') {
+            $query->whereHas('location.district.state', fn($q) => $q->where('id', $request->state_id));
+        }
+
+        if ($request->filled('district_id') && $request->district_id !== 'all') {
+            $query->whereHas('location.district', fn($q) => $q->where('id', $request->district_id));
+        }
+
+        if ($request->filled('type') && $request->type !== 'all') {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->filled('site_type') && $request->site_type !== 'all') {
+            $query->where('site_type', $request->site_type);
+        }
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('size') && $request->size !== 'all') {
+            $query->where('size', $request->size);
+        }
+
+        $billboards = $query->get();
+
+        // ✅ Create image manager (GD driver is default in most servers)
+        $manager = new ImageManager(new Driver());
+
+        foreach ($billboards as $billboard) {
+            $resizedImages = [];
+
+            $imagePaths = [
+                public_path('storage/billboards/' . $billboard->site_number . '_1.png'),
+                public_path('storage/billboards/' . $billboard->site_number . '_2.png'),
+            ];
+
+            foreach ($imagePaths as $fullPath) {
+                if (file_exists($fullPath)) {
+                    // Resize and compress
+                    $resized = $manager->read($fullPath)
+                        ->scale(width: 600)   // auto keeps aspect ratio
+                        ->toJpeg(70);         // compress quality
+
+                    $resizedImages[] = 'data:image/jpeg;base64,' . base64_encode($resized->toString());
+                }
+            }
+
+            $billboard->images = $resizedImages;
+        }
+
+        // 📂 Filename
+        $filename = 'billboards-master';
+        $date = now()->format('Y-m-d');
+
+        if ($request->filled('district_id') && $request->district_id !== 'all') {
+            $district = District::find($request->district_id);
+            if ($district) {
+                $filename = 'billboards-' . Str::slug($district->name) . '-' . $date;
+            }
+        } elseif ($request->filled('state_id') && $request->state_id !== 'all') {
+            $state = State::find($request->state_id);
+            if ($state) {
+                $filename = 'billboards-' . Str::slug($state->name) . '-' . $date;
+            }
+        } else {
+            $filename .= '-' . $date;
+        }
+
+        $pdf = PDF::loadView('billboard.exportlist_client', compact('billboards'))
         ->setPaper('A4', 'landscape'); // 👈 Set orientation here
 
         return $pdf->download($filename . '.pdf');

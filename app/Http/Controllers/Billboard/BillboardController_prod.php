@@ -563,6 +563,30 @@ class BillboardController extends Controller
         return $pdf->download('billboard-detail-' . $billboard->site_number . '.pdf');
     }
 
+    public function downloadPdfClient($id)
+    {
+        $billboard = Billboard::with([
+            'location' => function ($query) {
+                $query->with([
+                    'district' => function ($query) {
+                        $query->with('state');
+                    }
+                ]);
+            }
+        ])->findOrFail($id);
+
+        // Hardcode images for testing
+        $billboard->images = [
+            'images/billboards/' . $billboard->site_number . '_1.png',
+            'images/billboards/' . $billboard->site_number . '_2.png',
+        ];
+
+        $pdf = PDF::loadView('billboard.export_client', compact('billboard'))
+        ->setPaper('A4', 'landscape'); // 👈 Set orientation here
+
+        return $pdf->download('billboard-detail-' . $billboard->site_number . '.pdf');
+    }
+
     public function exportListPdf(Request $request)
     {
         // ↑ Increase PHP memory limit right at the start
@@ -643,6 +667,91 @@ class BillboardController extends Controller
         }
 
         $pdf = PDF::loadView('billboard.exportlist', compact('billboards'))
+        ->setPaper('A4', 'landscape'); // 👈 Set orientation here
+
+        return $pdf->download($filename . '.pdf');
+    }
+
+    public function exportListPdfClient(Request $request)
+    {
+        // ↑ Increase PHP memory limit right at the start
+        ini_set('memory_limit', '1024M'); // 1GB
+        ini_set('max_execution_time', 300); // 5 minutes
+        set_time_limit(300);
+
+
+        $query = Billboard::with(['location.district.state']);
+
+        if ($request->filled('state_id') && $request->state_id !== 'all') {
+            $query->whereHas('location.district.state', fn($q) => $q->where('id', $request->state_id));
+        }
+
+        if ($request->filled('district_id') && $request->district_id !== 'all') {
+            $query->whereHas('location.district', fn($q) => $q->where('id', $request->district_id));
+        }
+
+        if ($request->filled('type') && $request->type !== 'all') {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->filled('site_type') && $request->site_type !== 'all') {
+            $query->where('site_type', $request->site_type);
+        }
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('size') && $request->size !== 'all') {
+            $query->where('size', $request->size);
+        }
+
+        $billboards = $query->get();
+
+        // ✅ Create image manager (GD driver is default in most servers)
+        $manager = new ImageManager(new Driver());
+
+        foreach ($billboards as $billboard) {
+            $resizedImages = [];
+
+            $imagePaths = [
+                'images/billboards/' . $billboard->site_number . '_1.png',
+                'images/billboards/' . $billboard->site_number . '_2.png',
+            ];
+
+            foreach ($imagePaths as $fullPath) {
+                if (file_exists($fullPath)) {
+                    // Resize and compress
+                    $resized = $manager->read($fullPath)
+                        ->scale(width: 600)   // auto keeps aspect ratio
+                        ->toJpeg(70);         // compress quality
+
+                    $resizedImages[] = 'data:image/jpeg;base64,' . base64_encode($resized->toString());
+                }
+            }
+
+            $billboard->images = $resizedImages;
+        }
+
+        // 📂 Filename
+        $filename = 'billboards-master';
+        $date = now()->format('Y-m-d');
+
+        if ($request->filled('district_id') && $request->district_id !== 'all') {
+            $district = District::find($request->district_id);
+            if ($district) {
+                $filename = 'billboards-' . Str::slug($district->name) . '-' . $date;
+            }
+        } elseif ($request->filled('state_id') && $request->state_id !== 'all') {
+            $state = State::find($request->state_id);
+            if ($state) {
+                $filename = 'billboards-' . Str::slug($state->name) . '-' . $date;
+            }
+        } else {
+            $filename .= '-' . $date;
+        }
+
+        $pdf = PDF::loadView('billboard.exportlist_client', compact('billboards'))
         ->setPaper('A4', 'landscape'); // 👈 Set orientation here
 
         return $pdf->download($filename . '.pdf');
