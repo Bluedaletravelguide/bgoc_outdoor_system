@@ -51,7 +51,14 @@
             <div class="mt-2 xl:mt-0">
                 <a href="{{ route('billboard.download', $billboard_detail->id) }}" class="button bg-theme-9 text-black">Download PDF [INTERNAL]</a>
                 <a href="{{ route('billboard.download.client', $billboard_detail->id) }}" class="button bg-theme-12 text-black">Download PDF [CLIENT]</a>
-                <a href="https://www.google.com/maps?q={{ $billboard_detail->gps_latitude }},{{ $billboard_detail->gps_longitude }}" target="_blank" class="button bg-theme-1 text-white">Show on Maps</a>
+                @php
+                    $mapUrl = !empty($billboard_detail->gps_url)
+                        ? $billboard_detail->gps_url
+                        : "https://www.google.com/maps?q={$billboard_detail->gps_latitude},{$billboard_detail->gps_longitude}";
+                @endphp
+
+                <a href="{{ $mapUrl }}" target="_blank" rel="noopener noreferrer" 
+                class="button bg-theme-1 text-white">Show on Maps</a>
                 <a href="javascript:void(0)" onclick="populateBillboardEditModal({{ json_encode($billboard_detail) }})" class="button bg-theme-1 text-white">Edit</a>
             </div>
         </div>

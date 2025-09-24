@@ -22,6 +22,7 @@ class Billboard extends Model
         'site_type',
         'gps_latitude',
         'gps_longitude',
+        'gps_url',
         'traffic_volume',
         'size',
         'type',

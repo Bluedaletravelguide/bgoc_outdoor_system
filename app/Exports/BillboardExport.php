@@ -32,7 +32,13 @@ class BillboardExport implements FromCollection, WithHeadings, WithMapping, With
                 'billboards.size',
                 'billboards.lighting',
                 'locations.name as location_name',
-                DB::raw("CONCAT(districts.name, ', ', states.name) as area"),
+                DB::raw("CONCAT(
+                    CASE 
+                        WHEN states.name = 'Kuala Lumpur' THEN 'KL'
+                        WHEN states.name = 'Selangor' THEN 'SEL'
+                        ELSE states.name
+                    END, ' - ', districts.name
+                ) as area"),
                 DB::raw("CONCAT(billboards.gps_latitude, ', ', billboards.gps_longitude) as gps_coordinates"),
                 'billboards.traffic_volume',
             )
@@ -61,7 +67,7 @@ class BillboardExport implements FromCollection, WithHeadings, WithMapping, With
         }
 
         // ✅ Sort by location name alphabetically
-        $query->orderBy('locations.name', 'asc');
+        $query->orderByRaw("area ASC");
 
         return $query->get();
     }
@@ -95,7 +101,7 @@ class BillboardExport implements FromCollection, WithHeadings, WithMapping, With
             "Size",
             "Lighting",
             "Location",
-            "Area",
+            "District",
             "GPS Coordinates",
             "Traffic Volume",
         ];

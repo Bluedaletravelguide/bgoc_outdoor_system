@@ -165,7 +165,13 @@
                         <tr>
                             <td>GPS Coordinates:</td>
                             <td>
-                                <a href="https://www.google.com/maps/search/?api=1&query={{ $billboard->gps_latitude }},{{ $billboard->gps_longitude }}" target="_blank" rel="noopener noreferrer">
+                                @php
+                                    $mapUrl = !empty($billboard->gps_url)
+                                        ? $billboard->gps_url
+                                        : "https://www.google.com/maps/search/?api=1&query={$billboard->gps_latitude},{$billboard->gps_longitude}";
+                                @endphp
+
+                                <a href="{{ $mapUrl }}" target="_blank" rel="noopener noreferrer">
                                     {{ $billboard->gps_latitude }}, {{ $billboard->gps_longitude }}
                                 </a>
                             </td>

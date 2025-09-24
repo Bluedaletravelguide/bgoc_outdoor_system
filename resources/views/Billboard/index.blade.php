@@ -150,7 +150,7 @@
                     <th>Size</th>
                     <th>Lighting</th>
                     <th>Location</th>
-                    <th>Area</th>
+                    <th>District</th>
                     <th style="display:none;">GPS Coordinate</th>
                     <!-- <th>Status</th> -->
                     <th class="dt-exclude-export dt-no-sort">Show Detail</th>
@@ -187,8 +187,13 @@
                             <label>Size (H)'x(W)' <span style="color: red;">*</span></label>
                             <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardSize" required>
                                 <option value="">-- Select Size --</option>
+                                <option value="10x10">10x10</option>
                                 <option value="15x10">15x10</option>
                                 <option value="30x20">30x20</option>
+                                <option value="10x40">10x40</option>
+                                <option value="6x3">6x3</option>
+                                <option value="7x3">7x3</option>
+                                <option value="8x3">8x3</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
@@ -200,6 +205,12 @@
                                 <option value="SOLAR">SOLAR</option>
                             </select>
                         </div>
+
+                        <!-- Separator -->
+                        <div class="col-span-12">
+                            <hr class="my-6 border-t-4 border-black">
+                        </div>
+
                         <div class="col-span-12 sm:col-span-12">
                             <label>State <span style="color: red;">*</span></label>
                             <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardState" required>
@@ -235,6 +246,12 @@
                                 <option value="D">D - Others</option>
                             </select>
                         </div>
+
+                        <!-- Separator -->
+                        <div class="col-span-12">
+                            <hr class="my-6 border-t-4 border-black">
+                        </div>
+
                         <div class="col-span-12 sm:col-span-12">
                             <label for="inputGPSCoordinate" class="form-label">GPS Coordinate <span style="color: red;">*</span></label>
                             <input 
@@ -248,6 +265,25 @@
                             >
                             <small class="text-gray-500">Format: latitude (-90 → 90), longitude (-180 → 180)</small>
                         </div>
+                        <!-- New field for Google Maps URL -->
+                        <div class="col-span-12 sm:col-span-12">
+                            <label for="inputMapsUrl" class="form-label">Google Maps Link</label>
+                            <input 
+                                type="url" 
+                                class="input w-full border mt-2 flex-1" 
+                                id="inputMapsUrl" 
+                                name="gps_url"
+                                placeholder="Paste Google Maps share link (e.g. https://maps.app.goo.gl/xyz123)"
+                                pattern="https:\/\/maps\.app\.goo\.gl\/[A-Za-z0-9]+"
+                            >
+                            <small class="text-gray-500">Paste the short link from Google Maps → Share → Copy Link</small>
+                        </div>
+
+                        <!-- Separator -->
+                        <div class="col-span-12">
+                            <hr class="my-6 border-t-4 border-black">
+                        </div>
+
                         <div class="col-span-12 sm:col-span-12">
                             <label for="inputBillboardTrafficVolume" class="form-label">Traffic Volume</label>
                             <input 
@@ -308,8 +344,13 @@
                             <label>Billboard Size <span style="color: red;">*</span></label>
                             <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardSize" required>
                                 <option value="">-- Select Size --</option>
+                                <option value="10x10">10x10</option>
                                 <option value="15x10">15x10</option>
                                 <option value="30x20">30x20</option>
+                                <option value="10x40">10x40</option>
+                                <option value="6x3">6x3</option>
+                                <option value="7x3">7x3</option>
+                                <option value="8x3">8x3</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
@@ -321,6 +362,12 @@
                                 <option value="SOLAR">SOLAR</option>
                             </select>
                         </div>
+
+                        <!-- Separator -->
+                        <div class="col-span-12">
+                            <hr class="my-6 border-t-4 border-black">
+                        </div>
+
                         <div class="col-span-12 sm:col-span-12">
                             <label>State <span style="color: red;">*</span></label>
                             <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardState"  disabled>
@@ -332,7 +379,7 @@
                         </div>
                         <div class="col-span-12 sm:col-span-12">
                             <label>District <span style="color: red;">*</span></label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardDistrict" disabled>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardDistrict" required>
                                 <option value="">-- Select District --</option>
                             </select>
                         </div>
@@ -346,6 +393,12 @@
                             <label>Location <span style="color: red;">*</span></label>
                             <input type="text" class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardLocation" placeholder="Enter location name">
                         </div>
+
+                        <!-- Separator -->
+                        <div class="col-span-12">
+                            <hr class="my-6 border-t-4 border-black">
+                        </div>
+
                         <div class="col-span-12 sm:col-span-12">
                             <label for="editGPSCoordinate" class="form-label">GPS Coordinate <span style="color: red;">*</span></label>
                             <input 
@@ -358,6 +411,23 @@
                             >
                             <small class="text-gray-500">Format: latitude, longitude</small>
                         </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label for="editGPSUrl" class="form-label">GPS URL (Google Maps)</label>
+                            <input 
+                                type="url" 
+                                class="input w-full border mt-2 flex-1" 
+                                id="editGPSUrl" 
+                                name="gps_url"
+                                placeholder="https://maps.app.goo.gl/xyz123"
+                            >
+                            <small class="text-gray-500">Example: https://maps.app.goo.gl/xxxxx</small>
+                        </div>
+
+                        <!-- Separator -->
+                        <div class="col-span-12">
+                            <hr class="my-6 border-t-4 border-black">
+                        </div>
+
                         <div class="col-span-12 sm:col-span-12">
                             <label>Traffic Volume</label>
                             <input type="text" class="input w-full border mt-2 flex-1" id="editBillboardTrafficVolume" value="" required>
@@ -537,11 +607,25 @@
             width: '100%'
         });
 
+        // Initialize Select2 with tagging enabled
+        $('#inputBillboardDistrict').select2({
+            tags: true,
+            placeholder: "-- Select or Add District --",
+            allowClear: true,
+        });
+
+        $('#editBillboardDistrict').select2({
+            tags: true,   // ✅ allow typing new values
+            placeholder: "-- Select or Type District --",
+            allowClear: true,
+            width: '100%'
+        });
+
         // When "State" is changed in add form
         $('#inputBillboardState').on('change', function () {
             let stateId = $(this).val();
 
-            // Reset District & Council dropdowns
+            // Reset District & Council
             $('#inputBillboardDistrict').empty().append('<option value="">-- Select District --</option>');
             $('#inputBillboardCouncil').empty().append('<option value="">-- Select Council --</option>');
 
@@ -555,8 +639,12 @@
                     },
                     success: function (districts) {
                         districts.forEach(function (district) {
-                            $('#inputBillboardDistrict').append(`<option value="${district.id}">${district.name}</option>`);
+                            let option = new Option(district.name, district.id, false, false);
+                            $('#inputBillboardDistrict').append(option);
                         });
+
+                        // Refresh select2 options after AJAX load
+                        $('#inputBillboardDistrict').trigger('change');
                     },
                     error: function () {
                         alert('Failed to load districts.');
@@ -565,12 +653,10 @@
             }
         });
 
-        // When "District" is changed in add form
+        // When district changes → load councils
         $('#inputBillboardDistrict').on('change', function () {
-            let stateId = $('#inputBillboardState').val();   // ✅ get the selected state
-            let districtId = $(this).val();
+            let stateId = $('#inputBillboardState').val();
 
-            // Reset Council dropdown
             $('#inputBillboardCouncil').empty().append('<option value="">-- Select Council --</option>');
 
             if (stateId !== '') {
@@ -579,7 +665,7 @@
                     type: 'POST',
                     data: {
                         _token: '{{ csrf_token() }}',
-                        state_id: stateId   // ✅ Correct
+                        state_id: stateId
                     },
                     success: function (councils) {
                         councils.forEach(function (council) {
@@ -760,7 +846,9 @@
                         data: "id",
                         render: function(data, type, row) {
                             var a = "{{ route('billboard.detail', ['id'=>':data'] )}}".replace(':data', data);
-                            let mapUrl = `https://www.google.com/maps?q=${row.gps_latitude},${row.gps_longitude}`;
+                            let mapUrl = row.gps_url && row.gps_url.trim() !== ""
+                                ? row.gps_url
+                                : `https://www.google.com/maps?q=${row.gps_latitude},${row.gps_longitude}`;
                             let element = 
                                 `<div class="flex flex-row">
                                     <a href="javascript:;" id="detail-` + data + `"
@@ -796,6 +884,7 @@
                                     data-location="${row.location_name}"
                                     data-gps_latitude="${row.gps_latitude}"
                                     data-gps_longitude="${row.gps_longitude}"
+                                    data-gps_url="${row.gps_url}"
                                     data-traffic_volume="${row.traffic_volume}"
                                     data-status="${row.status}"
                                     data-site_type="${row.site_type}"
@@ -893,6 +982,7 @@
             const latitude = $this.data('gps_latitude');
             const longitude = $this.data('gps_longitude');
             $('#editGPSCoordinate').val(latitude + ', ' + longitude);
+            $('#editGPSUrl').val($this.data('gps_url'));
             
             $('#editBillboardTrafficVolume').val($this.data('traffic_volume'));
             $('#editBillboardStatus').val($this.data('status'));
@@ -918,6 +1008,14 @@
                 districts.forEach(function (d) {
                     $('#editBillboardDistrict').append(`<option value="${d.id}">${d.name}</option>`);
                 });
+
+                // ✅ if districtID is not in list (user had custom one before), add it manually
+                if (districtID && !$('#editBillboardDistrict option[value="' + districtID + '"]').length) {
+                    $('#editBillboardDistrict').append(
+                        `<option value="${districtID}" selected>${districtID}</option>`
+                    );
+                }
+
                 $('#editBillboardDistrict').val(districtID).trigger('change');
 
                 // ✅ Fetch councils after districts load
@@ -991,9 +1089,6 @@
         // Add New Billboard
         function billboardAddButton() {
 
-            // document.getElementById("billboardAddButton").disabled = true;
-            // document.getElementById('billboardAddButton').style.display = 'none';
-
             $.ajax({
                 type: 'POST',
                 url: "{{ route('billboard.create') }}",
@@ -1007,10 +1102,10 @@
                     council         : document.getElementById("inputBillboardCouncil").value,
                     land            : document.getElementById("inputBillboardLand").value,
                     location        : document.getElementById("inputBillboardLocation").value,
-                    gpsCoordinate   : document.getElementById("inputGPSCoordinate").value,
+                    gps_coordinate  : document.getElementById("inputGPSCoordinate").value,
+                    gps_url         : document.getElementById("inputMapsUrl").value,
                     trafficvolume   : document.getElementById("inputBillboardTrafficVolume").value,
-                    siteType        : document.getElementById("inputBillboardSiteType").value,
-                    
+                    siteType        : document.getElementById("inputBillboardSiteType").value,   
                 },
                 success: function(response) {
                     // Close modal after successfully edited
@@ -1025,20 +1120,17 @@
                     document.getElementById("inputBillboardSize").value = "";
                     document.getElementById("inputBillboardLighting").value = "";
                     document.getElementById("inputBillboardState").value = "";
-                    document.getElementById("inputBillboardDistrict").value = "";
+                    $('#inputBillboardDistrict').val(null).trigger('change');
                     document.getElementById("inputBillboardCouncil").value = "";
                     document.getElementById("inputBillboardLand").value = "";
                     document.getElementById("inputBillboardLocation").value = "";
                     document.getElementById("inputGPSCoordinate").value = "";
+                    document.getElementById("inputMapsUrl").value = "";
                     document.getElementById("inputBillboardTrafficVolume").value = "";
                     document.getElementById("inputBillboardSiteType").value = "";
 
                     // Reload table
                     $('#billboard_table').DataTable().ajax.reload();
-                    
-                    // Reset the button visibility and enable it for next submission
-                    // document.getElementById("billboardAddButton").disabled = false;
-                    // document.getElementById('billboardAddButton').style.display = 'inline-block';  // Shows the button again
                 },
                 error: function(xhr, status, error) {
                     // Display the validation error message
@@ -1067,7 +1159,8 @@
                     district_id: $('#editBillboardDistrict').val(),
                     council_id: $('#editBillboardCouncil').val(),
                     location_name: $('#editBillboardLocation').val(), // 👈 send as name
-                    gpsCoordinate: $('#editGPSCoordinate').val(),
+                    gps_coordinate: $('#editGPSCoordinate').val(),
+                    gps_url: $('#editGPSUrl').val(),
                     traffic_volume: $('#editBillboardTrafficVolume').val(),
                     status: $('#editBillboardStatus').val(),
                     site_type: $('#editBillboardSiteType').val(),
@@ -1082,6 +1175,9 @@
                     // Show successful toast
                     window.showSubmitToast("Successfully added.", "#91C714");
 
+                    // Reload table
+                    $('#billboard_table').DataTable().ajax.reload();
+
                     // Clean fields
                     document.getElementById("editBillboardModalId").value = "";
                     document.getElementById("editBillboardType").value = "";
@@ -1094,17 +1190,16 @@
                     document.getElementById("editGPSLongitude").value = "";
                     document.getElementById("editGPSLatitude").value = "";
                     document.getElementById("editGPSCoordinate").value = "";
+                    document.getElementById("editGPSUrl").value = "";
                     document.getElementById("editBillboardTrafficVolume").value = "";
                     document.getElementById("editBillboardStatus").value = "";
                     document.getElementById("editBillboardSiteType").value = "";
                     
-
-                    // Reload table
-                    $('#billboard_table').DataTable().ajax.reload();
-                    
                     // Reset the button visibility and enable it for next submission
                     document.getElementById("billboardEditButton").disabled = false;
                     document.getElementById('billboardEditButton').style.display = 'inline-block';  // Shows the button again
+
+                    
                 },
                 error: function(xhr, status, error) {
                     // Display the validation error message
@@ -1143,6 +1238,7 @@
                 $('#editGPSLatitude').val(latitude);
                 $('#editGPSLongitude').val(longitude);
                 $('#editGPSCoordinate').val(longitude);
+                $('#editGPSUrl').val(row.data('gps_url') || "");
                 // Combined GPS coordinate field
                 if (latitude && longitude) {
                     $('#editGPSCoordinate').val(latitude + ', ' + longitude);

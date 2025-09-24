@@ -192,6 +192,7 @@ class BillboardController extends Controller
                 'region'                => $d->district_name . ', ' . $d->state_name,
                 'gps_latitude'          => $d->gps_latitude,
                 'gps_longitude'         => $d->gps_longitude,
+                'gps_url'               => $d->gps_url,
                 'traffic_volume'        => $d->traffic_volume,
                 'status'                => $d->status,
                 'created_at'            => $created_at,
@@ -225,13 +226,17 @@ class BillboardController extends Controller
             'size'          => 'required|string|max:50',
             'lighting'      => 'required|string', // adjust based on your allowed values
             'state'         => 'required|exists:states,id',
-            'district'      => 'nullable|exists:districts,id',
+            'district'      => 'nullable|string|max:255',
             'council'       => 'required|exists:councils,id',
             'location'      => 'required|string|max:255',
             'land'          => 'required|string|max:10', // adjust if you only allow values like "PRIV" / "GOV"
-            'gpsCoordinate' => [
+            'gps_coordinate' => [
                 'required',
                 'regex:/^-?([0-8]?\d(\.\d+)?|90(\.0+)?),\s*-?(1[0-7]\d(\.\d+)?|180(\.0+)?)$/'
+            ],
+            'gps_url' => [
+                'nullable',
+                'regex:/^https:\/\/maps\.app\.goo\.gl\/[A-Za-z0-9]+$/'
             ],
             'trafficvolume' => 'nullable|integer|min:0',
             'siteType' => 'nullable|string|max:10',
@@ -254,15 +259,32 @@ class BillboardController extends Controller
             $land           = $request->land;
             $trafficvolume  = $request->trafficvolume;
             $siteType       = $request->siteType;
+            $gpsUrl         = $request->gps_url;
 
-            $coords = explode(',', $request->gpsCoordinate);
+            $coords = explode(',', $request->gps_coordinate);
             $gpslatitude = trim($coords[0]);
             $gpslongitude = trim($coords[1]);
+
+            $districtId = null;
+
+            if (!empty($district)) {
+                if (is_numeric($district)) {
+                    // existing district id
+                    $districtId = (int)$district;
+                } else {
+                    // district typed by user → create new
+                    $district = District::firstOrCreate(
+                        ['name' => $district, 'state_id' => $request->state]
+                    );
+                    $districtId = $district->id;
+                }
+            }
+
 
             // Step 1: Ensure location exists (or create new)
             $location = Location::firstOrCreate([
                 'name'        => $locationName,
-                'district_id' => $district,
+                'district_id' => $districtId,
                 'council_id'  => $council,
             ]);
 
@@ -270,22 +292,16 @@ class BillboardController extends Controller
             $stateCode = State::select('prefix')->where('id', $state)->firstOrFail();
 
             // Step 3: Running number
-            $lastBillboard = Billboard::whereHas('location.district.state', function ($query) use ($state) {
+            $lastNumber = Billboard::whereHas('location.district.state', function ($query) use ($state) {
                     $query->where('id', $state);
                 })
-                ->orderBy('id', 'desc')
-                ->lockForUpdate() // 🚀 prevents race conditions
-                ->first();
+                ->selectRaw("MAX(CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(site_number,'-',3),'-',-1) AS UNSIGNED)) as max_number")
+                ->lockForUpdate() // ensures safe increment under concurrency
+                ->value('max_number');
 
-            if ($lastBillboard) {
-                preg_match('/-(\d{4})-/', $lastBillboard->site_number, $matches);
-                $lastNumber = isset($matches[1]) ? (int)$matches[1] : 0;
-                $runningNumber = $lastNumber + 1;
-            } else {
-                $runningNumber = 1;
-            }
-
+            $runningNumber = $lastNumber ? $lastNumber + 1 : 1;
             $formattedNumber = str_pad($runningNumber, 4, '0', STR_PAD_LEFT);
+
             $councilAbbv = Council::findOrFail($council)->abbreviation;
 
             // Step 4: Generate site_number
@@ -310,12 +326,13 @@ class BillboardController extends Controller
                 'size'              => $size,
                 'lighting'          => $lighting,
                 'state'             => $state,
-                'district'          => $district,
+                'district'          => $districtId,
                 'location_id'       => $location->id,
                 'gps_longitude'     => $gpslongitude,
                 'gps_latitude'      => $gpslatitude,
+                'gps_url'           => $gpsUrl,
                 'traffic_volume'    => $trafficvolume ?? 0,
-                'site_type'          => $siteType,
+                'site_type'         => $siteType,
                 'created_by'        => $userID,
             ]);
 
@@ -339,13 +356,8 @@ class BillboardController extends Controller
      */
     public function update(Request $request)
     {
-        logger('miau');
-        logger()->info('ini dia request:', $request->all());
 
-        
         $billboard = Billboard::find($request->id);
-
-        
 
         if (!$billboard) {
             return response()->json([
@@ -361,16 +373,23 @@ class BillboardController extends Controller
             'size' => 'nullable|string|max:255',
             'lighting' => 'nullable|string|max:255',
             'state_id' => 'nullable|integer',
-            'district_id' => 'nullable|integer',
+            'district_id' => 'nullable|string|max:255',
             'location_name' => 'nullable|string|max:255',
-            'gpsCoordinate' => [
+            'gps_coordinate' => [
                 'required',
                 'regex:/^-?([0-8]?\d(\.\d+)?|90(\.0+)?),\s*-?(1[0-7]\d(\.\d+)?|180(\.0+)?)$/'
+            ],
+            'gps_url' => [
+                'nullable',
+                'regex:/^https:\/\/maps\.app\.goo\.gl\/[A-Za-z0-9]+$/'
             ],
             'traffic_volume' => 'nullable|integer',
             'status' => 'nullable|integer',
             'site_type' => 'nullable|string|max:255',
         ]);
+
+        logger()->info('District value received:', ['district_id' => $request->district_id]);
+
 
         try {
             // Ensure all queries successfully executed
@@ -379,7 +398,7 @@ class BillboardController extends Controller
             $billboard = Billboard::findOrFail($request->id);
             $location = Location::find($billboard->location_id);
 
-            $coords = explode(',', $request->gpsCoordinate);
+            $coords = explode(',', $request->gps_coordinate);
             $gpslatitude = trim($coords[0]);
             $gpslongitude = trim($coords[1]);
 
@@ -388,6 +407,31 @@ class BillboardController extends Controller
                     'name' => $request->location_name, 
                 ]);
             }
+
+            // ✅ handle district (id or new text)
+            $districtId = null;
+
+            if ($request->filled('district_id')) {
+                if (is_numeric($request->district_id)) {
+                    // existing district
+                    $districtId = (int) $request->district_id;
+                } else {
+                    // new district name
+                    $district = \App\Models\District::create([
+                        'name' => $request->district_id,
+                        'state_id' => $request->state_id,
+                    ]);
+                    $districtId = $district->id;
+                }
+            }
+
+            if ($location) {
+                $location->update([
+                    'name'        => $request->location_name,
+                    'district_id' => $districtId,       // ✅ update district here
+                ]);
+            }
+
 
             // Map prefix to full type name
             $prefixMap = [
@@ -408,9 +452,9 @@ class BillboardController extends Controller
                 'size'           => $request->size,
                 'lighting'       => $request->lighting,
                 'state_id'       => $request->state_id,
-                'district_id'    => $request->district_id,
                 'gps_latitude'   => $gpslatitude,
                 'gps_longitude'  => $gpslongitude,
+                'gps_url'        => $request->gps_url,
                 'traffic_volume' => (int)$request->traffic_volume,
                 'status'         => (int)$request->status,
                 'site_type'      => $request->site_type,
