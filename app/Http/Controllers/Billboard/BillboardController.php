@@ -330,7 +330,7 @@ class BillboardController extends Controller
                 'gps_longitude'     => $gpslongitude,
                 'gps_latitude'      => $gpslatitude,
                 'gps_url'           => $gpsUrl,
-                'traffic_volume'    => $trafficvolume ?? 0,
+                'traffic_volume'    => $trafficvolume,
                 'site_type'         => $siteType,
                 'created_by'        => $userID,
             ]);
@@ -454,7 +454,7 @@ class BillboardController extends Controller
                 'gps_latitude'   => $gpslatitude,
                 'gps_longitude'  => $gpslongitude,
                 'gps_url'        => $request->gps_url,
-                'traffic_volume' => (int)$request->traffic_volume,
+                'traffic_volume' => $request->traffic_volume,
                 'status'         => (int)$request->status,
                 'site_type'      => $request->site_type,
             ]);

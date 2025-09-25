@@ -76,13 +76,14 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/billboardBooking', [BillboardBookingController::class, 'index'])->name('billboard.booking.index');
     Route::get('/billboard/monthly/ongoing', [BillboardBookingController::class, 'getMonthlyOngoingJobs'])->name('billboard.monthly.ongoing');
     Route::post('/billboard/monthly/ongoing', [BillboardBookingController::class, 'updateJobMonthlyStatus'])->name('jobs.update.monthly.status');
-    Route::post('/billboardBooking/list', [BillboardBookingController::class, 'list'])->name('billboard.booking.list');
+    // Route::post('/billboardBooking/list', [BillboardBookingController::class, 'list'])->name('billboard.booking.list');
     Route::post('/booking/create', [BillboardBookingController::class, 'create'])->name('billboard.booking.create');
     Route::post('/booking/edit', [BillboardBookingController::class, 'edit'])->name('billboard.booking.edit');
     Route::post('/booking/delete', [BillboardBookingController::class, 'delete'])->name('billboard.booking.delete');
 
     // Billboard Availability
     Route::get('/billboardAvailability', [BillboardAvailabilityController::class, 'index'])->name('billboard.availability.index');
+    Route::post('/billboardAvailability/list', [BillboardAvailabilityController::class, 'list'])->name('billboard.booking.list');
     Route::post('/billboardAvailability', [BillboardAvailabilityController::class, 'update'])->name('billboard.availability.update');
     Route::post('/booking/availability', [BillboardAvailabilityController::class, 'getBillboardAvailability'])->name('billboard.checkAvailability');
     Route::get('/billboard/monthly-availability', [BillboardAvailabilityController::class, 'getMonthlyBookingAvailability'])->name('billboard.monthly.availability');

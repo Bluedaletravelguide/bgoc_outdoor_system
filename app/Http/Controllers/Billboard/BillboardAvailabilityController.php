@@ -60,6 +60,100 @@ class BillboardAvailabilityController extends Controller
         return view('billboard.availability.index', compact('companies', 'states', 'districts', 'locations', 'types'));
     }
 
+    public function list(Request $request)
+    {
+        $user = Auth::user();
+
+        // Get user roles
+        $role = $user->roles->pluck('name')[0];
+
+        $userID = $this->user->id;
+
+        $columns = array(
+            0 => 'site_number',
+            1 => 'company_name',
+            2 => 'location',
+            3 => 'start_date',
+            4 => 'end_date',
+            5 => 'duration',
+            6 => 'status',
+            7 => 'remarks',
+            8 => 'id',
+            9 => 'billboard_id',
+        );
+
+        $limit              = $request->input('length');
+        $start              = $request->input('start');
+        $orderColumnIndex   = $request->input('order.0.column');
+        $orderColumnName    = $columns[$orderColumnIndex] ?? 'billboard_bookings.id';
+        $orderDirection     = $request->input('order.0.dir', 'desc');
+
+        $filters = $this->extractFilters($request);
+
+        $query = $this->baseBookingQuery();
+
+        $this->applyBookingFilters($query, $filters);
+
+        // Get total records count
+        $totalData = $query->count();
+
+        // Search (same as other endpoint)
+        if (!empty($filters['search_value'])) {
+            $searchValue = trim(strtolower($filters['search_value']));
+            $query->where(function ($q) use ($searchValue) {
+                $q->where('billboards.site_number', 'LIKE', "%{$searchValue}%")
+                ->orWhere('client_companies.name', 'LIKE', "%{$searchValue}%")
+                ->orWhere('locations.name', 'LIKE', "%{$searchValue}%")
+                ->orWhere('districts.name', 'LIKE', "%{$searchValue}%")
+                ->orWhere('states.name', 'LIKE', "%{$searchValue}%");
+            });
+        }
+
+        $query->orderBy('locations.name', 'asc')
+        ->orderBy($orderColumnName, $orderDirection);
+
+        
+
+        // Get total filtered records count
+        $totalFiltered = $query->count();
+
+        // Apply pagination
+        $filteredData = $query->skip($start)->take($limit)->get();
+
+        $data = array();
+
+        foreach ($filteredData as $d) {
+            $created_at = Carbon::parse($d->created_at)->format('Y-m-d');
+
+            $nestedData = array(
+                'site_number'           => $d->site_number,
+                'company_id'            => $d->company_id,
+                'company_name'          => $d->company_name,
+                'location_id'           => $d->location_id,
+                'location_name'         => $d->location_name,
+                'start_date'            => $d->start_date ? Carbon::parse($d->start_date)->format('d/m/y') : null,
+                'end_date'              => $d->end_date ? Carbon::parse($d->end_date)->format('d/m/y') : null,
+                'remarks'               => $d->remarks,
+                'duration'              => ($d->start_date && $d->end_date) ? Carbon::parse($d->start_date)->diffInMonths(Carbon::parse($d->end_date)) + 1 : null,
+                'created_at'            => $created_at,
+                'status'                => $d->status,
+                'id'                    => $d->id,
+                'billboard_id'          => $d->billboard_id,
+            );
+
+            $data[] = $nestedData;
+        }
+
+        $json_data = array(
+            "draw"              => intval($request->input('draw')),
+            "recordsTotal"      => intval($totalData),
+            "recordsFiltered"   => intval($totalFiltered),
+            "data"              => $data,
+        );
+
+        return response()->json($json_data);
+    }
+
     public function getMonthlyBookingAvailability(Request $request)
     {
         $filters = $this->extractFilters($request);
@@ -74,10 +168,6 @@ class BillboardAvailabilityController extends Controller
 
             [$isAvailable, $nextAvailableDate] = $this->checkAvailability($billboard, $startDate, $endDate);
 
-            if (!$this->passesStatusFilter($isAvailable, $filters['status'])) {
-                continue;
-            }
-
             // Build monthly blocks between start and end date
             $months = $this->buildMonthlyBlocks($billboard, $startDate, $endDate);
 
@@ -88,6 +178,7 @@ class BillboardAvailabilityController extends Controller
                 'site_type'          => $billboard->site_type ?? '-',
                 'type'               => $billboard->type ?? '-',
                 'size'               => $billboard->size ?? '-',
+                'remarks'            => $billboard->remarks ?? '',
                 'is_available'       => $isAvailable,
                 'next_available_raw' => $isAvailable ? null : $nextAvailableDate,
                 'months'             => $months,
@@ -104,7 +195,6 @@ class BillboardAvailabilityController extends Controller
         ]);
     }
 
-
     public function getBillboardAvailability(Request $request)
     {
         $filters = $this->extractFilters($request);
@@ -112,11 +202,14 @@ class BillboardAvailabilityController extends Controller
 
         $results = [];
         foreach ($billboards as $billboard) {
-            [$isAvailable, $nextAvailableDate] = $this->checkAvailability($billboard, $filters['start_date'], $filters['end_date']);
+            [$isAvailable, $nextAvailableDate] = $this->checkAvailability(
+                $billboard,
+                $filters['start_date'],
+                $filters['end_date']
+            );
 
-            if (!$this->passesStatusFilter($isAvailable, $filters['status'])) {
-                continue;
-            }
+            // ✅ take the first booking’s status if exists
+            $bookingStatus = $billboard->bookings->first()->status ?? null;
 
             $results[] = [
                 'id'              => $billboard->id,
@@ -135,14 +228,20 @@ class BillboardAvailabilityController extends Controller
                 'state_name'      => $billboard->location->district->state->name ?? '',
 
                 'is_available'    => $isAvailable,
-                'status_label'    => $isAvailable ? 'Available' : 'Not Available',
+                'status'          => $bookingStatus, // ✅ actual booking status
                 'next_available_raw' => $isAvailable ? null : $nextAvailableDate,
                 'next_available'  => $isAvailable ? null : optional($nextAvailableDate)->format('d/m/Y'),
             ];
-
         }
 
         $results = $this->sortAvailability($results);
+
+        // ✅ optional: extra safeguard, filter results by booking status if requested
+        if (!empty($filters['status'])) {
+            $results = array_values(array_filter($results, function ($item) use ($filters) {
+                return $item['status'] === $filters['status'];
+            }));
+        }
 
         return response()->json([
             'draw' => intval($request->input('draw')),
@@ -151,6 +250,7 @@ class BillboardAvailabilityController extends Controller
             'data' => $results,
         ]);
     }
+
 
     private function extractFilters(Request $request)
     {
@@ -187,6 +287,11 @@ class BillboardAvailabilityController extends Controller
         ->when($filters['location'], fn($q) => $q->where('location_id', $filters['location']))
         ->when($filters['type'], fn($q) => $q->where('prefix', $filters['type']))
         ->when($filters['site_type'], fn($q) => $q->where('billboards.site_type', $filters['site_type']))
+        ->when($filters['status'], function ($q) use ($filters) {
+            $q->whereHas('bookings', function ($q2) use ($filters) {
+                $q2->where('status', $filters['status']);
+            });
+        })
         ->when(!empty($filters['search_value']), function ($q) use ($filters) {
             $search = $filters['search_value'];
             $q->where(function ($q2) use ($search) {
@@ -210,10 +315,6 @@ class BillboardAvailabilityController extends Controller
         return $billboards->values();
     }
 
-
-
-
-
     private function checkAvailability($billboard, Carbon $startDate, Carbon $endDate)
     {
         $isAvailable = true;
@@ -234,14 +335,6 @@ class BillboardAvailabilityController extends Controller
         }
 
         return [$isAvailable, $nextAvailableDate];
-    }
-
-    private function passesStatusFilter($isAvailable, $status)
-    {
-        if (is_null($status)) return true;
-
-        $boolStatus = filter_var($status, FILTER_VALIDATE_BOOLEAN);
-        return $isAvailable === $boolStatus;
     }
 
     private function sortAvailability(array $items)
@@ -322,6 +415,7 @@ class BillboardAvailabilityController extends Controller
                         'client'      => optional($booking->clientCompany)->name ?? null, // ✅ client name
                         'start_date'  => $bookingStart->format('d/m/Y'), // ✅ booking start
                         'end_date'    => $bookingEnd->format('d/m/Y'),   // ✅ booking end
+                        'remarks'     => $booking->remarks,
                     ];
 
                     break;
@@ -349,6 +443,47 @@ class BillboardAvailabilityController extends Controller
         return $months;
     }
 
+    private function baseBookingQuery()
+    {
+        return BillboardBooking::select(
+            'billboard_bookings.*',
+            'billboards.id as billboard_id',
+            'billboards.site_number as site_number',
+            'client_companies.name as company_name',
+            'locations.id as location_id',
+            'locations.name as location_name',
+            'districts.id as district_id',
+            'districts.name as district_name',
+            'states.id as state_id',
+            'states.name as state_name'
+        )
+        ->leftJoin('client_companies', 'client_companies.id', '=', 'billboard_bookings.company_id')
+        ->leftJoin('billboards', 'billboards.id', '=', 'billboard_bookings.billboard_id')
+        ->leftJoin('locations', 'locations.id', '=', 'billboards.location_id')
+        ->leftJoin('districts', 'districts.id', '=', 'locations.district_id')
+        ->leftJoin('states', 'states.id', '=', 'districts.state_id');
+    }
+
+
+    private function applyBookingFilters($query, $filters)
+    {
+        return $query
+            ->when(!empty($filters['start_date']) && !empty($filters['end_date']), function ($q) use ($filters) {
+                $q->where(function ($sub) use ($filters) {
+                    $sub->where('billboard_bookings.start_date', '<=', $filters['end_date'])
+                        ->where('billboard_bookings.end_date', '>=', $filters['start_date']);
+                });
+            })
+            ->when(!empty($filters['state']), fn($q) => $q->where('states.id', $filters['state']))
+            ->when(!empty($filters['district']), fn($q) => $q->where('districts.id', $filters['district']))
+            ->when(!empty($filters['location']), fn($q) => $q->where('locations.id', $filters['location']))
+            ->when(!empty($filters['status']), fn($q) => $q->where('billboard_bookings.status', $filters['status']))
+            ->when(!empty($filters['client']), fn($q) => $q->where('billboard_bookings.company_id', $filters['client']));
+    }
+
+
+
+
 
 
 
@@ -359,62 +494,11 @@ class BillboardAvailabilityController extends Controller
     {
         $billboard = BillboardBooking::findOrFail($request->id);
         $billboard->status = $request->status;
+        $billboard->remarks = $request->remarks;
         $billboard->save();
 
         return response()->json(['success' => true]);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-    
-
-    
 
     public function downloadPdf($id)
     {

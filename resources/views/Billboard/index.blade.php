@@ -291,8 +291,7 @@
                                 type="number" 
                                 class="input w-full border mt-2 flex-1" 
                                 id="inputBillboardTrafficVolume" 
-                                name="traffic_volume"
-                                min="0" 
+                                name="traffic_volume" 
                                 step="1" 
                                 placeholder="e.g. 50000" 
                                 required

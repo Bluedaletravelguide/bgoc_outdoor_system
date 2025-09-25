@@ -161,8 +161,11 @@
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Status</label>
                 <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="filterAvailabilityStatus">
                     <option value="" selected="">All</option>
-                    <option value="true">Available</option>
-                    <option value="false">Not Available</option>
+                    <option value="pending_payment">Pending Payment</option>
+                    <option value="pending_install">Pending Install</option>
+                    <option value="ongoing">Ongoing</option>
+                    <option value="completed">Completed</option>
+                    <option value="dismantle">Dismantle</option>
                 </select>
             </div>
         </form> 
@@ -267,12 +270,16 @@
         <table class="table mt-5" id="billboard_availability_table">
             <thead>
                 <tr class="bg-theme-1 text-white">
-                    <th class="whitespace-nowrap w-12">No.</th>
-                    <th class="whitespace-nowrap w-24">Site #</th>
+                    <th class="whitespace-nowrap">No.</th>
+                    <th class="whitespace-nowrap">Site #</th>
+                    <th class="whitespace-nowrap">Client Name</th>
                     <th class="whitespace-nowrap">Location</th>
-                    <th class="whitespace-nowrap">State</th>
-                    <th class="whitespace-nowrap w-24">Status</th>
-                    <th class="whitespace-nowrap w-24">Next Available</th> 
+                    <th class="whitespace-nowrap">Start Date</th>
+                    <th class="whitespace-nowrap">End Date</th> 
+                    <th class="whitespace-nowrap">Duration (Month)</th>
+                    <th class="whitespace-nowrap">Status</th>
+                    <th class="whitespace-nowrap">Remarks</th>
+                    <th class="whitespace-nowrap">Detail</th>
                     <th class="whitespace-nowrap flex flex-row">Action</th>
                 </tr>
             </thead>
@@ -420,6 +427,10 @@
                         <option value="completed">Completed</option>
                         <option value="dismantle">Dismantle</option>           
                     </select>
+                </div>
+                <div class="col-span-12 sm:col-span-12">
+                    <label>Remarks <span style="color: red;">*</span></label>
+                    <textarea class="input w-full border mt-2 flex-1" placeholder="Remarks" id="editBookingRemarks" rows="5" required></textarea>
                 </div>
             </div>
 
@@ -820,7 +831,7 @@
         colWidths.forEach((w, i) => monthlySheet.getColumn(i + 1).width = w);
 
         // ---- Availability List (2nd sheet) ----
-        const availabilitySheet = workbook.addWorksheet('Availability List');
+        const availabilitySheet = workbook.addWorksheet('Monthly Ongoing Job List');
         const availabilityData = prepareAvailabilityData();
         availabilityData.forEach((rowData, rowIndex) => {
             const row = availabilitySheet.addRow(rowData);
@@ -837,14 +848,42 @@
                     cell.alignment = { horizontal: 'center', vertical: 'middle' };
                 } else {
                     cell.alignment = { horizontal: 'center', vertical: 'middle' };
-                    if (colNumber === 5 && cell.value) {
+                    
+                    if ([2, 3, 4, 9].includes(colNumber)) {
+                        cell.alignment = { horizontal: 'left', vertical: 'middle' };
+                    }
+
+                    // Mapping from DB → readable
+                    const statusMap = {
+                        'pending_payment': 'Pending Payment',
+                        'pending_install': 'Pending Install',
+                        'ongoing': 'Ongoing',
+                        'completed': 'Completed',
+                        'dismantle': 'Dismantle'
+                    };
+
+                    // Replace the cell value with the readable wording
+                    if (statusMap[status]) {
+                        cell.value = statusMap[status];
+                    }
+                    
+                    if (colNumber === 8 && cell.value) {
                         const status = String(cell.value).toLowerCase();
-                        if (status.includes('not available')) {
-                            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDC3545' } };
-                            cell.font = { color: { argb: 'FFFFFFFF' } };
-                        } else if (status.includes('available')) {
-                            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF10B981' } };
-                            cell.font = { color: { argb: 'FFFFFFFF' } };
+                        if (status.includes('pending_payment')) {
+                            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD32929' } };
+                            cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+                        } else if (status.includes('pending_install')) {
+                            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1C3FAA' } };
+                            cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+                        } else if (status.includes('ongoing')) {
+                            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF059669' } };
+                            cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+                        } else if (status.includes('completed')) {
+                            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFBC500' } };
+                            cell.font = { color: { argb: 'FF000000' }, bold: true };
+                        } else if (status.includes('dismantle')) {
+                            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF7F9EB9' } };
+                            cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
                         }
                     }
                 }
@@ -926,7 +965,7 @@
 
     function prepareAvailabilityData() {
         // Define header row
-        const header = ['No', 'Site #', 'Location', 'State', 'Status', 'Next Available'];
+        const header = ['No', 'Site #', 'Client', 'Location', 'Start Date', 'End Date', 'Duration (month)', 'Status', 'Remarks'];
         const data = [header];
 
         // Get DataTable instance
@@ -938,10 +977,14 @@
             const row = [
                 index + 1,
                 rowData.site_number || '',
+                rowData.company_name || '',
                 rowData.location_name || '',
-                `${rowData.district_name || ''}, ${rowData.state_name || ''}`,
-                rowData.status_label || '',
-                rowData.next_available || ''
+                rowData.start_date || '',
+                rowData.end_date || '',
+                rowData.duration || '',
+                rowData.status || '',
+                // `${rowData.district_name || ''}, ${rowData.state_name || ''}`,
+                rowData.remarks || ''
             ];
             data.push(row);
         });
@@ -1035,6 +1078,15 @@
             };
         });
 
+        // Status colors mapping
+        const statusColors = {
+            'pending_payment': { bg: 'FFD32929', font: 'FFFFFFFF' }, // red
+            'pending_install': { bg: 'FF1C3FAA', font: 'FFFFFFFF' }, // blue
+            'ongoing':         { bg: 'FF059669', font: 'FFFFFFFF' }, // green
+            'completed':       { bg: 'FFFBC500', font: 'FF000000' }, // yellow
+            'dismantle':       { bg: 'FF7F9EB9', font: 'FFFFFFFF' }  // gray
+        };
+
         // Style data rows
         worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
             if (rowNumber === 1) return; // skip header
@@ -1048,26 +1100,27 @@
                     right: { style: 'thin', color: { argb: 'FFCCCCCC' } }
                 };
 
-                // Status column (5th column)
-                if (colNumber === 5 && cell.value) {
+                // Apply status color for column 8 ("Status")
+                if (colNumber === 8 && cell.value) {
                     const status = String(cell.value).toLowerCase();
-                    if (status.includes('not available')) {
-                        cell.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:'FFDC3545' } };
-                        cell.font = { color:{ argb:'FFFFFFFF' } };
-                    } else if (status.includes('available')) {
-                        cell.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:'FF10B981' } };
-                        cell.font = { color:{ argb:'FFFFFFFF' } };
+                    for (const key in statusColors) {
+                        if (status.includes(key)) {
+                            cell.fill = { type:'pattern', pattern:'solid', fgColor:{ argb: statusColors[key].bg } };
+                            cell.font = { color:{ argb: statusColors[key].font }, bold: true };
+                            break;
+                        }
                     }
                 }
             });
         });
 
         // Set column widths
-        const colWidths = [5, 12, 25, 20, 15, 15];
+        const colWidths = [5, 12, 25, 20, 15, 15, 15, 15, 20];
         colWidths.forEach((w, i) => {
             worksheet.getColumn(i + 1).width = w;
         });
     }
+
 
 
     function buildMonthlyBookingTableHead(selectedYear) {
@@ -1075,9 +1128,9 @@
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         let headerHtml = '<tr>';
         headerHtml += '<th>No</th>';
-        headerHtml += '<th>Site No</th>';
+        headerHtml += '<th>Site #</th>';
         headerHtml += '<th>Location</th>';
-        headerHtml += '<th>Area</th>';
+        headerHtml += '<th>District</th>';
         headerHtml += '<th>New/Existing</th>';
         headerHtml += '<th>Type</th>';
         headerHtml += '<th>Size</th>';
@@ -1142,6 +1195,7 @@
                                 data-client="${month.client || ''}" 
                                 data-start-date="${month.start_date || ''}" 
                                 data-end-date="${month.end_date || ''}"
+                                data-remarks="${month.remarks ? month.remarks.replace(/"/g, '&quot;') : ''}"
                             `;
                         }
 
@@ -1167,20 +1221,25 @@
         const $fileName = `Billboard_Availability_List_${formattedDate}_${formattedTime}`;
 
         const table = $('#billboard_availability_table').DataTable({
+            altEditor: true,
             destroy: true,
             debug: true,
             processing: true,
             searching: true,
             serverSide: true,
             ordering: true,
-            order: [[0, 'asc']],
+            order: [
+                [0, 'desc']
+            ],
             pagingType: 'full_numbers',
             pageLength: 25,
-            aLengthMenu: [[25, 50, 75, -1], [25, 50, 75, "All"]],
+            aLengthMenu: [
+                [25, 50, 75, -1],
+                [25, 50, 75, "All"]
+            ],
             iDisplayLength: 25,
             ajax: {
-                url: "{{ route('billboard.checkAvailability') }}",
-                dataType: "json",
+                url: "{{ route('billboard.booking.list') }}",
                 type: "POST",
                 data: function(d) {
                     d._token = $('meta[name="csrf-token"]').attr('content');
@@ -1214,7 +1273,7 @@
             ],
             columns: [
                 {
-                    data: null,
+                    data: null, // <-- important
                     name: 'no',
                     orderable: false,
                     searchable: false,
@@ -1222,40 +1281,110 @@
                         return meta.row + meta.settings._iDisplayStart + 1;
                     }
                 },
-                { data: "site_number" },
-                { data: "location_name" },
                 {
-                    data: null,
-                    name: 'district_state',
-                    render: function (data, type, row) {
-                        const district = row.district_name || '';
-                        const state = row.state_name || '';
-                        return `${district}, ${state}`;
-                    }
+                    data: "site_number",
                 },
                 {
-                    data: "status_label",
+                    data: "company_name",
+                },
+                {
+                    data: "location_name",
+                },
+                {
+                    data: "start_date",
+                },
+                {
+                    data: "end_date",
+                },
+                {
+                    data: "duration",
+                },
+                {
+                    data: "status",
+                    type: "readonly",
                     render: function(data, type, row) {
-                        if (row.is_available == false) {
-                            return `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-6 text-white">${data}</a>`;
-                        } else {
-                            return `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-18 text-black">${data}</a>`;
+                        let element = ``
+                        if (data == 'pending_payment'){
+                            element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-6 text-white">Pending Payment</a>`;
+                        } else if (data == 'pending_install'){
+                            element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-1 text-white">Pending Install</a>`;
+                        } else if (data == 'ongoing') {
+                            element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-green-600 text-white">Ongoing</a>`;
+                        } else if (data == 'completed') {
+                            element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-12 text-black">Completed</a>`;
+                        } else if (data == 'dismantle') {
+                            element = `
+                                <div class="flex flex-col space-y-2">
+                                    <a href="javascript:;" 
+                                    class="button p-2 w-32 bg-theme-13 text-white stock-inventory-btn"
+                                    data-id="${row.id}">
+                                        Dismantle
+                                    </a>
+                                </div>`;
                         }
+                        
+                        return element;
                     }
                 },
-                { data: "next_available" },
+                {
+                    data: "remarks",
+                    name: "remarks",
+                    render: function (data, type, row) {
+                        if (!data) return "-"; // handle empty remarks
+
+                        let shortText = data.length > 30 ? data.substr(0, 30) + "..." : data;
+
+                        return `
+                            <span class="remarks-short">${shortText}</span>
+                            ${data.length > 30 ? `<a href="javascript:void(0)" class="read-more text-blue-500 ml-2" data-full="${encodeURIComponent(data)}">Read more</a>` : ""}
+                        `;
+                    }
+                },
+                {
+                    data: "billboard_id",
+                    render: function(data, type, row) {
+                        var a = "{{ route('billboard.detail', ['id'=>':data'] )}}".replace(':data', data);
+                        let element = 
+                        `<div class="flex flex-row">
+                            <a href="javascript:;" id="${data}"
+                                class="button w-32 inline-block mr-2 mb-2 bg-theme-9 text-white text-center" data-toggle="button" onclick="window.open('${a}')" >
+                                Site location
+                            </a>
+                        </div>`;
+
+                        return element;
+                    }
+                },
                 {
                     data: "id",
-                    render: (data) => `
-                        <div class="flex justify-center items-center gap-3">
-                            <a href="javascript:;" data-toggle="modal" data-target="#addBookingModal"
-                                class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-1 text-white new-job-order" 
-                                data-id="${data}">
-                                New Job Order
+                    render: function(data, type, row) {
+                        return `
+                        <div class="flex items-center space-x-2">
+                            <!-- Edit Button -->
+                            <a href="javascript:;" 
+                            class="edit-booking button w-24 inline-block mr-2 mb-2 bg-theme-1 text-white" 
+                            data-id="${data}">
+                            Edit
                             </a>
-                        </div>
-                    `
-                },
+
+                            <!-- Delete Button -->
+                            <a class="flex items-center text-theme-6" href="javascript:;" 
+                            data-toggle="modal" data-target="#billboardBookingDeleteModal" 
+                            id="delete-${data}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" 
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" 
+                                    stroke-width="1.5" stroke-linecap="round" 
+                                    stroke-linejoin="round" class="feather feather-trash-2 w-4 h-4 mr-1">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4
+                                            a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                </svg> 
+                            </a>
+                        </div>`;
+                    }
+                }
             ],
         });
 
@@ -1556,13 +1685,14 @@
             });
         })();
 
-        // Row click event
+        // click on table 1 cell with booking_id to open edit status modal
         $(document).on("click", "#monthly-booking-body td[data-booking-id]", function() {
             const bookingId = $(this).data("booking-id");
             const client = $(this).data("client");
             const start = $(this).data("start-date");
             const end = $(this).data("end-date");
             const status = $(this).data("status");
+            const remarks = $(this).data("remarks");
 
             if (!bookingId) return;
 
@@ -1571,7 +1701,28 @@
             $("#editBookingClient").text(client || "N/A");
             $("#editBookingDates").text(start && end ? `${start} – ${end}` : "N/A");
             $("#editBookingStatus").val(status);
+            $("#editBookingRemarks").val(remarks);
 
+            openAltEditorModal("#editStatusModal");
+        });
+
+        // Open modal to edit Billboard Booking (via Edit button)
+        $(document).on("click", ".edit-booking", function () {
+            booking_id = $(this).data("id"); // from data-id attribute
+
+            let row = $('#billboard_availability_table')
+                        .DataTable()
+                        .row($(this).closest('tr'))
+                        .data();
+
+            // Fill form fields
+            $("#editStatusModal").data("booking-id", row.id);
+            $("#editBookingClient").text(row.company_name || "N/A");
+            $("#editBookingDates").text(row.start_date && row.end_date ? `${row.start_date} – ${row.end_date}` : "N/A");
+            $("#editBookingStatus").val(row.status);
+            $("#editBookingRemarks").val(row.remarks);
+
+            // Open modal
             openAltEditorModal("#editStatusModal");
         });
 
@@ -1598,6 +1749,7 @@
                 },
                 success: function(response) {
                     $("#editStatusModal").addClass("hidden").removeClass("flex");
+                    window.showSubmitToast("Successfully added.", "#91C714");
                     location.reload(); // reload table
                 },
                 error: function(xhr) {
@@ -1606,6 +1758,53 @@
                 }
             });
         });
+
+        
+
+
+
+
+
+
+        // Edit Billboard Booking
+        function editBooking() {
+            var status = document.getElementById("editBookingStatus").value;
+            var remarks = document.getElementById("editBookingRemarks").value;
+
+            $.ajax({
+                type: 'POST',
+                url: "{{ route('billboard.booking.edit') }}",
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    status: status,
+                    remarks: remarks,
+                    booking_id: booking_id,
+                },
+                success: function(response) {
+                    // Close modal after successfully edited
+                    var element = "#editBookingModal";
+                    closeAltEditorModal(element);
+
+                    // Show successful toast
+                    window.showSubmitToast("Successfully updated.", "#91C714");
+
+                    // Clean fields
+                    document.getElementById("editBookingStatus").value = "";
+                    document.getElementById("editBookingRemarks").value = "";
+
+                    // Reload table
+                    $('#billboard_booking_table').DataTable().ajax.reload();
+                },
+                error: function(xhr, status, error) {
+                    // Display the validation error message
+                    var response = JSON.parse(xhr.responseText);
+                    var error = "Error: " + response.error;
+
+                    // Show fail toast
+                    window.showSubmitToast(error, "#D32929");
+                }
+            });
+        }
 
 
 
