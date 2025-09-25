@@ -17,10 +17,12 @@ class BillboardExport implements FromCollection, WithHeadings, WithMapping, With
 {
     protected $filters;
     protected $rowNumber = 0; // For "No" column
+    protected $selectedIds; // For selected billboard IDs
 
-    public function __construct($filters)
+    public function __construct(array $filters = [], $selectedIds = null)
     {
         $this->filters = $filters;
+        $this->selectedIds = $selectedIds;
     }
 
     public function collection()
@@ -64,6 +66,15 @@ class BillboardExport implements FromCollection, WithHeadings, WithMapping, With
         }
         if (!empty($this->filters['size']) && $this->filters['size'] !== "all") {
             $query->where('billboards.size', $this->filters['size']);
+        }
+
+        logger()->info('Selected IDs for export: ', ['ids' => $this->selectedIds]);
+
+        // ✅ If selected IDs exist, filter only those
+        if (!empty($this->selectedIds)) {
+            $ids = is_array($this->selectedIds) ? $this->selectedIds : explode(',', $this->selectedIds);
+            $ids = array_map('intval', $ids); // <- important
+            $query->whereIn('billboards.id', $ids);
         }
 
         // ✅ Sort by location name alphabetically

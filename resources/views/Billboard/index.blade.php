@@ -143,6 +143,7 @@
         <table class="table table-report mt-5" id="billboard_table">
             <thead>
                 <tr class="bg-theme-1 text-white">
+                    <th><input type="checkbox" id="select-all-billboards"></th>
                     <th>No</th>
                     <th>Site #</th>
                     <th>New/Existing</th>
@@ -488,6 +489,49 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
+
+    // Global array
+    let selectedBillboards = [];
+
+    // Row checkbox clicked
+    $('#billboard_table').on('change', 'input.billboard-checkbox', function() {
+        let id = $(this).val().toString(); // always string
+        if ($(this).is(':checked')) {
+            if (!selectedBillboards.includes(id)) selectedBillboards.push(id);
+        } else {
+            selectedBillboards = selectedBillboards.filter(i => i != id);
+        }
+    });
+
+    // Select all checkbox
+    $('#select-all-billboards').on('click', function() {
+        let isChecked = $(this).is(':checked');
+        $('#billboard_table tbody input.billboard-checkbox').each(function() {
+            let id = $(this).val().toString();
+            $(this).prop('checked', isChecked);
+            if (isChecked) {
+                if (!selectedBillboards.includes(id)) selectedBillboards.push(id);
+            } else {
+                selectedBillboards = selectedBillboards.filter(i => i != id);
+            }
+        });
+    });
+
+    // Restore on redraw
+    $('#billboard_table').on('draw.dt', function() {
+        $('#billboard_table tbody input.billboard-checkbox').each(function() {
+            let id = $(this).val().toString();
+            $(this).prop('checked', selectedBillboards.includes(id));
+        });
+
+        // Update "select all"
+        let allChecked = $('#billboard_table tbody input.billboard-checkbox').length === 
+                        $('#billboard_table tbody input.billboard-checkbox:checked').length;
+        $('#select-all-billboards').prop('checked', allChecked);
+    });
+
+
+
     $('#filterBillboardState').on('change', function () {
         let stateId = $(this).val();
 
@@ -529,53 +573,86 @@
     document.getElementById('exportBtn').addEventListener('click', function (e) {
         e.preventDefault();
 
-        // Read values from your filter fields
-        let state = document.getElementById('filterBillboardState')?.value || 'all';
-        let district = document.getElementById('filterBillboardDistrict')?.value || 'all';
-        let type = document.getElementById('filterBillboardType')?.value || 'all';
+        // Read filters
+        let state     = document.getElementById('filterBillboardState')?.value || 'all';
+        let district  = document.getElementById('filterBillboardDistrict')?.value || 'all';
+        let type      = document.getElementById('filterBillboardType')?.value || 'all';
         let site_type = document.getElementById('filterBillboardSiteType')?.value || 'all';
-        let size = document.getElementById('filterBillboardSize')?.value || 'all';
-        let status = document.getElementById('filterBillboardStatus')?.value || 'all';
+        let size      = document.getElementById('filterBillboardSize')?.value || 'all';
+        let status    = document.getElementById('filterBillboardStatus')?.value || 'all';
 
-        // Build query string
-        let query = new URLSearchParams({
+        // Build params
+        let params = {
             state_id: state,
             district_id: district,
             type: type,
             site_type: site_type,
             size: size,
             status: status
-        }).toString();
+        };
+
+        // ✅ Add selectedBillboards if any
+        if (selectedBillboards.length > 0) {
+            params.billboard_ids = selectedBillboards.join(',');
+        }
+
+        // Build query string
+        let query = new URLSearchParams(params).toString();
 
         // Redirect with query string
         let exportUrl = '{{ route("billboards.export.pdf") }}' + '?' + query;
         window.open(exportUrl, '_blank');
+
+        // ✅ After opening, clear selections
+        selectedBillboards = []; // reset array
+        document.querySelectorAll('.billboard-checkbox').forEach(cb => cb.checked = false);
+        let selectAll = document.getElementById('select-all-billboards');
+        if (selectAll) {
+            selectAll.checked = false;
+        }
     });
+
 
     document.getElementById('exportBtnClient').addEventListener('click', function (e) {
         e.preventDefault();
 
-        // Read values from your filter fields
-        let state = document.getElementById('filterBillboardState')?.value || 'all';
-        let district = document.getElementById('filterBillboardDistrict')?.value || 'all';
-        let type = document.getElementById('filterBillboardType')?.value || 'all';
+        // Read filters
+        let state     = document.getElementById('filterBillboardState')?.value || 'all';
+        let district  = document.getElementById('filterBillboardDistrict')?.value || 'all';
+        let type      = document.getElementById('filterBillboardType')?.value || 'all';
         let site_type = document.getElementById('filterBillboardSiteType')?.value || 'all';
-        let size = document.getElementById('filterBillboardSize')?.value || 'all';
-        let status = document.getElementById('filterBillboardStatus')?.value || 'all';
+        let size      = document.getElementById('filterBillboardSize')?.value || 'all';
+        let status    = document.getElementById('filterBillboardStatus')?.value || 'all';
 
-        // Build query string
-        let query = new URLSearchParams({
+        // Build params
+        let params = {
             state_id: state,
             district_id: district,
             type: type,
             site_type: site_type,
             size: size,
             status: status
-        }).toString();
+        };
+
+        // ✅ Add selectedBillboards if any
+        if (selectedBillboards.length > 0) {
+            params.billboard_ids = selectedBillboards.join(',');
+        }
+
+        // Build query string
+        let query = new URLSearchParams(params).toString();
 
         // Redirect with query string
-        let exportUrl = '{{ route("billboards.export.pdf.client") }}' + '?' + query;
+        let exportUrl = '{{ route("billboards.export.pdf") }}' + '?' + query;
         window.open(exportUrl, '_blank');
+
+        // ✅ After opening, clear selections
+        selectedBillboards = []; // reset array
+        document.querySelectorAll('.billboard-checkbox').forEach(cb => cb.checked = false);
+        let selectAll = document.getElementById('select-all-billboards');
+        if (selectAll) {
+            selectAll.checked = false;
+        }
     });
 
 
@@ -597,7 +674,6 @@
     $(document).ready(function() {
         // Global variables
         var filterBillboardStatus;
-
         document.getElementById("billboardDeleteButton").addEventListener("click", billboardDeleteButton);
 
         // Initialize Select2 with search
@@ -766,7 +842,6 @@
                         d.size      = $('#filterBillboardSize').val();
                     },
                     dataSrc: function(json) {
-                        console.log(json);
                         json.recordsTotal       = json.recordsTotal;
                         json.recordsFiltered    = json.recordsFiltered;
                         return json.data;
@@ -778,6 +853,7 @@
                         text: "Export Excel",
                         className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
                         action: function () {
+                            
                             let form = $('<form>', {
                                 method: 'POST',
                                 action: "{{ route('billboards.export') }}"
@@ -785,6 +861,12 @@
 
                             // Add filters as hidden inputs
                             form.append($('<input>', {type: 'hidden', name: '_token', value: $('meta[name="csrf-token"]').attr('content')}));
+
+                            // Add selected IDs if any
+                            if (selectedBillboards.length > 0) {
+                                form.append($('<input>', {type: 'hidden', name: 'billboard_ids', value: selectedBillboards.join(',')}));
+                            }
+
                             form.append($('<input>', {type: 'hidden', name: 'status', value: $('#filterBillboardStatus').val()}));
                             form.append($('<input>', {type: 'hidden', name: 'state', value: $('#filterBillboardState').val()}));
                             form.append($('<input>', {type: 'hidden', name: 'district', value: $('#filterBillboardDistrict').val()}));
@@ -793,6 +875,14 @@
                             form.append($('<input>', {type: 'hidden', name: 'size', value: $('#filterBillboardSize').val()}));
 
                             form.appendTo('body').submit().remove();
+
+                            // ✅ After opening, clear selections
+                            selectedBillboards = []; // reset array
+                            document.querySelectorAll('.billboard-checkbox').forEach(cb => cb.checked = false);
+                            let selectAll = document.getElementById('select-all-billboards');
+                            if (selectAll) {
+                                selectAll.checked = false;
+                            }
                         }
                     }
                 ],
@@ -802,6 +892,15 @@
                     orderable: false
                 }],
                 columns: [
+                    {
+                        data: "id",
+                        orderable: false,
+                        searchable: false,
+                        render: function(data) {
+                            let checked = selectedBillboards.includes(data) ? 'checked' : '';
+                            return `<input type="checkbox" class="billboard-checkbox" value="${data}" ${checked}>`;
+                        }
+                    },
                     {
                         data: null, // <-- important
                         name: 'no',

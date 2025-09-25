@@ -95,22 +95,23 @@ class BillboardController extends Controller
         $type     = $request->input('type');
         $site_type     = $request->input('site_type');
         $size     = $request->input('size');
+        $searchValue    = trim(strtolower($request->input('search.value')));
+        $start     = $request->input('start', 0);
+        $limit     = $request->input('length', 25);
         
-        $columns = array(
-            0 => 'site_number',
-            1 => 'type',
-            2 => 'size',
-            3 => 'lighting',
-            4 => 'location_name',
-            5 => 'district_name',
-            6 => 'date_registered',
-            7 => 'status',
-            8 => 'id',
-            9 => 'site_type',
-        );
+        $columns = [
+            0 => 'billboards.site_number',
+            1 => 'billboards.type',
+            2 => 'billboards.size',
+            3 => 'billboards.lighting',
+            4 => 'locations.name',
+            5 => 'districts.name',
+            6 => 'billboards.created_at',
+            7 => 'billboards.status',
+            8 => 'billboards.id',
+            9 => 'billboards.site_type',
+        ];
 
-        $limit              = $request->input('length');
-        $start              = $request->input('start');
         $orderColumnIndex   = $request->input('order.0.column');
         $orderColumnName    = $columns[$orderColumnIndex];
         $orderDirection     = $request->input('order.0.dir');
@@ -149,8 +150,6 @@ class BillboardController extends Controller
 
         // Get total records count
         $totalData = $query->count();
-
-        $searchValue = trim(strtolower($request->input('search.value')));
 
         if (!empty($searchValue)) {
             $query->where(function ($query) use ($searchValue) {
@@ -732,32 +731,42 @@ class BillboardController extends Controller
     public function exportListPdf(Request $request)
     {
         // ↑ Increase PHP memory limit right at the start
-        ini_set('memory_limit', '512M');
+        ini_set('memory_limit', '1024M'); // 1GB
+        ini_set('max_execution_time', 300); // 5 minutes
+        set_time_limit(300);
 
         $query = Billboard::with(['location.district.state']);
 
-        if ($request->filled('state_id') && $request->state_id !== 'all') {
-            $query->whereHas('location.district.state', fn($q) => $q->where('id', $request->state_id));
-        }
+        // ✅ Apply selected IDs first (like Excel export)
+        if ($request->filled('billboard_ids')) {
+            $ids = explode(',', $request->billboard_ids);
+            $ids = array_map('intval', $ids);
+            $query->whereIn('id', $ids);
+        } else {
+            // Apply filters only if no specific selection
+            if ($request->filled('state_id') && $request->state_id !== 'all') {
+                $query->whereHas('location.district.state', fn($q) => $q->where('id', $request->state_id));
+            }
 
-        if ($request->filled('district_id') && $request->district_id !== 'all') {
-            $query->whereHas('location.district', fn($q) => $q->where('id', $request->district_id));
-        }
+            if ($request->filled('district_id') && $request->district_id !== 'all') {
+                $query->whereHas('location.district', fn($q) => $q->where('id', $request->district_id));
+            }
 
-        if ($request->filled('type') && $request->type !== 'all') {
-            $query->where('type', $request->type);
-        }
+            if ($request->filled('type') && $request->type !== 'all') {
+                $query->where('type', $request->type);
+            }
 
-        if ($request->filled('site_type') && $request->site_type !== 'all') {
-            $query->where('site_type', $request->site_type);
-        }
+            if ($request->filled('site_type') && $request->site_type !== 'all') {
+                $query->where('site_type', $request->site_type);
+            }
 
-        if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
-        }
+            if ($request->filled('status') && $request->status !== 'all') {
+                $query->where('status', $request->status);
+            }
 
-        if ($request->filled('size') && $request->size !== 'all') {
-            $query->where('size', $request->size);
+            if ($request->filled('size') && $request->size !== 'all') {
+                $query->where('size', $request->size);
+            }
         }
 
         $billboards = $query->get();
@@ -814,32 +823,42 @@ class BillboardController extends Controller
     public function exportListPdfClient(Request $request)
     {
         // ↑ Increase PHP memory limit right at the start
-        ini_set('memory_limit', '512M');
+        ini_set('memory_limit', '1024M'); // 1GB
+        ini_set('max_execution_time', 300); // 5 minutes
+        set_time_limit(300);
 
         $query = Billboard::with(['location.district.state']);
 
-        if ($request->filled('state_id') && $request->state_id !== 'all') {
-            $query->whereHas('location.district.state', fn($q) => $q->where('id', $request->state_id));
-        }
+        // ✅ Apply selected IDs first (like Excel export)
+        if ($request->filled('billboard_ids')) {
+            $ids = explode(',', $request->billboard_ids);
+            $ids = array_map('intval', $ids);
+            $query->whereIn('id', $ids);
+        } else {
+            // Apply filters only if no specific selection
+            if ($request->filled('state_id') && $request->state_id !== 'all') {
+                $query->whereHas('location.district.state', fn($q) => $q->where('id', $request->state_id));
+            }
 
-        if ($request->filled('district_id') && $request->district_id !== 'all') {
-            $query->whereHas('location.district', fn($q) => $q->where('id', $request->district_id));
-        }
+            if ($request->filled('district_id') && $request->district_id !== 'all') {
+                $query->whereHas('location.district', fn($q) => $q->where('id', $request->district_id));
+            }
 
-        if ($request->filled('type') && $request->type !== 'all') {
-            $query->where('type', $request->type);
-        }
+            if ($request->filled('type') && $request->type !== 'all') {
+                $query->where('type', $request->type);
+            }
 
-        if ($request->filled('site_type') && $request->site_type !== 'all') {
-            $query->where('site_type', $request->site_type);
-        }
+            if ($request->filled('site_type') && $request->site_type !== 'all') {
+                $query->where('site_type', $request->site_type);
+            }
 
-        if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
-        }
+            if ($request->filled('status') && $request->status !== 'all') {
+                $query->where('status', $request->status);
+            }
 
-        if ($request->filled('size') && $request->size !== 'all') {
-            $query->where('size', $request->size);
+            if ($request->filled('size') && $request->size !== 'all') {
+                $query->where('size', $request->size);
+            }
         }
 
         $billboards = $query->get();
@@ -896,6 +915,9 @@ class BillboardController extends Controller
     public function exportExcel(Request $request)
     {
         $filters = $request->only(['status','state','district','type','site_type','size']);
+        $selectedIds = $request->input('billboard_ids');
+
+        logger()->info('Exporting with selectedIds:'. $request->input('billboard_ids'));
 
         // ✅ Base name logic (match title rules in BillboardExport)
         $baseName = "Billboard_List";
@@ -908,7 +930,7 @@ class BillboardController extends Controller
         // ✅ Final filename
         $fileName = $baseName . "_" . now()->format('dmY') . ".xlsx";
 
-        return Excel::download(new BillboardExport($filters), $fileName);
+        return Excel::download(new BillboardExport($filters, $selectedIds), $fileName);
     }
 
 

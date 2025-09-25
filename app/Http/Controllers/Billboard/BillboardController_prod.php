@@ -607,7 +607,7 @@ class BillboardController extends Controller
         ];
 
         $pdf = PDF::loadView('billboard.export', compact('billboard'))
-        ->setPaper('A4', 'landscape'); // 👈 Set orientation here
+        ->setPaper('A4', 'landscape'); // ðŸ‘ˆ Set orientation here
 
         return $pdf->download('billboard-detail-' . $billboard->site_number . '.pdf');
     }
@@ -631,14 +631,14 @@ class BillboardController extends Controller
         ];
 
         $pdf = PDF::loadView('billboard.export_client', compact('billboard'))
-        ->setPaper('A4', 'landscape'); // 👈 Set orientation here
+        ->setPaper('A4', 'landscape'); // ðŸ‘ˆ Set orientation here
 
         return $pdf->download('billboard-detail-' . $billboard->site_number . '.pdf');
     }
 
     public function exportListPdf(Request $request)
     {
-        // ↑ Increase PHP memory limit right at the start
+        // â†‘ Increase PHP memory limit right at the start
         ini_set('memory_limit', '1024M'); // 1GB
         ini_set('max_execution_time', 300); // 5 minutes
         set_time_limit(300);
@@ -646,33 +646,41 @@ class BillboardController extends Controller
 
         $query = Billboard::with(['location.district.state']);
 
-        if ($request->filled('state_id') && $request->state_id !== 'all') {
-            $query->whereHas('location.district.state', fn($q) => $q->where('id', $request->state_id));
-        }
+        // ✅ Apply selected IDs first (like Excel export)
+        if ($request->filled('billboard_ids')) {
+            $ids = explode(',', $request->billboard_ids);
+            $ids = array_map('intval', $ids);
+            $query->whereIn('id', $ids);
+        } else {
+            // Apply filters only if no specific selection
+            if ($request->filled('state_id') && $request->state_id !== 'all') {
+                $query->whereHas('location.district.state', fn($q) => $q->where('id', $request->state_id));
+            }
 
-        if ($request->filled('district_id') && $request->district_id !== 'all') {
-            $query->whereHas('location.district', fn($q) => $q->where('id', $request->district_id));
-        }
+            if ($request->filled('district_id') && $request->district_id !== 'all') {
+                $query->whereHas('location.district', fn($q) => $q->where('id', $request->district_id));
+            }
 
-        if ($request->filled('type') && $request->type !== 'all') {
-            $query->where('type', $request->type);
-        }
+            if ($request->filled('type') && $request->type !== 'all') {
+                $query->where('type', $request->type);
+            }
 
-        if ($request->filled('site_type') && $request->site_type !== 'all') {
-            $query->where('site_type', $request->site_type);
-        }
+            if ($request->filled('site_type') && $request->site_type !== 'all') {
+                $query->where('site_type', $request->site_type);
+            }
 
-        if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
-        }
+            if ($request->filled('status') && $request->status !== 'all') {
+                $query->where('status', $request->status);
+            }
 
-        if ($request->filled('size') && $request->size !== 'all') {
-            $query->where('size', $request->size);
+            if ($request->filled('size') && $request->size !== 'all') {
+                $query->where('size', $request->size);
+            }
         }
 
         $billboards = $query->get();
 
-        // ✅ Create image manager (GD driver is default in most servers)
+        // âœ… Create image manager (GD driver is default in most servers)
         $manager = new ImageManager(new Driver());
 
         foreach ($billboards as $billboard) {
@@ -697,7 +705,7 @@ class BillboardController extends Controller
             $billboard->images = $resizedImages;
         }
 
-        // 📂 Filename
+        // ðŸ“‚ Filename
         $filename = 'billboards-master';
         $date = now()->format('Y-m-d');
 
@@ -716,14 +724,14 @@ class BillboardController extends Controller
         }
 
         $pdf = PDF::loadView('billboard.exportlist', compact('billboards'))
-        ->setPaper('A4', 'landscape'); // 👈 Set orientation here
+        ->setPaper('A4', 'landscape'); // ðŸ‘ˆ Set orientation here
 
         return $pdf->download($filename . '.pdf');
     }
 
     public function exportListPdfClient(Request $request)
     {
-        // ↑ Increase PHP memory limit right at the start
+        // â†‘ Increase PHP memory limit right at the start
         ini_set('memory_limit', '1024M'); // 1GB
         ini_set('max_execution_time', 300); // 5 minutes
         set_time_limit(300);
@@ -731,33 +739,41 @@ class BillboardController extends Controller
 
         $query = Billboard::with(['location.district.state']);
 
-        if ($request->filled('state_id') && $request->state_id !== 'all') {
-            $query->whereHas('location.district.state', fn($q) => $q->where('id', $request->state_id));
-        }
+        // ✅ Apply selected IDs first (like Excel export)
+        if ($request->filled('billboard_ids')) {
+            $ids = explode(',', $request->billboard_ids);
+            $ids = array_map('intval', $ids);
+            $query->whereIn('id', $ids);
+        } else {
+            // Apply filters only if no specific selection
+            if ($request->filled('state_id') && $request->state_id !== 'all') {
+                $query->whereHas('location.district.state', fn($q) => $q->where('id', $request->state_id));
+            }
 
-        if ($request->filled('district_id') && $request->district_id !== 'all') {
-            $query->whereHas('location.district', fn($q) => $q->where('id', $request->district_id));
-        }
+            if ($request->filled('district_id') && $request->district_id !== 'all') {
+                $query->whereHas('location.district', fn($q) => $q->where('id', $request->district_id));
+            }
 
-        if ($request->filled('type') && $request->type !== 'all') {
-            $query->where('type', $request->type);
-        }
+            if ($request->filled('type') && $request->type !== 'all') {
+                $query->where('type', $request->type);
+            }
 
-        if ($request->filled('site_type') && $request->site_type !== 'all') {
-            $query->where('site_type', $request->site_type);
-        }
+            if ($request->filled('site_type') && $request->site_type !== 'all') {
+                $query->where('site_type', $request->site_type);
+            }
 
-        if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
-        }
+            if ($request->filled('status') && $request->status !== 'all') {
+                $query->where('status', $request->status);
+            }
 
-        if ($request->filled('size') && $request->size !== 'all') {
-            $query->where('size', $request->size);
+            if ($request->filled('size') && $request->size !== 'all') {
+                $query->where('size', $request->size);
+            }
         }
 
         $billboards = $query->get();
 
-        // ✅ Create image manager (GD driver is default in most servers)
+        // âœ… Create image manager (GD driver is default in most servers)
         $manager = new ImageManager(new Driver());
 
         foreach ($billboards as $billboard) {
@@ -782,7 +798,7 @@ class BillboardController extends Controller
             $billboard->images = $resizedImages;
         }
 
-        // 📂 Filename
+        // ðŸ“‚ Filename
         $filename = 'billboards-master';
         $date = now()->format('Y-m-d');
 
@@ -801,7 +817,7 @@ class BillboardController extends Controller
         }
 
         $pdf = PDF::loadView('billboard.exportlist_client', compact('billboards'))
-        ->setPaper('A4', 'landscape'); // 👈 Set orientation here
+        ->setPaper('A4', 'landscape'); // ðŸ‘ˆ Set orientation here
 
         return $pdf->download($filename . '.pdf');
     }
@@ -809,6 +825,9 @@ class BillboardController extends Controller
     public function exportExcel(Request $request)
     {
         $filters = $request->only(['status','state','district','type','site_type','size']);
+        $selectedIds = $request->input('billboard_ids');
+
+        logger()->info('Exporting with selectedIds:'. $request->input('billboard_ids'));
 
         // ✅ Base name logic (match title rules in BillboardExport)
         $baseName = "Billboard_List";
@@ -821,7 +840,7 @@ class BillboardController extends Controller
         // ✅ Final filename
         $fileName = $baseName . "_" . now()->format('dmY') . ".xlsx";
 
-        return Excel::download(new BillboardExport($filters), $fileName);
+        return Excel::download(new BillboardExport($filters, $selectedIds), $fileName);
     }
 
 
@@ -884,12 +903,12 @@ class BillboardController extends Controller
             $imageData = null;
 
             if ($fileSize > 1024 * 1024) { 
-                // > 1 MB → compress/resize
+                // > 1 MB â†’ compress/resize
                 $imageData = (string) Image::read($file)
                     ->scale(width: 400)   // resize if large
                     ->toPng();
             } else {
-                // <= 1 MB → keep as-is
+                // <= 1 MB â†’ keep as-is
                 $imageData = file_get_contents($file->getRealPath());
             }
 
