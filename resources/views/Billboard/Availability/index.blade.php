@@ -76,6 +76,42 @@
         z-index: 6;
     }
 
+    /* Collapsed (default) */
+    .expand-cell {
+        max-width: 250px;          /* adjust width */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        position: relative;
+        vertical-align: top;
+        padding-right: 30px;
+    }
+
+    .expand-cell .toggle-location {
+        position: absolute;
+        display: inline-block;
+        right: 4px;                /* pin to right edge */
+        top: 50%;
+        transform: translateY(-50%);
+        color: blue;
+        background: white;         /* prevent overlap */
+        z-index: 10;               /* bring to front */
+    }
+
+    .expand-cell .location-text {
+        padding-right: 25px; /* space reserved for [+] */
+        display: inline-block;
+    }
+
+    /* Expanded (full text, no cutoff) */
+    .expand-cell.expanded {
+        white-space: normal;       /* allow multiple lines */
+        overflow: visible;         /* no hidden text */
+        text-overflow: clip;       /* remove ... */
+        max-width: none;           /* allow full width */
+    }
+
+
     .select2-container {
         min-width: 250px !important; /* adjust size */
     }
@@ -293,6 +329,27 @@
 @endsection('app_content')
 
 @section('modal_content')
+<!-- Remarks Modal -->
+<div class="row flex flex-col sm:flex-row sm:items-end xl:items-start mb-2">
+    <div class="modal" id="remarksModal">
+        <div class="modal__content">
+            <!-- Modal Header -->
+            <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
+                <h2 class="font-medium text-base mr-auto">Remarks</h2>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
+                <div class="col-span-12 sm:col-span-12">
+                    <label>Full Remarks</label>
+                    <textarea class="input w-full border mt-2 flex-1" id="remarksContent" rows="8" readonly></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Remarks Modal End -->
+
 <!-- Create Job Order Modal -->
 <div class="row flex flex-col sm:flex-row sm:items-end xl:items-start mb-2">
     <div class="modal" id="addBookingModal">
@@ -483,6 +540,8 @@
         const dt = $('#billboard_availability_table').DataTable();
         dt.search(value).draw();
     });
+
+    
 
 
     // <!-- BEGIN: Billboard Booking List Filter -->
@@ -1175,7 +1234,13 @@
                     let html = `<tr data-id="${row.id}" class="cursor-pointer hover:bg-gray-100"> 
                         <td class="border border-gray-300">${index + 1}</td>
                         <td class="border border-gray-300">${row.site_number}</td>
-                        <td class="border border-gray-300">${row.location}</td>
+                        <td class="border border-gray-300 expand-cell">
+                            <span class="location-text">${row.location}</span>
+                            ${row.location.length > 25 
+                                ? '<button type="button" class="toggle-location text-blue text-xs ml-2 align-top">&nbsp;&nbsp;&nbsp;[+]</button>' 
+                                : ''
+                            }
+                        </td>
                         <td class="border border-gray-300">${row.area}</td>
                         <td class="border border-gray-300">${row.site_type}</td>
                         <td class="border border-gray-300">${row.type}</td>
@@ -1286,9 +1351,38 @@
                 },
                 {
                     data: "company_name",
+                    render: function (data, type, row) {
+                        if (!data) return "-"; 
+
+                        let shortText = data.length > 30 ? data.substr(0, 30) + "..." : data;
+
+                        return `
+                            <span class="location-short">${shortText}</span>
+                            ${data.length > 30 
+                                ? `<a href="javascript:void(0)" class="read-more text-blue-500 ml-2" 
+                                    data-full="${encodeURIComponent(data)}"
+                                    data-short="${encodeURIComponent(shortText)}">[+]</a>` 
+                                : "" }
+                        `;
+                    }
                 },
                 {
                     data: "location_name",
+                    name: "location_name",
+                    render: function (data, type, row) {
+                        if (!data) return "-"; 
+
+                        let shortText = data.length > 30 ? data.substr(0, 30) + "..." : data;
+
+                        return `
+                            <span class="location-short">${shortText}</span>
+                            ${data.length > 30 
+                                ? `<a href="javascript:void(0)" class="read-more text-blue-500 ml-2" 
+                                    data-full="${encodeURIComponent(data)}"
+                                    data-short="${encodeURIComponent(shortText)}">[+]</a>` 
+                                : "" }
+                        `;
+                    }
                 },
                 {
                     data: "start_date",
@@ -1336,7 +1430,7 @@
 
                         return `
                             <span class="remarks-short">${shortText}</span>
-                            ${data.length > 30 ? `<a href="javascript:void(0)" class="read-more text-blue-500 ml-2" data-full="${encodeURIComponent(data)}">Read more</a>` : ""}
+                            ${data.length > 30 ? `<a href="javascript:void(0)" class="remarks-read-more text-blue-500 ml-2" data-full="${encodeURIComponent(data)}">Read more</a>` : ""}
                         `;
                     }
                 },
@@ -1496,6 +1590,39 @@
         let endPicker = null;
 
         document.getElementById("inputBookingSubmit").addEventListener("click", inputBookingSubmit);
+
+        $(document).on('click', '.toggle-location', function (e) {
+            e.preventDefault();
+            const cell = $(this).closest('.expand-cell');
+            cell.toggleClass('expanded');
+            $(this).text(cell.hasClass('expanded') ? '  [-]' : '  [+]');
+        });
+
+        // Handle Read more / Read less for location & remarks
+        $(document).on('click', '.read-more', function () {
+            const $this = $(this);
+            const $cell = $this.closest('td');
+            const $span = $cell.find('span');
+
+            let fullText = decodeURIComponent($this.data('full'));
+            let shortText = decodeURIComponent($this.data('short'));
+
+            if ($this.text() === "[+]") {
+                $span.text(fullText);
+                $this.text("[-]");
+            } else {
+                $span.text(shortText);
+                $this.text("[+]");
+            }
+        });
+
+        $(document).on("click", ".remarks-read-more", function () {
+            let fullText = decodeURIComponent($(this).data("full"));
+            $("#remarksContent").val(fullText);
+
+            // Use your helper instead of jQuery modal
+            openAltEditorModal("#remarksModal");
+        });
 
         $('#inputBookingForm').on('submit', function (e) {
             e.preventDefault(); // Prevent default form submission
