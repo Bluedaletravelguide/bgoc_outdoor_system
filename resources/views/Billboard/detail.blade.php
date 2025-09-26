@@ -14,11 +14,11 @@
     display: inline-block;
     margin-top: 0.5rem;
     font-size: 0.875rem;
-    color: #f87171; /* red-400 */
+    color: #f87171;
     cursor: pointer;
   }
   .dz-remove:hover {
-    color: #b91c1c; /* red-700 */
+    color: #b91c1c;
   }
 </style>
 
@@ -44,6 +44,7 @@
                 <div class="text-gray-600">Traffic Volume: {{ $billboard_detail->traffic_volume }} </div>
                 <div class="text-gray-600">Billboard Type: {{ $billboard_detail->prefix }} - {{ $billboard_detail->type }} </div>
                 <div class="text-gray-600">Size: {{ $billboard_detail->size }} </div>
+                <div class="text-gray-600">Lighting: {{ $billboard_detail->lighting }} </div>
                 <div class="text-gray-600">Status: {{ $billboard_detail->site_type ? strtoupper($billboard_detail->site_type) : '-' }} </div>
             </div>
             <br>
@@ -64,9 +65,7 @@
     </div>
 </div>
 
-
 <div class="intro-y box px-5 pt-5 mt-5">
-    <!-- BEGIN: Blog Layout -->
     <h2 class="intro-y font-medium text-xl sm:text-2xl">
         Billboard Site Images
     </h2>
@@ -75,10 +74,12 @@
         $image2Exists = Storage::exists('public/billboards/' . $billboard_detail->site_number . '_2.png');
     @endphp
 
+            
+
     <div class="intro-y mt-6">
         <div class="flex gap-4">
             <!-- Image 1 Slot -->
-            <div class="flex-1 relative group h-48 overflow-hidden rounded-lg shadow bg-gray-100">
+            <div class="flex-1 relative group h-86 overflow-hidden rounded-lg shadow bg-gray-100">
                 @if($image1Exists)
                     <button 
                         onclick="deleteImage('{{ $billboard_detail->site_number }}_1.png', this)" 
@@ -92,7 +93,7 @@
             </div>
 
             <!-- Image 2 Slot -->
-            <div class="flex-1 relative group h-48 overflow-hidden rounded-lg shadow bg-gray-100">
+            <div class="flex-1 relative group h-86 overflow-hidden rounded-lg shadow bg-gray-100">
                 @if($image2Exists)
                     <button 
                         onclick="deleteImage('{{ $billboard_detail->site_number }}_2.png', this)" 
@@ -141,91 +142,133 @@
     <div class="modal" id="billboardEditModal">
         <div class="modal__content">
             <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
-                <h2 class="font-medium text-base mr-auto">Edit Stock</h2>
+                <h2 class="font-medium text-base mr-auto">Edit Billboard</h2>
             </div>
-            <form>
+            <form id="billboardEditForm" action="{{ route('billboard.update') }}" method="POST">
+                @csrf
+                @method('POST')
                 <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                     <div class="col-span-12 sm:col-span-12">
                         <input type="hidden" id="editBillboardModalId" name="id">
                         <label>Outdoor Type <span style="color: red;">*</span></label>
-                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardType" disabled>
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardType" name="type" disabled>
                             <option value="">-- Select Outdoor Type --</option>
                             <option value="BB">Billboard</option>
                             <option value="TB">Tempboard</option>
                             <option value="BU">Bunting</option>
                             <option value="BN">Banner</option>
                         </select>
+                        <input type="hidden" id="editBillboardTypeHidden" name="type" value="">
                     </div>
                     <div class="col-span-12 sm:col-span-12">
                         <label>Billboard Size <span style="color: red;">*</span></label>
-                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardSize" required>
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardSize" name="size" required>
                             <option value="">-- Select Size --</option>
+                            <option value="10x10">10x10</option>
                             <option value="15x10">15x10</option>
                             <option value="30x20">30x20</option>
+                            <option value="10x40">10x40</option>
+                            <option value="6x3">6x3</option>
+                            <option value="7x3">7x3</option>
+                            <option value="8x3">8x3</option>
                         </select>
                     </div>
                     <div class="col-span-12 sm:col-span-12">
                         <label>Lighting <span style="color: red;">*</span></label>
-                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardLighting" required>
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardLighting" name="lighting" required>
                             <option value="">-- Select Lighting --</option>
                             <option value="None">None</option>
                             <option value="TNB">TNB</option>
                             <option value="SOLAR">SOLAR</option>
                         </select>
                     </div>
+
+                    <!-- Separator -->
+                    <div class="col-span-12">
+                        <hr class="my-6 border-t-1 border-gray-300">
+                    </div>
+
                     <div class="col-span-12 sm:col-span-12">
                         <label>State <span style="color: red;">*</span></label>
-                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardState"  disabled>
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardState" name="state_id" disabled>
                             <option value="">-- Select State --</option>
                             @foreach ($states as $state)
                                 <option value="{{ $state->id }}">{{ $state->name }}</option>
                             @endforeach
                         </select>
+                        <!-- Hidden input to send state_id value -->
+                        <input type="hidden" id="editBillboardStateHidden" name="state_id" value="">
                     </div>
                     <div class="col-span-12 sm:col-span-12">
                         <label>District <span style="color: red;">*</span></label>
-                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardDistrict" disabled>
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardDistrict" name="district_id" required>
                             <option value="">-- Select District --</option>
                         </select>
                     </div>
                     <div class="col-span-12 sm:col-span-12">
                         <label>Council <span style="color: red;">*</span></label>
-                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardCouncil" disabled>
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardCouncil" name="council_id" disabled>
                             <option value="">-- Select Council --</option>
                         </select>
                     </div>
                     <div class="col-span-12 sm:col-span-12">
                         <label>Location <span style="color: red;">*</span></label>
-                        <input type="text" class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardLocation" placeholder="Enter location name">
+                        <input type="text" class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardLocation" name="location_name" placeholder="Enter location name">
                     </div>
+
+                    <!-- Separator -->
+                    <div class="col-span-12">
+                        <hr class="my-6 border-t-1 border-gray-300">
+                    </div>
+
                     <div class="col-span-12 sm:col-span-12">
                         <label for="editGPSCoordinate" class="form-label">GPS Coordinate <span style="color: red;">*</span></label>
                         <input 
                             type="text" 
                             class="input w-full border mt-2 flex-1" 
                             id="editGPSCoordinate" 
-                            name="gpsCoordinate"
+                            name="gps_coordinate"
                             placeholder="e.g. 3.1390, 101.6869" 
                             required
                         >
                         <small class="text-gray-500">Format: latitude, longitude</small>
                     </div>
                     <div class="col-span-12 sm:col-span-12">
+                        <label for="editGPSUrl" class="form-label">GPS URL (Google Maps)</label>
+                        <input 
+                            type="url" 
+                            class="input w-full border mt-2 flex-1" 
+                            id="editGPSUrl" 
+                            name="gps_url"
+                            placeholder="https://maps.app.goo.gl/xyz123"
+                        >
+                        <small class="text-gray-500">Example: https://maps.app.goo.gl/xxxxx</small>
+                    </div>
+
+                    <!-- Separator -->
+                    <div class="col-span-12">
+                        <hr class="my-6 border-t-1 border-gray-300">
+                    </div>
+
+                    <div class="col-span-12 sm:col-span-12">
                         <label>Traffic Volume</label>
-                        <input type="text" class="input w-full border mt-2 flex-1" id="editBillboardTrafficVolume" value="" required>
+                        <input type="text" class="input w-full border mt-2 flex-1" id="editBillboardTrafficVolume" name="traffic_volume" value="" required>
                     </div>
                     <div class="col-span-12 sm:col-span-12">
                         <label>Site Type</label>
-                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardSiteType">
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardSiteType" name="site_type">
                             <option value="">-- Select option --</option>
                             <option value="new">New</option>
                             <option value="existing">Existing</option>
                             <option value="rejected">Rejected</option>
+                            <option value="existing_1">Existing 1</option>
+                            <option value="existing_2">Existing 2</option>
+                            <option value="existing_3">Existing 3</option>
                         </select>
                     </div>
                     <div class="col-span-12 sm:col-span-12">
                         <label>Status</label>
-                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardStatus">
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardStatus" name="status">
                             <option value="">-- Select option --</option>
                             <option value="1">Active</option>
                             <option value="0">Inactive</option>
@@ -243,78 +286,17 @@
 <!-- Edit Modal End -->
 @endsection('modal_content')
 
-
 @section('script')
+<!-- Add these CDN links before your script -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.css">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.js"></script>
+
 <script>
-    Dropzone.options.fileUploadForm = {
-        paramName: "file",
-        maxFiles: 2,
-        acceptedFiles: 'image/*',
-        maxFilesize: 10, // allow 10 MB
-        addRemoveLinks: true,
-        dictRemoveFile: "Remove",
-        dictMaxFilesExceeded: "You can only upload 2 images per site.",
-
-        init: function () {
-            let dz = this;
-
-            let siteNumber = "{{ $billboard_detail->site_number }}";
-            let existingImages = [
-                @if(Storage::exists('public/billboards/' . $billboard_detail->site_number . '_1.png'))
-                    { name: "{{ $billboard_detail->site_number }}_1.png", url: "{{ asset('storage/billboards/' . $billboard_detail->site_number . '_1.png') }}" },
-                @endif
-                @if(Storage::exists('public/billboards/' . $billboard_detail->site_number . '_2.png'))
-                    { name: "{{ $billboard_detail->site_number }}_2.png", url: "{{ asset('storage/billboards/' . $billboard_detail->site_number . '_2.png') }}" }
-                @endif
-            ];
-
-            existingImages.forEach(function(file) {
-                dz.emit("addedfile", file);
-                dz.emit("thumbnail", file, file.url);
-                dz.emit("complete", file);
-            });
-
-            dz.options.maxFiles = dz.options.maxFiles - existingImages.length;
-
-            // Handle remove file
-            dz.on("removedfile", function(file) {
-                if (file.name) {
-                    axios.post("{{ route('billboard.deleteImage') }}", {
-                        filename: file.name,
-                        _token: "{{ csrf_token() }}"
-                    })
-                    .then(response => {
-                        console.log(response.data.message);
-                        dz.options.maxFiles++; // free up a slot
-                    })
-                    .catch(error => {
-                        console.error(error.response.data.message || error);
-                        alert(error.response.data.message || "Failed to delete image");
-                    });
-                }
-            });
-        },
-
-        sending: function(file, xhr, formData) {
-            formData.append("_token", "{{ csrf_token() }}"); // 🔑 Add CSRF
-            formData.append("site_number", "{{ $billboard_detail->site_number }}");
-        },
-
-        success: function(file, response) {
-            alert(data.message);
-        },
-
-
-        error: function(file, response) {
-            console.error("❌ Dropzone error:", response);
-            // Don’t use dz here, just remove the file safely
-            this.removeFile(file);
-        }
-    };
-
-
+    // Define functions in the global scope so they're accessible to inline onclick
     function deleteImage(filename, button) {
         if(!confirm('Are you sure you want to delete this image?')) return;
 
@@ -341,13 +323,33 @@
         });
     }
 
-    // Open modal
+    // Fixed modal functions to prevent scrollbar error
     function openAltEditorModal(element) {
-        cash(element).modal('show');
+        // Ensure DOM is ready before opening modal
+        setTimeout(() => {
+            try {
+                cash(element).modal('show');
+            } catch (e) {
+                console.error('Modal error:', e);
+                // Fallback: manually show modal
+                document.querySelector(element).style.display = 'block';
+                document.querySelector(element).classList.add('show');
+            }
+        }, 100);
     }
-    // Close modal
+    
     function closeAltEditorModal(element) {
-        cash(element).modal('hide');
+        // Ensure DOM is ready before closing modal
+        setTimeout(() => {
+            try {
+                cash(element).modal('hide');
+            } catch (e) {
+                console.error('Modal close error:', e);
+                // Fallback: manually hide modal
+                document.querySelector(element).style.display = 'none';
+                document.querySelector(element).classList.remove('show');
+            }
+        }, 100);
     }
 
     function populateBillboardEditModal(data) {
@@ -358,14 +360,32 @@
 
         // Fill form fields
         $('#editBillboardModalId').val(data.id);
+        
+        // Set the visible select (disabled) to show current value
         $('#editBillboardType').val(data.prefix);
+        
+        // Set the hidden field with the actual value to be sent
+        $('#editBillboardTypeHidden').val(data.prefix);
+        
         $('#editBillboardSize').val(data.size);
         $('#editBillboardLighting').val(data.lighting);
         $('#editGPSCoordinate').val(data.gps_latitude + ', ' + data.gps_longitude);
+        $('#editGPSUrl').val(data.gps_url);
         $('#editBillboardTrafficVolume').val(data.traffic_volume);
         $('#editBillboardStatus').val(data.status);
         $('#editBillboardSiteType').val(data.site_type);
         $('#editBillboardLocation').val(data.location_name);
+
+        // Set the hidden state ID to send the value
+        $('#editBillboardStateHidden').val(stateID);
+
+        // Initialize Select2 for District field with tagging enabled
+        $('#editBillboardDistrict').select2({
+            tags: true,
+            placeholder: "-- Select or Type District --",
+            allowClear: true,
+            width: '100%'
+        });
 
         // Populate dependent dropdowns
         $('#editBillboardState').val(stateID).trigger('change');
@@ -380,6 +400,7 @@
                 $('#editBillboardDistrict').append(`<option value="${d.id}">${d.name}</option>`);
             });
             $('#editBillboardDistrict').val(districtID).trigger('change');
+            $('#editBillboardDistrict').trigger('select2:select'); // Refresh Select2
 
             // Load Councils
             $.post('{{ route("location.getCouncils") }}', {
@@ -394,79 +415,177 @@
             });
         });
 
-        // Open modal
+        // Open modal with delay to prevent scrollbar error
         openAltEditorModal('#billboardEditModal');
     }
 
-$(document).ready(function () {
-
-    document.getElementById("billboardEditButton").addEventListener("click", function (e) {
-        e.preventDefault();
-        billboardEditButton();
-    });
-
-    function billboardEditButton() {
-        console.log("Submitting edit form...");
-        // e.preventDefault();
-
-        $.ajax({
-            url: '{{ route("billboard.update") }}',
-            method: 'POST',
-            data: {
-                _token: '{{ csrf_token() }}',
-                id: $('#editBillboardModalId').val(),
-                type: $('#editBillboardType').val(),
-                size: $('#editBillboardSize').val(),
-                lighting: $('#editBillboardLighting').val(),
-                state_id: $('#editBillboardState').val(),
-                district_id: $('#editBillboardDistrict').val(),
-                council_id: $('#editBillboardCouncil').val(),
-                location_name: $('#editBillboardLocation').val(), // 👈 send as name
-                gpsCoordinate: $('#editGPSCoordinate').val(),
-                traffic_volume: $('#editBillboardTrafficVolume').val(),
-                status: $('#editBillboardStatus').val(),
-                site_type: $('#editBillboardSiteType').val(),      
-            },
-            success: function(response) {
-                // Close modal after successfully edited
-                var element = "#billboardEditModal";
-                closeAltEditorModal(element);
-
-                // Show successful toast
-                window.showSubmitToast("Successfully added.", "#91C714");
-
-                // Clean fields
-                document.getElementById("editBillboardModalId").value = "";
-                document.getElementById("editBillboardType").value = "";
-                document.getElementById("editBillboardSize").value = "";
-                document.getElementById("editBillboardLighting").value = "";
-                document.getElementById("editBillboardState").value = "";
-                document.getElementById("editBillboardDistrict").value = "";
-                document.getElementById("editBillboardCouncil").value = "";
-                document.getElementById("editBillboardLocation").value = "";
-                document.getElementById("editGPSCoordinate").value = "";
-                document.getElementById("editBillboardTrafficVolume").value = "";
-                document.getElementById("editBillboardStatus").value = "";
-                document.getElementById("editBillboardSiteType").value = "";
-                
-                
-                // Reset the button visibility and enable it for next submission
-                document.getElementById("billboardEditButton").disabled = false;
-                document.getElementById('billboardEditButton').style.display = 'inline-block';  // Shows the button again
-            },
-            error: function(xhr, status, error) {
-                // Display the validation error message
-                var response = JSON.parse(xhr.responseText);
-                var error = "Error: " + response.error;
-
-                // Show fail toast
-                window.showSubmitToast(error, "#D32929");
-            }
+    // Wait for document ready and Dropzone to be available
+    $(document).ready(function () {
+        // Initialize Select2 for District field with tagging enabled
+        $('#editBillboardDistrict').select2({
+            tags: true,
+            placeholder: "-- Select or Type District --",
+            allowClear: true,
+            width: '100%'
         });
-    };
-});
 
+        // Check if Dropzone is available before initializing
+        if (typeof Dropzone !== 'undefined') {
+            // Initialize Dropzone manually by targeting the form ID
+            Dropzone.options.fileUploadForm = {
+                paramName: "file",
+                maxFiles: 2,
+                acceptedFiles: 'image/*',
+                maxFilesize: 10,
+                addRemoveLinks: true,
+                dictRemoveFile: "Remove",
+                dictMaxFilesExceeded: "You can only upload 2 images per site.",
 
+                init: function () {
+                    let dz = this;
 
+                    let existingImages = [
+                        @if($image1Exists)
+                            { name: "{{ $billboard_detail->site_number }}_1.png", url: "{{ asset('storage/billboards/' . $billboard_detail->site_number . '_1.png') }}" },
+                        @endif
+                        @if($image2Exists)
+                            { name: "{{ $billboard_detail->site_number }}_2.png", url: "{{ asset('storage/billboards/' . $billboard_detail->site_number . '_2.png') }}" }
+                        @endif
+                    ];
+
+                    existingImages.forEach(function(file) {
+                        dz.emit("addedfile", file);
+                        dz.emit("thumbnail", file, file.url);
+                        dz.emit("complete", file);
+                    });
+
+                    dz.options.maxFiles = dz.options.maxFiles - existingImages.length;
+
+                    dz.on("removedfile", function(file) {
+                        if (file.name) {
+                            axios.post("{{ route('billboard.deleteImage') }}", {
+                                filename: file.name,
+                                _token: "{{ csrf_token() }}"
+                            })
+                            .then(response => {
+                                alert(response.data.message);
+                                dz.options.maxFiles++; 
+                                window.location.reload();
+                            })
+                            .catch(error => {
+                                alert(error.response?.data?.message || "Failed to delete image");
+                            });
+                        }
+                    });
+                },
+
+                sending: function(file, xhr, formData) {
+                    formData.append("_token", "{{ csrf_token() }}");
+                    formData.append("site_number", "{{ $billboard_detail->site_number }}");
+                },
+
+                success: function(file, response) {
+                    alert(response.message);
+
+                    // Update image directly without full reload
+                    let imgSelector = `img[src*='${response.filename.split('.')[0]}']`;
+                    let img = document.querySelector(imgSelector);
+
+                    if (img) {
+                        img.src = response.url; // already has ?v=timestamp
+                    } else {
+                        window.location.reload(); // fallback
+                    }
+                },
+
+                error: function(file, response) {
+                    console.error("❌ Dropzone error:", response);
+                    this.removeFile(file);
+                }
+            };
+        } else {
+            console.error('Dropzone library is not loaded');
+        }
+
+        // Handle form submission when the submit button is clicked
+        $(document).on('click', '#billboardEditButton', function (e) {
+            e.preventDefault();
+            
+            // Validate required fields
+            if (!validateForm()) {
+                return;
+            }
+
+            $.ajax({
+                url: '{{ route("billboard.update") }}',
+                method: 'POST',
+                data: $('#billboardEditForm').serialize(),
+                success: function(response) {
+                    // Close modal after successfully edited
+                    var element = "#billboardEditModal";
+                    closeAltEditorModal(element);
+
+                    // Show successful toast
+                    if (typeof window.showSubmitToast !== 'undefined') {
+                        window.showSubmitToast("Successfully updated.", "#91C714");
+                    } else {
+                        alert("Successfully updated.");
+                    }
+
+                    // Reload the page to see changes
+                    location.reload();
+                },
+                error: function(xhr, status, error) {
+                    // Display the validation error message
+                    console.log("AJAX Error", xhr.status, xhr.responseText);
+                    var response = xhr.responseJSON || {error: 'An error occurred'};
+                    var errorMessage = response.error || response.message || 'An unknown error occurred';
+
+                    if (typeof window.showSubmitToast !== 'undefined') {
+                        window.showSubmitToast("Error: " + errorMessage, "#D32929");
+                    } else {
+                        alert("Error: " + errorMessage);
+                    }
+                }
+            });
+        });
+
+        // Form validation function
+        function validateForm() {
+            let isValid = true;
+            let errors = [];
+
+            if (!$('#editBillboardModalId').val()) {
+                errors.push('Billboard ID is required');
+                isValid = false;
+            }
+
+            if (!$('#editBillboardType').val()) {
+                errors.push('Outdoor Type is required');
+                isValid = false;
+            }
+
+            if (!$('#editBillboardSize').val()) {
+                errors.push('Billboard Size is required');
+                isValid = false;
+            }
+
+            if (!$('#editBillboardLighting').val()) {
+                errors.push('Lighting is required');
+                isValid = false;
+            }
+
+            if (!$('#editGPSCoordinate').val()) {
+                errors.push('GPS Coordinate is required');
+                isValid = false;
+            }
+
+            if (errors.length > 0) {
+                alert('Please fix the following errors:\n' + errors.join('\n'));
+            }
+
+            return isValid;
+        }
+    });
 </script>
 @endsection

@@ -355,7 +355,6 @@ class BillboardController extends Controller
      */
     public function update(Request $request)
     {
-
         $billboard = Billboard::find($request->id);
 
         if (!$billboard) {
@@ -368,7 +367,7 @@ class BillboardController extends Controller
         // validate (you can adjust rules)
         $request->validate([
             'id' => 'required|integer|exists:billboards,id',
-            'type' => 'required|string|max:255',
+            'type' => 'required|string|in:BB,TB,BU,BN', // Accept only these prefix values
             'size' => 'nullable|string|max:255',
             'lighting' => 'nullable|string|max:255',
             'state_id' => 'nullable|integer',
@@ -387,9 +386,6 @@ class BillboardController extends Controller
             'site_type' => 'nullable|string|max:255',
         ]);
 
-        logger()->info('District value received:', ['district_id' => $request->district_id]);
-
-
         try {
             // Ensure all queries successfully executed
             DB::beginTransaction();
@@ -401,13 +397,14 @@ class BillboardController extends Controller
             $gpslatitude = trim($coords[0]);
             $gpslongitude = trim($coords[1]);
 
-            if ($location) {
+            // Update location if it exists
+            if ($location && $request->filled('location_name')) {
                 $location->update([
                     'name' => $request->location_name, 
                 ]);
             }
 
-            // ✅ handle district (id or new text)
+            // ✅ handle district (id or new text) - only update if provided
             $districtId = null;
 
             if ($request->filled('district_id')) {
@@ -422,15 +419,14 @@ class BillboardController extends Controller
                     ]);
                     $districtId = $district->id;
                 }
+                
+                // Update location with new district if location exists
+                if ($location) {
+                    $location->update([
+                        'district_id' => $districtId,
+                    ]);
+                }
             }
-
-            if ($location) {
-                $location->update([
-                    'name'        => $request->location_name,
-                    'district_id' => $districtId,       // ✅ update district here
-                ]);
-            }
-
 
             // Map prefix to full type name
             $prefixMap = [
@@ -440,24 +436,47 @@ class BillboardController extends Controller
                 'BN' => 'Banner',
             ];
 
-            $prefix = $request->type; // sent from JS, e.g., "BB"
-            $fullType = $prefixMap[$prefix] ?? 'Unknown'; // map to full name
+            $prefix = $request->type; // sent from hidden field, e.g., "BB"
+            $fullType = $prefixMap[$prefix] ?? $prefix; // map to full name or use prefix as fallback
 
-            $fullType = $prefixMap[$request->type] ?? $request->type; // fallback in case unknown
-
-            $billboard->update([
-                'prefix'         => $prefix,    // store the short code
-                'type'           => $fullType,  // store the full name
-                'size'           => $request->size,
-                'lighting'       => $request->lighting,
-                'state_id'       => $request->state_id,
+            // Prepare update data - only include fields that are present in the request
+            $updateData = [
+                'prefix'         => $prefix,    // always update type
+                'type'           => $fullType,  // always update type
                 'gps_latitude'   => $gpslatitude,
                 'gps_longitude'  => $gpslongitude,
-                'gps_url'        => $request->gps_url,
-                'traffic_volume' => $request->traffic_volume,
-                'status'         => (int)$request->status,
-                'site_type'      => $request->site_type,
-            ]);
+            ];
+
+            // Only add fields to update if they are present in the request
+            if ($request->filled('size')) {
+                $updateData['size'] = $request->size;
+            }
+            
+            if ($request->filled('lighting')) {
+                $updateData['lighting'] = $request->lighting;
+            }
+            
+            if ($request->filled('state_id')) {
+                $updateData['state_id'] = $request->state_id;
+            }
+
+            if (array_key_exists('gps_url', $request->all())) {
+                $updateData['gps_url'] = $request->gps_url !== '' ? $request->gps_url : null;
+            }
+            
+            if (array_key_exists('traffic_volume', $request->all())) {
+                $updateData['traffic_volume'] = $request->traffic_volume !== '' ? $request->traffic_volume : null;
+            }
+            
+            if ($request->filled('status')) {
+                $updateData['status'] = (int)$request->status;
+            }
+            
+            if ($request->filled('site_type')) {
+                $updateData['site_type'] = $request->site_type;
+            }
+
+            $billboard->update($updateData);
 
             // Ensure all queries successfully executed, commit the db changes
             DB::commit();
@@ -472,7 +491,6 @@ class BillboardController extends Controller
             return response()->json(['error' => $e->getMessage()], 422);
         }
     }
-
 
     /**
      * Delete billboard + all associated images
@@ -916,8 +934,6 @@ class BillboardController extends Controller
     {
         $filters = $request->only(['status','state','district','type','site_type','size']);
         $selectedIds = $request->input('billboard_ids');
-
-        logger()->info('Exporting with selectedIds:'. $request->input('billboard_ids'));
 
         // ✅ Base name logic (match title rules in BillboardExport)
         $baseName = "Billboard_List";
