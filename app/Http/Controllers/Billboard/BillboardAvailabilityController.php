@@ -407,8 +407,8 @@ class BillboardAvailabilityController extends Controller
                         'year'       => $current->year,
                         'span'       => $span,
                         'text'       => optional($booking->clientCompany)->name
-                                        ? $booking->clientCompany->name . ' (' . $bookingStart->format('d/m/Y') . '–' . $bookingEnd->format('d/m/Y') . ')'
-                                        : 'Booked (' . $bookingStart->format('d/m/Y') . '–' . $bookingEnd->format('d/m/Y') . ')',
+                                        ? $booking->clientCompany->name . ' (' . $bookingStart->format('j/n/y') . '–' . $bookingEnd->format('j/n/y') . ')'
+                                        : 'Booked (' . $bookingStart->format('j/n/y') . '–' . $bookingEnd->format('j/n/y') . ')',
                         'color'      => $colorClass,
                         'booking_id' => $booking->id, // ✅ Add booking_id here
                         'status'     => $booking->status, // optional: helpful for frontend
