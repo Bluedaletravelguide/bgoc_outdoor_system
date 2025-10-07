@@ -190,6 +190,7 @@
                                 <option value="">-- Select Size --</option>
                                 <option value="10x10">10x10</option>
                                 <option value="15x10">15x10</option>
+                                <option value="20x15">20x15</option>
                                 <option value="30x20">30x20</option>
                                 <option value="10x40">10x40</option>
                                 <option value="6x3">6x3</option>
@@ -346,6 +347,7 @@
                                 <option value="">-- Select Size --</option>
                                 <option value="10x10">10x10</option>
                                 <option value="15x10">15x10</option>
+                                <option value="20x15">20x15</option>
                                 <option value="30x20">30x20</option>
                                 <option value="10x40">10x40</option>
                                 <option value="6x3">6x3</option>
