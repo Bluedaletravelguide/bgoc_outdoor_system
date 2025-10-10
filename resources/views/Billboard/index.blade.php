@@ -38,7 +38,7 @@
             </div>
 
             @if (Auth::guard('web')->user()->hasRole(['superadmin', 'admin']))
-            <!-- Row 1: State & District -->
+            <!-- Row 1: State & Area -->
             <div class="sm:flex items-center mb-2">
                 <div class="sm:flex items-center sm:mr-4">
                     <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">State</label>
@@ -51,7 +51,7 @@
                 </div>
 
                 <div class="sm:flex items-center sm:mr-4">
-                    <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">District</label>
+                    <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Area</label>
                     <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardDistrict">
                         <option value="all">All</option>
                         @foreach ($districts as $district)
@@ -151,7 +151,7 @@
                     <th>Size</th>
                     <th>Lighting</th>
                     <th>Location</th>
-                    <th>District</th>
+                    <th>Area</th>
                     <th style="display:none;">GPS Coordinate</th>
                     <!-- <th>Status</th> -->
                     <th class="dt-exclude-export dt-no-sort">Show Detail</th>
@@ -223,9 +223,9 @@
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>District <span style="color: red;">*</span></label>
+                            <label>Area <span style="color: red;">*</span></label>
                             <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardDistrict" required>
-                                <option value="">-- Select District --</option>
+                                <option value="">-- Select Area --</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
@@ -380,9 +380,9 @@
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>District <span style="color: red;">*</span></label>
+                            <label>Area <span style="color: red;">*</span></label>
                             <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardDistrict" required>
-                                <option value="">-- Select District --</option>
+                                <option value="">-- Select Area --</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
@@ -687,13 +687,13 @@
         // Initialize Select2 with tagging enabled
         $('#inputBillboardDistrict').select2({
             tags: true,
-            placeholder: "-- Select or Add District --",
+            placeholder: "-- Select or Add Area --",
             allowClear: true,
         });
 
         $('#editBillboardDistrict').select2({
             tags: true,   // ✅ allow typing new values
-            placeholder: "-- Select or Type District --",
+            placeholder: "-- Select or Type Area --",
             allowClear: true,
             width: '100%'
         });
@@ -702,8 +702,8 @@
         $('#inputBillboardState').on('change', function () {
             let stateId = $(this).val();
 
-            // Reset District & Council
-            $('#inputBillboardDistrict').empty().append('<option value="">-- Select District --</option>');
+            // Reset Area & Council
+            $('#inputBillboardDistrict').empty().append('<option value="">-- Select Area --</option>');
             $('#inputBillboardCouncil').empty().append('<option value="">-- Select Council --</option>');
 
             if (stateId !== '') {
@@ -1104,7 +1104,7 @@
                 _token: '{{ csrf_token() }}',
                 state_id: stateID
             }, function (districts) {
-                $('#editBillboardDistrict').empty().append(`<option value="">-- Select District --</option>`);
+                $('#editBillboardDistrict').empty().append(`<option value="">-- Select Area --</option>`);
                 districts.forEach(function (d) {
                     $('#editBillboardDistrict').append(`<option value="${d.id}">${d.name}</option>`);
                 });
@@ -1149,7 +1149,7 @@
             if (stateID) {
                 // districts
                 $.get('/get-districts/' + stateID, function (data) {
-                    let options = '<option value="">-- Select District --</option>';
+                    let options = '<option value="">-- Select Area --</option>';
                     data.forEach(function (district) {
                         options += `<option value="${district.id}">${district.name}</option>`;
                     });
@@ -1167,7 +1167,7 @@
             }
         });
 
-        // 🔄 On District change => fetch locations
+        // 🔄 On Area change => fetch locations
         $('#editBillboardDistrict').on('change', function () {
             let districtID = $(this).val();
             $('#editBillboardLocation').html('<option value="">-- Loading Locations --</option>');

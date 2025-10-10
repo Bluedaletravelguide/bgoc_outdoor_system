@@ -150,9 +150,9 @@
                 </select>
             </div>
             <div class="row sm:flex items-center sm:mr-4">
-                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">District</label>
+                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Area</label>
                 <select class="input w-full mt-2 sm:mt-0 sm:w-auto border select2-district" id="filterAvailabilityDistrict">
-                    <option value="" selected="">-- Select District --</option>
+                    <option value="" selected="">-- Select Area --</option>
                     @foreach ($districts as $district)
                         <option value="{{ $district->id }}">{{ $district->name }}</option>
                     @endforeach
@@ -382,9 +382,9 @@
                         </select>
                     </div>
                     <div class="col-span-12 sm:col-span-12">
-                        <label>District <span style="color: red;">*</span></label>
+                        <label>Area <span style="color: red;">*</span></label>
                         <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBookingDistrict" disabled>
-                            <option value="">-- Select District --</option>
+                            <option value="">-- Select Area --</option>
                         </select>
                     </div>
                     <div class="col-span-12 sm:col-span-12">
@@ -551,7 +551,7 @@
         const $districtSelect = $('#filterAvailabilityDistrict');
         const $locationSelect = $('#filterAvailabilityLocation');
 
-        $districtSelect.empty().append('<option value="">-- Select District --</option>');
+        $districtSelect.empty().append('<option value="">-- Select Area --</option>');
         $locationSelect.empty().append('<option value="">-- Select Location --</option>');
 
         if (stateId === '' || stateId === 'all') {
@@ -595,7 +595,7 @@
         }
     });
 
-    // When "District" is changed in add form
+    // When "Area" is changed in add form
     $('#filterAvailabilityDistrict').on('change', function () {
         let districtId = $(this).val();
 
@@ -630,8 +630,8 @@
     $('#inputBookingState').on('change', function () {
         let stateId = $(this).val();
 
-        // Reset District and Location dropdowns
-        $('#inputBookingDistrict').empty().append('<option value="">-- Select District --</option>');
+        // Reset Area and Location dropdowns
+        $('#inputBookingDistrict').empty().append('<option value="">-- Select Area --</option>');
         $('#inputBookingLocation').empty().append('<option value="">-- Select Location --</option>');
 
         if (stateId !== '') {
@@ -654,7 +654,7 @@
         }
     });
 
-    // When "District" is changed in add form
+    // When "Area" is changed in add form
     $('#inputBookingDistrict').on('change', function () {
         let districtId = $(this).val();
 
@@ -769,7 +769,7 @@
         ];
 
         const legendRow = 2;
-        let startCol = 8; // H
+        let startCol = 7; // G
 
         legendItems.forEach((item, i) => {
             const col = startCol + i;
@@ -833,9 +833,20 @@
                     const colors = rowData._colors || [];
                     const colorClass = colors[colNumber - 1];
 
-                    if (colNumber <= 8) {
-                        // Force first 8 columns to black font
-                        cell.font = { color: { argb: 'FF000000' } };
+                    if (colNumber <= 8) { // Assuming first 8 columns (including GPS Coordinate) are non-booking
+                        // Force first 8 columns to black font, EXCEPT the GPS coordinate column if it has a link
+                        // Check if this is the GPS Coordinate column (column 6, index 5) and if it has a hyperlink
+                        if (colNumber === 6 && cell.value && typeof cell.value === 'object' && cell.value.hyperlink) {
+                            // Apply hyperlink styling: blue color, underline, bold (optional)
+                            cell.font = { 
+                                color: { argb: 'FF0000FF' }, // Blue color
+                                underline: true,              // Underline
+                                bold: true                    // Bold (optional)
+                            };
+                        } else {
+                            // Apply default black font for other first 8 columns
+                            cell.font = { color: { argb: 'FF000000' } };
+                        }
                     } else if (colorClass) {
                         // Booking / colored cell
                         const bgColor = colorMap[colorClass] || 'FFFFFFFF';
@@ -886,7 +897,17 @@
         });
 
         // Column widths
-        const colWidths = [5, 12, 25, 20, 12, 10, ...Array(totalCols - 6).fill(15)];
+        const colWidths = [
+            5,   // No
+            12,  // Site No
+            25,  // Location
+            20,  // Area
+            12,  // New/Existing
+            25,  // GPS Coordinate (Increased from default 10 or 12 to 25 to fit text)
+            10,  // Type
+            10,  // Size
+            ...Array(totalCols - 8).fill(15) // Monthly columns (Jan '25, etc.)
+        ];
         colWidths.forEach((w, i) => monthlySheet.getColumn(i + 1).width = w);
 
         // ---- Availability List (2nd sheet) ----
@@ -963,7 +984,7 @@
 
         // Build header row
         const header = [
-            'No', 'Site No', 'Location', 'Area', 'New/Existing', 'Type', 'Size',
+            'No', 'Site No', 'Location', 'Area', 'New/Existing', 'GPS Coordinate', 'Type', 'Size',
             ...months.map(month => `${month} '${shortYear}`)
         ];
 
@@ -977,11 +998,19 @@
             // Skip empty rows or header-like rows
             if ($cells.length === 0 || $cells.first().hasClass('text-center')) return;
 
+            // Retrieve the full row data object stored earlier
+            const fullRowData = $row.data('fullRowData');
+
+            if (!fullRowData) {
+                console.error("Full row data not found for row:", $row);
+                return; // Skip this row if data not found
+            }
+
             const rowData = [];
             const rowColors = []; // NEW: track color class for each cell
 
             // First 6 columns
-            for (let i = 0; i < 6; i++) {
+            for (let i = 0; i < 5; i++) {
                 const cellText = cleanForExport($($cells[i]).text().trim());
                 const classList = $($cells[i]).attr('class') || '';
                 const colorClass = classList.split(/\s+/).find(c => c.startsWith('bg-')) || 'bg-gray-400';
@@ -990,9 +1019,53 @@
                 rowColors.push(colorClass);
             }
 
+            // Column 6: GPS Coordinate (Not from table cell, from API data)
+            // Combine latitude and longitude
+            const gpsLat = fullRowData.gps_latitude;
+            const gpsLng = fullRowData.gps_longitude;
+            const gpsUrl = fullRowData.gps_url;
+
+            let gpsValueForExcel = ''; // This will be what's displayed in the cell
+            let gpsHyperlink = null;    // This will hold the URL if applicable
+
+            if (gpsLat != null && gpsLng != null) {
+                // Format to desired precision if needed, e.g., 6 decimal places
+                gpsValueForExcel = `${parseFloat(gpsLat).toFixed(6)}, ${parseFloat(gpsLng).toFixed(6)}`;
+                // Or simply: gpsValueForExcel = `${gpsLat}, ${gpsLng}`;
+            }
+
+            // Check if URL exists and set hyperlink
+            if (gpsUrl && typeof gpsUrl === 'string' && gpsUrl.trim() !== '') {
+                gpsHyperlink = gpsUrl.trim();
+            }
+
+            // For ExcelJS, if there's a hyperlink, we create an object with text and hyperlink properties
+            // Otherwise, just push the text string
+            if (gpsHyperlink) {
+                rowData.push({ text: gpsValueForExcel, hyperlink: gpsHyperlink, tooltip: gpsHyperlink }); // Optional: tooltip
+            } else {
+                rowData.push(gpsValueForExcel);
+            }
+            
+            rowColors.push('bg-gray-400'); // Default color for non-colored columns
+
+            // Column 7: Type (index 5 in original table cells, index 6 in new data array)
+            const typeCellText = cleanForExport($($cells[5]).text().trim()); // Adjusted index
+            const typeClassList = $($cells[5]).attr('class') || '';
+            const typeColorClass = typeClassList.split(/\s+/).find(c => c.startsWith('bg-')) || 'bg-gray-400';
+            rowData.push(typeCellText);
+            rowColors.push(typeColorClass);
+
+            // Column 8: Size (index 6 in original table cells, index 7 in new data array)
+            const sizeCellText = cleanForExport($($cells[6]).text().trim()); // Adjusted index
+            const sizeClassList = $($cells[6]).attr('class') || '';
+            const sizeColorClass = sizeClassList.split(/\s+/).find(c => c.startsWith('bg-')) || 'bg-gray-400';
+            rowData.push(sizeCellText);
+            rowColors.push(sizeColorClass);
+
             // Monthly columns (handle colspan)
             let monthIndex = 0;
-            for (let i = 6; i < $cells.length; i++) {
+            for (let i = 7; i < $cells.length; i++) {
                 const $cell = $($cells[i]);
                 const colspan = parseInt($cell.attr('colspan')) || 1;
                 const cellText = $cell.text().trim();
@@ -1118,7 +1191,7 @@
         const mergeInfo = [];
         $('#monthly-booking-body tr').each(function() {
             const rowMerges = [];
-            let colIndex = 6; // start from month columns
+            let colIndex = 7; // start from month columns
 
             $(this).find('td').slice(6).each(function() {
                 const colspan = parseInt($(this).attr('colspan')) || 1;
@@ -1213,7 +1286,7 @@
         headerHtml += '<th>No</th>';
         headerHtml += '<th>Site #</th>';
         headerHtml += '<th>Location</th>';
-        headerHtml += '<th>District</th>';
+        headerHtml += '<th>Area</th>';
         headerHtml += '<th>New/Existing</th>';
         headerHtml += '<th>Type</th>';
         headerHtml += '<th>Size</th>';
@@ -1292,8 +1365,11 @@
                     });
 
                     html += `</tr>`;
-                    tbody.append(html);
-                });
+                    const $newRow = $(html);
+                    // Store the full row data object on the <tr> element
+                    $newRow.data('fullRowData', row);
+                    tbody.append($newRow);
+                    });
             },
             error: function (xhr) {
                 console.error("AJAX error:", xhr.responseText);
@@ -2057,7 +2133,7 @@
                     state_id: row.state_id
                 },
                 success: function (districts) {
-                    $('#inputBookingDistrict').empty().append('<option value="">-- Select District --</option>');
+                    $('#inputBookingDistrict').empty().append('<option value="">-- Select Area --</option>');
                     districts.forEach(function (district) {
                         $('#inputBookingDistrict').append(
                             `<option value="${district.id}">${district.name}</option>`

@@ -159,6 +159,26 @@ class BillboardAvailabilityController extends Controller
         $filters = $this->extractFilters($request);
         $billboards = $this->queryFilteredBillboards($filters);
 
+        // Define state abbreviations map
+        $stateAbbrMap = [
+            'Kuala Lumpur' => 'KL',
+            'Selangor' => 'SEL',
+            'Negeri Sembilan' => 'N9',
+            'Melaka' => 'MLK',
+            'Johor' => 'JHR',
+            'Perak' => 'PRK',
+            'Pahang' => 'PHG',
+            'Terengganu' => 'TRG',
+            'Kelantan' => 'KTN',
+            'Perlis' => 'PLS',
+            'Kedah' => 'KDH',
+            'Penang' => 'PNG',
+            'Sarawak' => 'SWK',
+            'Sabah' => 'SBH',
+            'Labuan' => 'LBN',
+            'Putrajaya' => 'PJY',
+        ];
+
         $results = [];
         foreach ($billboards as $index => $billboard) {
 
@@ -171,11 +191,31 @@ class BillboardAvailabilityController extends Controller
             // Build monthly blocks between start and end date
             $months = $this->buildMonthlyBlocks($billboard, $startDate, $endDate);
 
+            // Format the area name
+            $districtName = $billboard->location->district->name ?? '';
+            $stateName = $billboard->location->district->state->name ?? '';
+            $fullAreaName = $districtName . ', ' . $stateName;
+
+            // Apply formatting: "District, State" -> "STATE_ABBR - District"
+            $parts = explode(',', $fullAreaName);
+            if (count($parts) >= 2) {
+                $areaName = trim($parts[0]); // e.g., "Petaling"
+                $stateName = trim($parts[1]); // e.g., "Selangor"
+                $stateAbbr = $stateAbbrMap[$stateName] ?? strtoupper(substr($stateName, 0, 3)); // Fallback to first 3 letters
+                $formattedArea = $stateAbbr . ' - ' . $areaName;
+            } else {
+                // If format doesn't match, use original
+                $formattedArea = $fullAreaName;
+            }
+
             $results[] = [
                 'site_number'        => $billboard->site_number,
                 'location'           => $billboard->location?->name ?? '',
-                'area'               => $billboard->location->district->name . ', ' . $billboard->location->district->state->name,
+                'area'               => $formattedArea,
                 'site_type'          => $billboard->site_type ?? '-',
+                'gps_latitude'       => $billboard->gps_latitude,
+                'gps_longitude'      => $billboard->gps_longitude,
+                'gps_url'            => $billboard->gps_url,
                 'type'               => $billboard->type ?? '-',
                 'size'               => $billboard->size ?? '-',
                 'remarks'            => $billboard->remarks ?? '',

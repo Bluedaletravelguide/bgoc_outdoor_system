@@ -38,6 +38,20 @@ class BillboardExport implements FromCollection, WithHeadings, WithMapping, With
                     CASE 
                         WHEN states.name = 'Kuala Lumpur' THEN 'KL'
                         WHEN states.name = 'Selangor' THEN 'SEL'
+                        WHEN states.name = 'Negeri Sembilan' THEN 'N9'
+                        WHEN states.name = 'Melaka' THEN 'MLK'
+                        WHEN states.name = 'Johor' THEN 'JHR'
+                        WHEN states.name = 'Perak' THEN 'PRK'
+                        WHEN states.name = 'Pahang' THEN 'PHG'
+                        WHEN states.name = 'Terengganu' THEN 'TRG'
+                        WHEN states.name = 'Kelantan' THEN 'KTN'
+                        WHEN states.name = 'Perlis' THEN 'PLS'
+                        WHEN states.name = 'Kedah' THEN 'KDH'
+                        WHEN states.name = 'Penang' THEN 'PNG'
+                        WHEN states.name = 'Sarawak' THEN 'SWK'
+                        WHEN states.name = 'Sabah' THEN 'SBH'
+                        WHEN states.name = 'Labuan' THEN 'LBN'
+                        WHEN states.name = 'Putrajaya' THEN 'PJY'
                         ELSE states.name
                     END, ' - ', districts.name
                 ) as area"),
@@ -112,7 +126,7 @@ class BillboardExport implements FromCollection, WithHeadings, WithMapping, With
             "Size",
             "Lighting",
             "Location",
-            "District",
+            "Area",
             "GPS Coordinates",
             "Traffic Volume",
         ];

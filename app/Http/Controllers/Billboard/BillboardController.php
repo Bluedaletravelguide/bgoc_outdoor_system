@@ -936,7 +936,7 @@ class BillboardController extends Controller
         $selectedIds = $request->input('billboard_ids');
 
         // ✅ Base name logic (match title rules in BillboardExport)
-        $baseName = "Billboard_List";
+        $baseName = "Outdoor";
         if (!empty($filters['site_type']) && $filters['site_type'] !== "all") {
             $baseName = ucfirst($filters['site_type']) . "_Stock_Inventory_List";
         } elseif (!empty($filters['type']) && $filters['type'] !== "all") {
