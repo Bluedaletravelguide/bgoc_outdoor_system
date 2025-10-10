@@ -982,7 +982,7 @@
 
             // First 6 columns
             for (let i = 0; i < 6; i++) {
-                const cellText = $($cells[i]).text().trim();
+                const cellText = cleanForExport($($cells[i]).text().trim());
                 const classList = $($cells[i]).attr('class') || '';
                 const colorClass = classList.split(/\s+/).find(c => c.startsWith('bg-')) || 'bg-gray-400';
 
@@ -1036,19 +1036,43 @@
             const row = [
                 index + 1,
                 rowData.site_number || '',
-                rowData.company_name || '',
-                rowData.location_name || '',
+                cleanForExport(rowData.company_name) || '',
+                cleanForExport(rowData.location_name) || '',
                 rowData.start_date || '',
                 rowData.end_date || '',
                 rowData.duration || '',
                 rowData.status || '',
                 // `${rowData.district_name || ''}, ${rowData.state_name || ''}`,
-                rowData.remarks || ''
+                cleanForExport(rowData.remarks) || ''
             ];
             data.push(row);
         });
 
+        console.log('Prepared availability data:', data);
+
         return data;
+    }
+
+    // Function to clean content for export
+    function cleanForExport(content) {
+        if (!content) return '';
+        
+        if (typeof content === 'string') {
+            // If it's HTML, clean it
+            if (content.includes('<') && content.includes('>')) {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = content;
+                content = tempDiv.textContent || tempDiv.innerText || '';
+            }
+            
+            // Clean up whitespace and remove [+] symbols
+            content = content.replace(/\s*\[\+\]\s*$/, '')
+                            .replace(/\s*\[\-\]\s*$/, '')
+                            .replace(/\s+/g, ' ')
+                            .trim();
+        }
+        
+        return content;
     }
 
 
