@@ -845,7 +845,33 @@ class BillboardController extends Controller
         ini_set('max_execution_time', 300); // 5 minutes
         set_time_limit(300);
 
-        $query = Billboard::with(['location.district.state']);
+        $query = Billboard::with(['location.district.state'])
+            ->leftJoin('locations', 'billboards.location_id', '=', 'locations.id')
+            ->leftJoin('districts', 'locations.district_id', '=', 'districts.id')
+            ->leftJoin('states', 'districts.state_id', '=', 'states.id')
+            ->select('billboards.*',
+                DB::raw("CONCAT(
+                            CASE 
+                                WHEN states.name = 'Kuala Lumpur' THEN 'KL'
+                                WHEN states.name = 'Selangor' THEN 'SEL'
+                                WHEN states.name = 'Negeri Sembilan' THEN 'N9'
+                                WHEN states.name = 'Melaka' THEN 'MLK'
+                                WHEN states.name = 'Johor' THEN 'JHR'
+                                WHEN states.name = 'Perak' THEN 'PRK'
+                                WHEN states.name = 'Pahang' THEN 'PHG'
+                                WHEN states.name = 'Terengganu' THEN 'TRG'
+                                WHEN states.name = 'Kelantan' THEN 'KTN'
+                                WHEN states.name = 'Perlis' THEN 'PLS'
+                                WHEN states.name = 'Kedah' THEN 'KDH'
+                                WHEN states.name = 'Penang' THEN 'PNG'
+                                WHEN states.name = 'Sarawak' THEN 'SWK'
+                                WHEN states.name = 'Sabah' THEN 'SBH'
+                                WHEN states.name = 'Labuan' THEN 'LBN'
+                                WHEN states.name = 'Putrajaya' THEN 'PJY'
+                                ELSE states.name
+                            END, ' - ', districts.name
+                        ) as area"))
+                        ->orderByRaw("area ASC");
 
         // ✅ Apply selected IDs first (like Excel export)
         if ($request->filled('billboard_ids')) {
