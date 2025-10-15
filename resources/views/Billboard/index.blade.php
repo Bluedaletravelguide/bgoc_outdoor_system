@@ -644,7 +644,7 @@
         let query = new URLSearchParams(params).toString();
 
         // Redirect with query string
-        let exportUrl = '{{ route("billboards.export.pdf") }}' + '?' + query;
+        let exportUrl = '{{ route("billboards.export.pdf.client") }}' + '?' + query;
         window.open(exportUrl, '_blank');
 
         // ✅ After opening, clear selections
