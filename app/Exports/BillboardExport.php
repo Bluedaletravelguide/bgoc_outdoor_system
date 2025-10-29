@@ -28,13 +28,13 @@ class BillboardExport implements FromCollection, WithHeadings, WithMapping, With
     public function collection()
     {
         $query = Billboard::select(
-                'billboards.site_number',
-                'billboards.site_type',
-                'billboards.type',
-                'billboards.size',
-                'billboards.lighting',
-                'locations.name as location_name',
-                DB::raw("CONCAT(
+            'billboards.site_number',
+            'billboards.site_type',
+            'billboards.type',
+            'billboards.size',
+            'billboards.lighting',
+            'locations.name as location_name',
+            DB::raw("CONCAT(
                     CASE 
                         WHEN states.name = 'Kuala Lumpur' THEN 'KL'
                         WHEN states.name = 'Selangor' THEN 'SEL'
@@ -55,9 +55,9 @@ class BillboardExport implements FromCollection, WithHeadings, WithMapping, With
                         ELSE states.name
                     END, ' - ', districts.name
                 ) as area"),
-                DB::raw("CONCAT(billboards.gps_latitude, ', ', billboards.gps_longitude) as gps_coordinates"),
-                'billboards.traffic_volume',
-            )
+            DB::raw("CONCAT(billboards.gps_latitude, ', ', billboards.gps_longitude) as gps_coordinates"),
+            'billboards.traffic_volume',
+        )
             ->leftJoin('locations', 'billboards.location_id', '=', 'locations.id')
             ->leftJoin('districts', 'locations.district_id', '=', 'districts.id')
             ->leftJoin('states', 'districts.state_id', '=', 'states.id');

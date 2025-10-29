@@ -73,8 +73,18 @@ class BillboardController extends Controller
         $clientcompany = ClientCompany::all();
 
         // return view('workOrder.index', compact('clientcompany', 'projects', 'supervisors', 'technicians'));
-        return view('billboard.index', compact('states', 'districts', 'locations', 'billboardTypes', 'billboardStatus', 'billboardSize', 'billboardLighting', 'contractors',
-        'clientcompany', 'billboards'));
+        return view('billboard.index', compact(
+            'states',
+            'districts',
+            'locations',
+            'billboardTypes',
+            'billboardStatus',
+            'billboardSize',
+            'billboardLighting',
+            'contractors',
+            'clientcompany',
+            'billboards'
+        ));
     }
 
     /**
@@ -95,7 +105,7 @@ class BillboardController extends Controller
         $type     = $request->input('type');
         $site_type     = $request->input('site_type');
         $size     = $request->input('size');
-        
+
         $columns = array(
             0 => 'site_number',
             1 => 'type',
@@ -155,9 +165,9 @@ class BillboardController extends Controller
         if (!empty($searchValue)) {
             $query->where(function ($query) use ($searchValue) {
                 $query->where('billboards.site_number', 'LIKE', "%{$searchValue}%")
-                ->orWhere('locations.name', 'LIKE', "%{$searchValue}%")
-                ->orWhere('districts.name', 'LIKE', "%{$searchValue}%")
-                ->orWhere('states.name', 'LIKE', "%{$searchValue}%");
+                    ->orWhere('locations.name', 'LIKE', "%{$searchValue}%")
+                    ->orWhere('districts.name', 'LIKE', "%{$searchValue}%")
+                    ->orWhere('states.name', 'LIKE', "%{$searchValue}%");
             });
         }
 
@@ -203,7 +213,7 @@ class BillboardController extends Controller
             $data[] = $nestedData;
         }
 
-        
+
 
         $json_data = array(
             "draw"              => intval($request->input('draw')),
@@ -293,8 +303,8 @@ class BillboardController extends Controller
 
             // Step 3: Running number
             $lastNumber = Billboard::whereHas('location.district.state', function ($query) use ($state) {
-                    $query->where('id', $state);
-                })
+                $query->where('id', $state);
+            })
                 ->selectRaw("MAX(CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(site_number,'-',3),'-',-1) AS UNSIGNED)) as max_number")
                 ->lockForUpdate() // ensures safe increment under concurrency
                 ->value('max_number');
@@ -343,7 +353,6 @@ class BillboardController extends Controller
                 'message' => 'Billboard created successfully.',
                 'billboard_id' => $billboard->id,
             ], 201);
-
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 422);
@@ -401,7 +410,7 @@ class BillboardController extends Controller
             // Update location if it exists
             if ($location && $request->filled('location_name')) {
                 $location->update([
-                    'name' => $request->location_name, 
+                    'name' => $request->location_name,
                 ]);
             }
 
@@ -420,7 +429,7 @@ class BillboardController extends Controller
                     ]);
                     $districtId = $district->id;
                 }
-                
+
                 // Update location with new district if location exists
                 if ($location) {
                     $location->update([
@@ -452,27 +461,27 @@ class BillboardController extends Controller
             if ($request->filled('size')) {
                 $updateData['size'] = $request->size;
             }
-            
+
             if ($request->filled('lighting')) {
                 $updateData['lighting'] = $request->lighting;
             }
-            
+
             if ($request->filled('state_id')) {
                 $updateData['state_id'] = $request->state_id;
             }
-            
+
             if (array_key_exists('gps_url', $request->all())) {
                 $updateData['gps_url'] = $request->gps_url !== '' ? $request->gps_url : null;
             }
-            
+
             if (array_key_exists('traffic_volume', $request->all())) {
-    $updateData['traffic_volume'] = $request->traffic_volume !== '' ? $request->traffic_volume : null;
-}
-            
+                $updateData['traffic_volume'] = $request->traffic_volume !== '' ? $request->traffic_volume : null;
+            }
+
             if ($request->filled('status')) {
                 $updateData['status'] = (int)$request->status;
             }
-            
+
             if ($request->filled('site_type')) {
                 $updateData['site_type'] = $request->site_type;
             }
@@ -498,7 +507,7 @@ class BillboardController extends Controller
      * Delete billboard + all associated images
      */
     public function delete(Request $request)
-    {   
+    {
         $id = $request->id;
 
         try {
@@ -527,7 +536,6 @@ class BillboardController extends Controller
             return response()->json([
                 "success" => "Billboard and all related images deleted successfully",
             ], 200);
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -546,7 +554,7 @@ class BillboardController extends Controller
 
         $filter = $request->input('filter');
         $id = $request->input('id');
-        
+
         $billboard_detail = Billboard::leftJoin('locations', 'locations.id', 'billboards.location_id')
             ->leftJoin('districts', 'districts.id', '=', 'locations.district_id')
             ->leftJoin('councils', 'councils.id', '=', 'locations.council_id')
@@ -590,7 +598,7 @@ class BillboardController extends Controller
 
         $filter = $request->input('filter');
         $id = $request->input('id');
-        
+
         $billboard_detail = Billboard::leftJoin('locations', 'locations.id', 'billboards.location_id')
             ->leftJoin('districts', 'districts.id', '=', 'locations.district_id')
             ->leftJoin('states', 'states.id', '=', 'districts.state_id')
@@ -642,7 +650,7 @@ class BillboardController extends Controller
         ];
 
         $pdf = PDF::loadView('billboard.export', compact('billboard'))
-        ->setPaper('A4', 'landscape'); // ðŸ‘ˆ Set orientation here
+            ->setPaper('A4', 'landscape'); // ðŸ‘ˆ Set orientation here
 
         return $pdf->download('billboard-detail-' . $billboard->site_number . '.pdf');
     }
@@ -666,7 +674,7 @@ class BillboardController extends Controller
         ];
 
         $pdf = PDF::loadView('billboard.export_client', compact('billboard'))
-        ->setPaper('A4', 'landscape'); // ðŸ‘ˆ Set orientation here
+            ->setPaper('A4', 'landscape'); // ðŸ‘ˆ Set orientation here
 
         return $pdf->download('billboard-detail-' . $billboard->site_number . '.pdf');
     }
@@ -759,7 +767,7 @@ class BillboardController extends Controller
         }
 
         $pdf = PDF::loadView('billboard.exportlist', compact('billboards'))
-        ->setPaper('A4', 'landscape'); // ðŸ‘ˆ Set orientation here
+            ->setPaper('A4', 'landscape'); // ðŸ‘ˆ Set orientation here
 
         return $pdf->download($filename . '.pdf');
     }
@@ -852,14 +860,14 @@ class BillboardController extends Controller
         }
 
         $pdf = PDF::loadView('billboard.exportlist_client', compact('billboards'))
-        ->setPaper('A4', 'landscape'); // ðŸ‘ˆ Set orientation here
+            ->setPaper('A4', 'landscape'); // ðŸ‘ˆ Set orientation here
 
         return $pdf->download($filename . '.pdf');
     }
 
     public function exportExcel(Request $request)
     {
-        $filters = $request->only(['status','state','district','type','site_type','size']);
+        $filters = $request->only(['status', 'state', 'district', 'type', 'site_type', 'size']);
         $selectedIds = $request->input('billboard_ids');
 
         // ✅ Base name logic (match title rules in BillboardExport)
@@ -885,11 +893,11 @@ class BillboardController extends Controller
 
 
 
-    public function uploadImage(Request $request) 
+    public function uploadImage(Request $request)
     {
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $siteNumber = $request->input('site_number'); 
+            $siteNumber = $request->input('site_number');
             $extension = 'png';
 
             $directory = '/home/bluedale2/public_html/bgocoutdoor.bluedale.com.my/images/billboards';
@@ -932,10 +940,10 @@ class BillboardController extends Controller
             $path = $directory . '/' . $filename;
 
             // Check original file size in bytes
-            $fileSize = $file->getSize(); 
+            $fileSize = $file->getSize();
             $imageData = null;
 
-            if ($fileSize > 1024 * 1024) { 
+            if ($fileSize > 1024 * 1024) {
                 // > 1 MB â†’ compress/resize
                 $imageData = (string) Image::read($file)
                     ->scale(width: 400)   // resize if large
@@ -983,6 +991,4 @@ class BillboardController extends Controller
 
         return response()->json(['message' => 'File not found'], 404);
     }
-
-
 }

@@ -10,16 +10,17 @@
 
 @section('app_content')
 <style>
-  .dz-remove {
-    display: inline-block;
-    margin-top: 0.5rem;
-    font-size: 0.875rem;
-    color: #f87171;
-    cursor: pointer;
-  }
-  .dz-remove:hover {
-    color: #b91c1c;
-  }
+    .dz-remove {
+        display: inline-block;
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
+        color: #f87171;
+        cursor: pointer;
+    }
+
+    .dz-remove:hover {
+        color: #b91c1c;
+    }
 </style>
 
 <div class="intro-y flex flex-col sm:flex-row items-center mt-8">
@@ -52,13 +53,13 @@
                 <a href="{{ route('billboard.download', $billboard_detail->id) }}" class="button bg-theme-9 text-black">Download PDF [INTERNAL]</a>
                 <a href="{{ route('billboard.download.client', $billboard_detail->id) }}" class="button bg-theme-12 text-black">Download PDF [CLIENT]</a>
                 @php
-                    $mapUrl = !empty($billboard_detail->gps_url)
-                        ? $billboard_detail->gps_url
-                        : "https://www.google.com/maps?q={$billboard_detail->gps_latitude},{$billboard_detail->gps_longitude}";
+                $mapUrl = !empty($billboard_detail->gps_url)
+                ? $billboard_detail->gps_url
+                : "https://www.google.com/maps?q={$billboard_detail->gps_latitude},{$billboard_detail->gps_longitude}";
                 @endphp
 
-                <a href="{{ $mapUrl }}" target="_blank" rel="noopener noreferrer" 
-                class="button bg-theme-1 text-white">Show on Maps</a>
+                <a href="{{ $mapUrl }}" target="_blank" rel="noopener noreferrer"
+                    class="button bg-theme-1 text-white">Show on Maps</a>
                 <a href="javascript:void(0)" onclick="populateBillboardEditModal({{ json_encode($billboard_detail) }})" class="button bg-theme-1 text-white">Edit</a>
             </div>
         </div>
@@ -70,43 +71,43 @@
         Billboard Site Images
     </h2>
     @php
-        $imageBasePath = '/home/bluedale2/public_html/bgocoutdoor.bluedale.com.my/images/billboards/';
-        $image1Path = $imageBasePath . $billboard_detail->site_number . '_1.png';
-        $image2Path = $imageBasePath . $billboard_detail->site_number . '_2.png';
+    $imageBasePath = '/home/bluedale2/public_html/bgocoutdoor.bluedale.com.my/images/billboards/';
+    $image1Path = $imageBasePath . $billboard_detail->site_number . '_1.png';
+    $image2Path = $imageBasePath . $billboard_detail->site_number . '_2.png';
 
-        $image1Exists = file_exists($image1Path);
-        $image2Exists = file_exists($image2Path);
+    $image1Exists = file_exists($image1Path);
+    $image2Exists = file_exists($image2Path);
     @endphp
 
-            
+
 
     <div class="intro-y mt-6">
         <div class="flex gap-4">
             <!-- Image 1 Slot -->
             <div class="flex-1 relative group h-86 overflow-hidden rounded-lg shadow bg-gray-100">
                 @if($image1Exists)
-                    <button 
-                        onclick="deleteImage('{{ $billboard_detail->site_number }}_1.png', this)" 
-                        class="absolute top-2 right-2 text-white bg-theme-6 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
-                        X
-                    </button>
-                    <img src="{{ url('images/billboards/' . $billboard_detail->site_number . '_1.png') }}?v={{ time() }}" 
-                        alt="{{ $billboard_detail->location_name }}" 
-                        class="w-full h-full object-cover">
+                <button
+                    onclick="deleteImage('{{ $billboard_detail->site_number }}_1.png', this)"
+                    class="absolute top-2 right-2 text-white bg-theme-6 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
+                    X
+                </button>
+                <img src="{{ url('images/billboards/' . $billboard_detail->site_number . '_1.png') }}?v={{ time() }}"
+                    alt="{{ $billboard_detail->location_name }}"
+                    class="w-full h-full object-cover">
                 @endif
             </div>
 
             <!-- Image 2 Slot -->
             <div class="flex-1 relative group h-86 overflow-hidden rounded-lg shadow bg-gray-100">
                 @if($image2Exists)
-                    <button 
-                        onclick="deleteImage('{{ $billboard_detail->site_number }}_2.png', this)" 
-                        class="absolute top-2 right-2 text-white bg-theme-6 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
-                        X
-                    </button>
-                    <img src="{{ url('images/billboards/' . $billboard_detail->site_number . '_2.png') }}?v={{ time() }}" 
-                        alt="{{ $billboard_detail->location_name }}" 
-                        class="w-full h-full object-cover">
+                <button
+                    onclick="deleteImage('{{ $billboard_detail->site_number }}_2.png', this)"
+                    class="absolute top-2 right-2 text-white bg-theme-6 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
+                    X
+                </button>
+                <img src="{{ url('images/billboards/' . $billboard_detail->site_number . '_2.png') }}?v={{ time() }}"
+                    alt="{{ $billboard_detail->location_name }}"
+                    class="w-full h-full object-cover">
                 @endif
             </div>
         </div>
@@ -197,7 +198,7 @@
                         <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardState" name="state_id" disabled>
                             <option value="">-- Select State --</option>
                             @foreach ($states as $state)
-                                <option value="{{ $state->id }}">{{ $state->name }}</option>
+                            <option value="{{ $state->id }}">{{ $state->name }}</option>
                             @endforeach
                         </select>
                         <!-- Hidden input to send state_id value -->
@@ -227,25 +228,23 @@
 
                     <div class="col-span-12 sm:col-span-12">
                         <label for="editGPSCoordinate" class="form-label">GPS Coordinate <span style="color: red;">*</span></label>
-                        <input 
-                            type="text" 
-                            class="input w-full border mt-2 flex-1" 
-                            id="editGPSCoordinate" 
+                        <input
+                            type="text"
+                            class="input w-full border mt-2 flex-1"
+                            id="editGPSCoordinate"
                             name="gps_coordinate"
-                            placeholder="e.g. 3.1390, 101.6869" 
-                            required
-                        >
+                            placeholder="e.g. 3.1390, 101.6869"
+                            required>
                         <small class="text-gray-500">Format: latitude, longitude</small>
                     </div>
                     <div class="col-span-12 sm:col-span-12">
                         <label for="editGPSUrl" class="form-label">GPS URL (Google Maps)</label>
-                        <input 
-                            type="url" 
-                            class="input w-full border mt-2 flex-1" 
-                            id="editGPSUrl" 
+                        <input
+                            type="url"
+                            class="input w-full border mt-2 flex-1"
+                            id="editGPSUrl"
                             name="gps_url"
-                            placeholder="https://maps.app.goo.gl/xyz123"
-                        >
+                            placeholder="https://maps.app.goo.gl/xyz123">
                         <small class="text-gray-500">Example: https://maps.app.goo.gl/xxxxx</small>
                     </div>
 
@@ -285,7 +284,7 @@
                 </div>
             </form>
         </div>
-    </div> 
+    </div>
 </div>
 <!-- Edit Modal End -->
 @endsection('modal_content')
@@ -302,29 +301,31 @@
 <script>
     // Define functions in the global scope so they're accessible to inline onclick
     function deleteImage(filename, button) {
-        if(!confirm('Are you sure you want to delete this image?')) return;
+        if (!confirm('Are you sure you want to delete this image?')) return;
 
         fetch('{{ route("billboard.deleteImage") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ filename: filename })
-        })
-        .then(response => {
-            if(response.ok) return response.json();
-            throw new Error('File not found');
-        })
-        .then(data => {
-            button.closest('.flex-1').remove();
-            alert(data.message);
-            window.location.reload(); // Refresh to update Dropzone state
-        })
-        .catch(err => {
-            console.error(err);
-            alert('Error deleting image.');
-        });
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    filename: filename
+                })
+            })
+            .then(response => {
+                if (response.ok) return response.json();
+                throw new Error('File not found');
+            })
+            .then(data => {
+                button.closest('.flex-1').remove();
+                alert(data.message);
+                window.location.reload(); // Refresh to update Dropzone state
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Error deleting image.');
+            });
     }
 
     // Fixed modal functions to prevent scrollbar error
@@ -341,7 +342,7 @@
             }
         }, 100);
     }
-    
+
     function closeAltEditorModal(element) {
         // Ensure DOM is ready before closing modal
         setTimeout(() => {
@@ -358,19 +359,19 @@
 
     function populateBillboardEditModal(data) {
         // IDs
-        let stateID    = data.state_id;
+        let stateID = data.state_id;
         let districtID = data.district_id;
-        let councilID  = data.council_id;
+        let councilID = data.council_id;
 
         // Fill form fields
         $('#editBillboardModalId').val(data.id);
-        
+
         // Set the visible select (disabled) to show current value
         $('#editBillboardType').val(data.prefix);
-        
+
         // Set the hidden field with the actual value to be sent
         $('#editBillboardTypeHidden').val(data.prefix);
-        
+
         $('#editBillboardSize').val(data.size);
         $('#editBillboardLighting').val(data.lighting);
         $('#editGPSCoordinate').val(data.gps_latitude + ', ' + data.gps_longitude);
@@ -398,9 +399,9 @@
         $.post('{{ route("location.getDistricts") }}', {
             _token: '{{ csrf_token() }}',
             state_id: stateID
-        }, function (districts) {
+        }, function(districts) {
             $('#editBillboardDistrict').empty().append(`<option value="">-- Select District --</option>`);
-            districts.forEach(function (d) {
+            districts.forEach(function(d) {
                 $('#editBillboardDistrict').append(`<option value="${d.id}">${d.name}</option>`);
             });
             $('#editBillboardDistrict').val(districtID).trigger('change');
@@ -410,9 +411,9 @@
             $.post('{{ route("location.getCouncils") }}', {
                 _token: '{{ csrf_token() }}',
                 state_id: stateID
-            }, function (councils) {
+            }, function(councils) {
                 $('#editBillboardCouncil').empty().append(`<option value="">-- Select Council --</option>`);
-                councils.forEach(function (c) {
+                councils.forEach(function(c) {
                     $('#editBillboardCouncil').append(`<option value="${c.id}">${c.name} (${c.abbreviation})</option>`);
                 });
                 $('#editBillboardCouncil').val(councilID).trigger('change');
@@ -424,7 +425,7 @@
     }
 
     // Wait for document ready and Dropzone to be available
-    $(document).ready(function () {
+    $(document).ready(function() {
         // Initialize Select2 for District field with tagging enabled
         $('#editBillboardDistrict').select2({
             tags: true,
@@ -445,15 +446,19 @@
                 dictRemoveFile: "Remove",
                 dictMaxFilesExceeded: "You can only upload 2 images per site.",
 
-                init: function () {
+                init: function() {
                     let dz = this;
 
                     let existingImages = [
-                        @if($image1Exists)
-                            { name: "{{ $billboard_detail->site_number }}_1.png", url: "{{ url('images/billboards/' . $billboard_detail->site_number . '_1.png') }}" },
+                        @if($image1Exists) {
+                            name: "{{ $billboard_detail->site_number }}_1.png",
+                            url: "{{ url('images/billboards/' . $billboard_detail->site_number . '_1.png') }}"
+                        },
                         @endif
-                        @if($image2Exists)
-                            { name: "{{ $billboard_detail->site_number }}_2.png", url: "{{ url('images/billboards/' . $billboard_detail->site_number . '_2.png') }}" }
+                        @if($image2Exists) {
+                            name: "{{ $billboard_detail->site_number }}_2.png",
+                            url: "{{ url('images/billboards/' . $billboard_detail->site_number . '_2.png') }}"
+                        }
                         @endif
                     ];
 
@@ -468,17 +473,17 @@
                     dz.on("removedfile", function(file) {
                         if (file.name) {
                             axios.post("{{ route('billboard.deleteImage') }}", {
-                                filename: file.name,
-                                _token: "{{ csrf_token() }}"
-                            })
-                            .then(response => {
-                                alert(response.data.message);
-                                dz.options.maxFiles++; 
-                                window.location.reload();
-                            })
-                            .catch(error => {
-                                alert(error.response?.data?.message || "Failed to delete image");
-                            });
+                                    filename: file.name,
+                                    _token: "{{ csrf_token() }}"
+                                })
+                                .then(response => {
+                                    alert(response.data.message);
+                                    dz.options.maxFiles++;
+                                    window.location.reload();
+                                })
+                                .catch(error => {
+                                    alert(error.response?.data?.message || "Failed to delete image");
+                                });
                         }
                     });
                 },
@@ -512,9 +517,9 @@
         }
 
         // Handle form submission when the submit button is clicked
-        $(document).on('click', '#billboardEditButton', function (e) {
+        $(document).on('click', '#billboardEditButton', function(e) {
             e.preventDefault();
-            
+
             // Validate required fields
             if (!validateForm()) {
                 return;
@@ -542,7 +547,9 @@
                 error: function(xhr, status, error) {
                     // Display the validation error message
                     console.log("AJAX Error", xhr.status, xhr.responseText);
-                    var response = xhr.responseJSON || {error: 'An error occurred'};
+                    var response = xhr.responseJSON || {
+                        error: 'An error occurred'
+                    };
                     var errorMessage = response.error || response.message || 'An unknown error occurred';
 
                     if (typeof window.showSubmitToast !== 'undefined') {
