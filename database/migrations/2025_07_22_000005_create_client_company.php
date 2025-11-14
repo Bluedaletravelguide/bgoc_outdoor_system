@@ -13,10 +13,9 @@ return new class extends Migration
     {
         Schema::create('client_companies', function (Blueprint $table) {
             $table->id();
-            $table->string('company_prefix', 4)->unique();
             $table->string('name')->unique();
-            $table->string('address');
-            $table->string('phone');
+            $table->string('address')->nullable();
+            $table->string('phone')->nullable();
             $table->integer('status')->default(1);
             $table->dateTime('created_at', $precision = 0)->useCurrent();
             $table->dateTime('updated_at', $precision = 0)->nullable()->useCurrentOnUpdate();
@@ -26,9 +25,9 @@ return new class extends Migration
         Schema::create('clients', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('email');
-            $table->string('phone');
-            $table->string('designation');
+            $table->string('email')->nullable();
+            $table->string('phone')->nullable();
+            $table->string('designation')->nullable();
             $table->unsignedBigInteger('company_id');
             $table->integer('status')->default(1);
             $table->dateTime('created_at', $precision = 0)->useCurrent();
@@ -45,7 +44,7 @@ return new class extends Migration
             $table->id();
             $table->string('company_name');
             $table->string('name');
-            $table->string('phone');
+            $table->string('phone')->nullable();
             $table->dateTime('created_at', $precision = 0)->useCurrent();
             $table->dateTime('updated_at', $precision = 0)->nullable()->useCurrentOnUpdate();
         });

@@ -105,23 +105,22 @@ class BillboardController extends Controller
         $type     = $request->input('type');
         $site_type     = $request->input('site_type');
         $size     = $request->input('size');
-        $searchValue    = trim(strtolower($request->input('search.value')));
-        $start     = $request->input('start', 0);
-        $limit     = $request->input('length', 25);
 
-        $columns = [
-            0 => 'billboards.site_number',
-            1 => 'billboards.type',
-            2 => 'billboards.size',
-            3 => 'billboards.lighting',
-            4 => 'locations.name',
-            5 => 'districts.name',
-            6 => 'billboards.created_at',
-            7 => 'billboards.status',
-            8 => 'billboards.id',
-            9 => 'billboards.site_type',
-        ];
+        $columns = array(
+            0 => 'site_number',
+            1 => 'type',
+            2 => 'size',
+            3 => 'lighting',
+            4 => 'location_name',
+            5 => 'district_name',
+            6 => 'date_registered',
+            7 => 'status',
+            8 => 'id',
+            9 => 'site_type',
+        );
 
+        $limit              = $request->input('length');
+        $start              = $request->input('start');
         $orderColumnIndex   = $request->input('order.0.column');
         $orderColumnName    = $columns[$orderColumnIndex];
         $orderDirection     = $request->input('order.0.dir');
@@ -160,6 +159,8 @@ class BillboardController extends Controller
 
         // Get total records count
         $totalData = $query->count();
+
+        $searchValue = trim(strtolower($request->input('search.value')));
 
         if (!empty($searchValue)) {
             $query->where(function ($query) use ($searchValue) {
@@ -501,6 +502,7 @@ class BillboardController extends Controller
         }
     }
 
+
     /**
      * Delete billboard + all associated images
      */
@@ -519,7 +521,8 @@ class BillboardController extends Controller
             $billboard->delete();
 
             // Delete ALL associated images (dynamic cleanup)
-            $directory = 'public/billboards';
+            $directory = '/home/bluedale2/public_html/bgocoutdoor.bluedale.com.my/images/billboards';
+
             $files = Storage::files($directory);
 
             foreach ($files as $file) {
@@ -612,85 +615,7 @@ class BillboardController extends Controller
 
         $billboard_images = BillboardImage::where('billboard_id', $request->id)->get();
 
-
-        // Convert to Dubai time
-        // $dubaiTime = Carbon::parse($open_WO_DetailId->created_dt);
-
-        // Add new formatted date, month, and year fields to the object
-        // $open_WO_DetailId->created_dt = $dubaiTime->format('F j, Y \a\t g:i A');
-
-        // if ($open_WO_DetailId !== null) {
-
-        //     $woActivities = WorkOrderActivity::select(
-        //         'work_order_activity.id as comment_id',
-        //         'comments',
-        //         'comment_by',
-        //         'work_order_activity.created_at as created_at',
-        //         'name',
-        //     )
-        //     ->leftJoin('users', 'users.id', 'work_order_activity.comment_by')
-        //     ->where('work_order_id', '=', $request->id);
-
-        // if($filter){
-        //     if ($filter == 'new') {
-        //         $woActivities->orderBy('created_at', 'desc');
-        //     } elseif ($filter == 'old'){
-        //         $woActivities->orderBy('created_at', 'asc');
-        //     }
-        // }
-        // // ->get();
-
-        // $woActivities = $woActivities->get();
-
-        // $woActivities->transform(function ($woActivity) {
-        //     // Convert to Dubai time
-        //     $created_dt = Carbon::parse($woActivity->created_at);
-
-        //     // Add new formatted date, month, and year fields to the object
-        //     $woActivity->created_dt = $created_dt->format('F j, Y \a\t g:i A');
-
-        //     // Fetch related attachments
-        //     $attachments = WorkOrderActivityAttachment::select('id', 'url')
-        //     ->where('wo_activity_id', '=', $woActivity->comment_id)
-        //     ->get();
-
-        //     // Add attachments to the activity
-        //     $woActivity->attachments = $attachments;
-
-        //     return $woActivity;
-        // });
-
-        // $gg = $woActivities->get();
-
-        // $WoOrHistory = WorkOrderHistory::select(
-        //     'work_order_history.id',
-        //     'work_order_history.status',
-        //     'work_order_history.status_changed_by',
-        //     'work_order_history.assigned_teamleader',
-        //     'work_order_history.assign_to_technician',
-        //     'users.id as user_id',
-        //     'users.name as user_name',
-        // )
-        // ->leftJoin('users', 'users.id', '=', DB::raw('CASE 
-        //         WHEN work_order_history.status = "NEW" THEN work_order_history.status_changed_by 
-        //         WHEN work_order_history.status = "ACCEPTED" THEN work_order_history.status_changed_by 
-        //         WHEN work_order_history.status = "ASSIGNED_SP" THEN work_order_history.status_changed_by                     
-        //         WHEN work_order_history.status = "ACCEPTED_TECHNICIAN" THEN work_order_history.assign_to_technician
-        //         WHEN work_order_history.status = "STARTED" THEN work_order_history.assign_to_technician
-        //         WHEN work_order_history.status = "COMPLETED" THEN work_order_history.assign_to_technician
-        //         ELSE NULL 
-        //     END'))
-        // ->where('work_order_history.work_order_id', '=', $request->id)
-        // ->get();
-
-        // return view('workOrderProfile.index', compact('open_WO_DetailId', 'imageData', 'WoOrObImageBefore', 'WoOrObImageAfter', 'WoOrHistory'));
         return view('billboard.detail', compact('billboard_detail', 'billboard_images'));
-
-        // } else {
-        //     // Handle the case when no record is found
-        //     // You can return an error message or redirect the user
-        //     return response()->json(['error' => 'No record found with the provided ID'], 404);
-        // }
     }
 
     public function downloadPdf($id)
@@ -720,12 +645,12 @@ class BillboardController extends Controller
 
         // Hardcode images for testing
         $billboard->images = [
-            'storage/billboards/' . $billboard->site_number . '_1.png',
-            'storage/billboards/' . $billboard->site_number . '_2.png',
+            'images/billboards/' . $billboard->site_number . '_1.png',
+            'images/billboards/' . $billboard->site_number . '_2.png',
         ];
 
         $pdf = PDF::loadView('billboard.export', compact('billboard'))
-            ->setPaper('A4', 'landscape'); // 👈 Set orientation here
+            ->setPaper('A4', 'landscape'); // ðŸ‘ˆ Set orientation here
 
         return $pdf->download('billboard-detail-' . $billboard->site_number . '.pdf');
     }
@@ -744,22 +669,23 @@ class BillboardController extends Controller
 
         // Hardcode images for testing
         $billboard->images = [
-            'storage/billboards/' . $billboard->site_number . '_1.png',
-            'storage/billboards/' . $billboard->site_number . '_2.png',
+            'images/billboards/' . $billboard->site_number . '_1.png',
+            'images/billboards/' . $billboard->site_number . '_2.png',
         ];
 
         $pdf = PDF::loadView('billboard.export_client', compact('billboard'))
-            ->setPaper('A4', 'landscape'); // 👈 Set orientation here
+            ->setPaper('A4', 'landscape'); // ðŸ‘ˆ Set orientation here
 
         return $pdf->download('billboard-detail-' . $billboard->site_number . '.pdf');
     }
 
     public function exportListPdf(Request $request)
     {
-        // ↑ Increase PHP memory limit right at the start
+        // â†‘ Increase PHP memory limit right at the start
         ini_set('memory_limit', '1024M'); // 1GB
         ini_set('max_execution_time', 300); // 5 minutes
         set_time_limit(300);
+
 
         $query = Billboard::with(['location.district.state']);
 
@@ -797,15 +723,15 @@ class BillboardController extends Controller
 
         $billboards = $query->get();
 
-        // ✅ Create image manager (GD driver is default in most servers)
+        // âœ… Create image manager (GD driver is default in most servers)
         $manager = new ImageManager(new Driver());
 
         foreach ($billboards as $billboard) {
             $resizedImages = [];
 
             $imagePaths = [
-                public_path('storage/billboards/' . $billboard->site_number . '_1.png'),
-                public_path('storage/billboards/' . $billboard->site_number . '_2.png'),
+                'images/billboards/' . $billboard->site_number . '_1.png',
+                'images/billboards/' . $billboard->site_number . '_2.png',
             ];
 
             foreach ($imagePaths as $fullPath) {
@@ -822,7 +748,7 @@ class BillboardController extends Controller
             $billboard->images = $resizedImages;
         }
 
-        // 📂 Filename
+        // ðŸ“‚ Filename
         $filename = 'billboards-master';
         $date = now()->format('Y-m-d');
 
@@ -841,47 +767,20 @@ class BillboardController extends Controller
         }
 
         $pdf = PDF::loadView('billboard.exportlist', compact('billboards'))
-            ->setPaper('A4', 'landscape'); // 👈 Set orientation here
+            ->setPaper('A4', 'landscape'); // ðŸ‘ˆ Set orientation here
 
         return $pdf->download($filename . '.pdf');
     }
 
     public function exportListPdfClient(Request $request)
     {
-        // ↑ Increase PHP memory limit right at the start
+        // â†‘ Increase PHP memory limit right at the start
         ini_set('memory_limit', '1024M'); // 1GB
         ini_set('max_execution_time', 300); // 5 minutes
         set_time_limit(300);
 
-        $query = Billboard::with(['location.district.state'])
-            ->leftJoin('locations', 'billboards.location_id', '=', 'locations.id')
-            ->leftJoin('districts', 'locations.district_id', '=', 'districts.id')
-            ->leftJoin('states', 'districts.state_id', '=', 'states.id')
-            ->select(
-                'billboards.*',
-                DB::raw("CONCAT(
-                            CASE 
-                                WHEN states.name = 'Kuala Lumpur' THEN 'KL'
-                                WHEN states.name = 'Selangor' THEN 'SEL'
-                                WHEN states.name = 'Negeri Sembilan' THEN 'N9'
-                                WHEN states.name = 'Melaka' THEN 'MLK'
-                                WHEN states.name = 'Johor' THEN 'JHR'
-                                WHEN states.name = 'Perak' THEN 'PRK'
-                                WHEN states.name = 'Pahang' THEN 'PHG'
-                                WHEN states.name = 'Terengganu' THEN 'TRG'
-                                WHEN states.name = 'Kelantan' THEN 'KTN'
-                                WHEN states.name = 'Perlis' THEN 'PLS'
-                                WHEN states.name = 'Kedah' THEN 'KDH'
-                                WHEN states.name = 'Penang' THEN 'PNG'
-                                WHEN states.name = 'Sarawak' THEN 'SWK'
-                                WHEN states.name = 'Sabah' THEN 'SBH'
-                                WHEN states.name = 'Labuan' THEN 'LBN'
-                                WHEN states.name = 'Putrajaya' THEN 'PJY'
-                                ELSE states.name
-                            END, ' - ', districts.name
-                        ) as area")
-            )
-            ->orderByRaw("area ASC");
+
+        $query = Billboard::with(['location.district.state']);
 
         // ✅ Apply selected IDs first (like Excel export)
         if ($request->filled('billboard_ids')) {
@@ -917,15 +816,15 @@ class BillboardController extends Controller
 
         $billboards = $query->get();
 
-        // ✅ Create image manager (GD driver is default in most servers)
+        // âœ… Create image manager (GD driver is default in most servers)
         $manager = new ImageManager(new Driver());
 
         foreach ($billboards as $billboard) {
             $resizedImages = [];
 
             $imagePaths = [
-                public_path('storage/billboards/' . $billboard->site_number . '_1.png'),
-                public_path('storage/billboards/' . $billboard->site_number . '_2.png'),
+                'images/billboards/' . $billboard->site_number . '_1.png',
+                'images/billboards/' . $billboard->site_number . '_2.png',
             ];
 
             foreach ($imagePaths as $fullPath) {
@@ -942,7 +841,7 @@ class BillboardController extends Controller
             $billboard->images = $resizedImages;
         }
 
-        // 📂 Filename
+        // ðŸ“‚ Filename
         $filename = 'billboards-master';
         $date = now()->format('Y-m-d');
 
@@ -961,7 +860,7 @@ class BillboardController extends Controller
         }
 
         $pdf = PDF::loadView('billboard.exportlist_client', compact('billboards'))
-            ->setPaper('A4', 'landscape'); // 👈 Set orientation here
+            ->setPaper('A4', 'landscape'); // ðŸ‘ˆ Set orientation here
 
         return $pdf->download($filename . '.pdf');
     }
@@ -972,7 +871,7 @@ class BillboardController extends Controller
         $selectedIds = $request->input('billboard_ids');
 
         // ✅ Base name logic (match title rules in BillboardExport)
-        $baseName = "Outdoor";
+        $baseName = "Billboard_List";
         if (!empty($filters['site_type']) && $filters['site_type'] !== "all") {
             $baseName = ucfirst($filters['site_type']) . "_Stock_Inventory_List";
         } elseif (!empty($filters['type']) && $filters['type'] !== "all") {
@@ -994,7 +893,6 @@ class BillboardController extends Controller
 
 
 
-
     public function uploadImage(Request $request)
     {
         if ($request->hasFile('file')) {
@@ -1002,13 +900,10 @@ class BillboardController extends Controller
             $siteNumber = $request->input('site_number');
             $extension = 'png';
 
-            $directory = 'public/billboards';
-            if (!Storage::exists($directory)) {
-                Storage::makeDirectory($directory);
-            }
+            $directory = '/home/bluedale2/public_html/bgocoutdoor.bluedale.com.my/images/billboards';
 
             // Limit to 2 images
-            $existingFiles = Storage::files($directory);
+            $existingFiles = glob($directory . '/' . $siteNumber . '_*.png');
             $siteFiles = array_filter($existingFiles, fn($f) => str_starts_with(basename($f), $siteNumber . '_'));
 
             if (count($siteFiles) >= 2) {
@@ -1042,19 +937,19 @@ class BillboardController extends Controller
 
             $filename = $siteNumber . '_' . $sequence . '.' . $extension;
 
-            $path = storage_path('app/' . $directory . '/' . $filename);
+            $path = $directory . '/' . $filename;
 
             // Check original file size in bytes
             $fileSize = $file->getSize();
             $imageData = null;
 
             if ($fileSize > 1024 * 1024) {
-                // > 1 MB → compress/resize
+                // > 1 MB â†’ compress/resize
                 $imageData = (string) Image::read($file)
                     ->scale(width: 400)   // resize if large
                     ->toPng();
             } else {
-                // <= 1 MB → keep as-is
+                // <= 1 MB â†’ keep as-is
                 $imageData = file_get_contents($file->getRealPath());
             }
 
@@ -1070,7 +965,7 @@ class BillboardController extends Controller
             }
 
             // Public URL
-            $url = Storage::url($directory . '/' . $filename);
+            $url = asset('images/billboards/' . $filename) . '?v=' . time();
 
             return response()->json([
                 'message'  => 'File uploaded successfully',
@@ -1085,12 +980,13 @@ class BillboardController extends Controller
     public function deleteImage(Request $request)
     {
         $filename = $request->input('filename');
-        $directory = 'public/billboards';
+        $directory = '/home/bluedale2/public_html/bgocoutdoor.bluedale.com.my/images/billboards';
+
         $path = $directory . '/' . $filename;
 
-        if (Storage::exists($path)) {
-            Storage::delete($path);
-            return response()->json(['message' => 'Image deleted successfully'], 200);
+        if (file_exists($path)) {
+            unlink($path);
+            return response()->json(['message' => 'File deleted successfully']);
         }
 
         return response()->json(['message' => 'File not found'], 404);

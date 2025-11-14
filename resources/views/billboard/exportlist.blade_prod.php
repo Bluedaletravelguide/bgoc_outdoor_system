@@ -115,23 +115,20 @@
             width: 130px;
         }
 
-        .image-section {
-            margin-top: 80px;
-            clear: both;
-            text-align: center; /* centers child images */
+        .image-grid {
+            border-collapse: collapse;
+            margin-top: 20px;
         }
 
-        .image-grid {
-            display: inline-block; /* allows images to be centered */
-            margin: 5px;           /* spacing between images */
+        .image-grid td {
+            padding: 5px;
         }
 
         .image-grid img {
-            max-width: 48%;        /* two images per row */
-            height: 370px;         /* fixed height */
-            object-fit: contain;   /* maintain aspect ratio */
+            max-width: 100%;
+            max-height: 360px;
             border: 1px solid #ccc;
-            page-break-inside: avoid;
+            object-fit: contain;
         }
     </style>
 </head>
@@ -164,8 +161,7 @@
                         <tr><td>District:</td><td>{{ $billboard->location->district->name ?? '-' }}</td></tr>
                         <tr><td>State:</td><td>{{ $billboard->location->district->state->name ?? '-' }}</td></tr>
                         <tr><td>Council:</td><td>{{ $billboard->location->council->abbreviation }} - {{ $billboard->location->council->name ?? '-' }}</td></tr>
-                        <tr>
-                            <td>GPS Coordinates:</td>
+                        <tr><td>GPS Coordinates:</td>
                             <td>
                                 @php
                                     $mapUrl = !empty($billboard->gps_url)
@@ -182,13 +178,24 @@
                 </div>
             </div>
 
-            <div class="image-section">
-                <div class="image-grid">
-                    @foreach($billboard->images as $img)
-                        <img src="{{ $img }}" alt="Billboard Image">
-                    @endforeach
+            <!-- ✅ Billboard Images -->
+            @if(!empty($billboard->images))
+                <div class="image-section">
+                    <table class="image-grid" width="100%">
+                        <tr>
+                            @foreach ($billboard->images as $img)
+                                <td width="{{ 100 / count($billboard->images) }}%" align="center" valign="middle" style="text-align:center; vertical-align:middle;">
+                                    <img src="{{ $img }}"
+                                         alt="Billboard Image"
+                                         style="max-width:100%; max-height:360px; border:1px solid #ccc; display:block; margin:auto;">
+                                </td>
+                            @endforeach
+                        </tr>
+                    </table>
                 </div>
-            </div>
+            @endif
+
+
 
             <!-- New box: Site Number -->
             <div class="sitetype-box">
@@ -221,7 +228,7 @@
             </table>
         </div> <!-- /.section -->
     @endforeach
-    </div>
+</div>
 
 
 </body>

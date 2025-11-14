@@ -51,6 +51,57 @@
     .status-installation { background-color: #f8d7da; }  /* red */
     .status-artwork { background-color: #fff3cd; }       /* yellow */
     .status-payment { background-color: #ffe5b4; }       /* orange */
+    
+    /* Custom horizontal scrollbar */
+    .overflow-x-auto::-webkit-scrollbar {
+        height: 8px;
+    }
+    .overflow-x-auto::-webkit-scrollbar-thumb {
+        background-color: #718096; /* gray-400 */
+        border-radius: 4px;
+    }
+    .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+        background-color: #4a5568; /* gray-500 */
+    }
+
+    /* ===== Freeze first 3 columns ===== */
+    #monthly-ongoing-table th:nth-child(1),
+    #monthly-ongoing-table td:nth-child(1) {
+        position: sticky;
+        left: 0;
+        min-width: 50px;   /* No */
+        background: #fff;
+        z-index: 5;
+    }
+
+    #monthly-ongoing-table th:nth-child(2),
+    #monthly-ongoing-table td:nth-child(2) {
+        position: sticky;
+        left: 30px;        /* width of col1 */
+        min-width: 120px;  /* Client */
+        background: #fff;
+        z-index: 5;
+    }
+
+    #monthly-ongoing-table th:nth-child(3),
+    #monthly-ongoing-table td:nth-child(3) {
+        position: sticky;
+        left: 140px;       /* col1 + col2 */
+        min-width: 120px;  /* Location */
+        background: #fff;
+        z-index: 5;
+    }
+
+    /* Ensure header cells of frozen columns stay on top */
+    #monthly-ongoing-table thead th:nth-child(1),
+    #monthly-ongoing-table thead th:nth-child(2),
+    #monthly-ongoing-table thead th:nth-child(3) {
+        z-index: 6;
+    }
+
+    .select2-container {
+        min-width: 250px !important; /* adjust size */
+    }
 </style>
 <!-- Flatpickr CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -101,7 +152,7 @@
         <form class="xl:flex flex-wrap items-end">
             <div class="row sm:flex items-center sm:mr-4">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">State</label>
-                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardBookingState">
+                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border select2-state" id="filterBillboardBookingState">
                     <option value="" selected="">-- Select State --</option>
                     @foreach ($states as $state)
                         <option value="{{ $state->id }}">{{ $state->name }}</option>
@@ -110,7 +161,7 @@
             </div>
             <div class="row sm:flex items-center sm:mr-4">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">District</label>
-                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardBookingDistrict">
+                <select class="input w-full mt-2 sm:mt-0 sm:w-auto border select2-district" id="filterBillboardBookingDistrict">
                     <option value="" selected="">-- Select State --</option>
                     @foreach ($districts as $district)
                         <option value="{{ $district->id }}">{{ $district->name }}</option>
@@ -119,20 +170,29 @@
             </div>
             <div class="sm:flex items-center sm:mr-4">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Location</label>
-                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardBookingLocation">
+                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border select2-location" id="filterBillboardBookingLocation">
                     <option value="" selected="">-- Select State --</option>
                     @foreach ($locations as $location)
                         <option value="{{ $location->id }}" data-site="{{ $location->site_number }}">{{ $location->name }}</option>
                     @endforeach
                 </select>
             </div>
+        </form>
+    </div>
+    <!-- Filter End -->
+
+    <!-- Monthly Ongoing Date Filter -->
+    <div class="flex flex-col sm:flex-row sm:items-end xl:items-start mb-2 mt-2">
+        <form class="xl:flex flex-wrap items-end">
             <div class="row sm:flex items-center sm:mr-4">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Status</label>
                 <select class="input w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardBookingStatus">
-                    <option value="" selected="">-- Select Status --</option>
-                    <option value="ongoing">Ongoing</option>
-                    <option value="pending_install">Pending Install</option>
+                    <option value="" selected="">-- Select Status --</option> 
                     <option value="pending_payment">Pending Payment</option>
+                    <option value="pending_install">Pending Install</option>
+                    <option value="ongoing">Ongoing</option>
+                    <option value="completed">Completed</option>
+                    <option value="dismantle">Dismantle</option>
                 </select>
             </div>
         </form>
@@ -163,6 +223,12 @@
     </div>
     <!-- Filter End -->
 
+    <div class="mb-4">
+        Search:<input type="text" id="globalSearchInput"
+            class="input border p-2 w-64 ml-4"
+            placeholder="Search all tables...">
+    </div>
+
     <!-- billboard monthly ongoing calendar table -->
     <div class="shadow-sm rounded-lg border border-gray-200 overflow-hidden">
         <div class="monthly-ongoing-table-wrapper">
@@ -186,7 +252,7 @@
 
     <!-- Monthly Ongoing table -->
     <div class="overflow-x-auto scrollbar-hidden">
-        <table class="table mt-5" id="billboard_booking_table">
+        <table class="min-w-[1200px] w-full text-sm text-left" id="billboard_booking_table">
             <thead>
                 <tr class="bg-theme-1 text-white">
                     <th class="whitespace-nowrap">No.</th>
@@ -212,97 +278,123 @@
 @endsection('app_content')
 
 @section('modal_content')
-<!-- Create Modal -->
-    <div class="row flex flex-col sm:flex-row sm:items-end xl:items-start mb-2">
-        <div class="modal" id="addBookingModal">
-            <div class="modal__content">
-                <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
-                    <h2 class="font-medium text-base mr-auto">Add New Job Order</h2>
-                </div>
-                <form id="inputBookingForm">
-                    <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Site Number</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="inputBookingSiteNo" value="" disabled>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Client</label>
-                            <select id="inputBookingCompany" class="input w-full border mt-2 select2-client" required>
-                                <option value="">-- Select Client --</option>
-                                @foreach ($companies as $company)
-                                    <option value="{{ $company->id }}">{{ $company->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>State</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBookingState">
-                                <option value="">-- Select State --</option>
-                                @foreach ($states as $state)
-                                    <option value="{{ $state->id }}">{{ $state->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>District</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBookingDistrict">
-                                <option value="">-- Select District --</option>
-                            </select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Location</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBookingLocation">
-                                <option value="">-- Select Location --</option>
-                            </select>
-                        </div>                     
-                        <div class="col-span-12 sm:col-span-6">
-                            <label for="start_date" class="form-label">Start Date</label>
-                            <input type="text" id="start_date" class="input border mt-2" placeholder="Select start date">
-                        </div>
-                        <div class="col-span-12 sm:col-span-6">
-                            <label for="end_date" class="form-label">End Date</label>
-                            <input type="text" id="end_date" class="input border mt-2" placeholder="Select end date">
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Status</label>
-                            <select id="inputBookingStatus" class="input w-full border mt-2 select" required>
-                                <option disabled selected hidden value="">-- Select Status --</option>
-                                <option value="pending_payment">Pending Payment</option>
-                                <option value="pending_install">Pending Install</option>
-                                <option value="ongoing">Ongoing</option>            
-                            </select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Artwork by</label>
-                            <select id="inputBookingArtworkBy" class="input w-full border mt-2 select" required>
-                                <option disabled selected hidden value="">-- Select Artwork by --</option>
-                                <option value="Client">Client</option>
-                                <option value="Bluedale">Bluedale</option>
-                            </select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>DBP Approval</label>
-                            <select id="inputBookingDBPApproval" class="input w-full border mt-2 select" required>
-                                <option disabled selected hidden value="">-- Select DBP Approval --</option>
-                                <option value="NA">Not Available</option>
-                                <option value="In Review">In Review</option>
-                                <option value="Approved">Approved</option>
-                                <option value="Rejected">Rejected</option>
-                            </select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-12">
-                            <label>Remarks</label>
-                            <input type="text" class="input w-full border mt-2 flex-1" id="inputBookingRemarks" value="" required>
-                        </div>
-                    </div>
 
-                    <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
-                        <button type="submit" class="button w-20 bg-theme-1 text-white" id="inputBookingSubmit">Submit</button>
-                    </div>
-                </form>
+<!-- Remarks Modal -->
+<div class="row flex flex-col sm:flex-row sm:items-end xl:items-start mb-2">
+    <div class="modal" id="remarksModal">
+        <div class="modal__content">
+            <!-- Modal Header -->
+            <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
+                <h2 class="font-medium text-base mr-auto">Remarks</h2>
             </div>
-        </div> 
+
+            <!-- Modal Body -->
+            <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
+                <div class="col-span-12 sm:col-span-12">
+                    <label>Full Remarks</label>
+                    <textarea class="input w-full border mt-2 flex-1" id="remarksContent" rows="8" readonly></textarea>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
+                <button type="button" class="button w-20 bg-gray-300 text-gray-700" onclick="closeAltEditorModal('#remarksModal')">Close</button>
+            </div>
+        </div>
     </div>
+</div>
+<!-- Remarks Modal End -->
+
+<!-- Create Modal -->
+<div class="row flex flex-col sm:flex-row sm:items-end xl:items-start mb-2">
+    <div class="modal" id="addBookingModal">
+        <div class="modal__content">
+            <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200 dark:border-dark-5">
+                <h2 class="font-medium text-base mr-auto">Add New Job Order</h2>
+            </div>
+            <form id="inputBookingForm">
+                <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>Client <span style="color: red;">*</span></label>
+                        <select id="inputBookingCompany" class="input w-full border mt-2 select2-client" required>
+                            <option value="">-- Select Client --</option>
+                            @foreach ($companies as $company)
+                                <option value="{{ $company->id }}">{{ $company->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>State <span style="color: red;">*</span></label>
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBookingState">
+                            <option value="">-- Select State --</option>
+                            @foreach ($states as $state)
+                                <option value="{{ $state->id }}">{{ $state->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>District <span style="color: red;">*</span></label>
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBookingDistrict">
+                            <option value="">-- Select District --</option>
+                        </select>
+                    </div>
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>Location <span style="color: red;">*</span></label>
+                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border select2-location" id="inputBookingLocation">
+                            <option value="">-- Select Location --</option>
+                        </select>
+                    </div>                     
+                    <div class="col-span-12 sm:col-span-6">
+                        <label for="start_date" class="form-label">Start Date <span style="color: red;">*</span></label>
+                        <input type="text" id="start_date" class="input border mt-2" placeholder="Select start date">
+                    </div>
+                    <div class="col-span-12 sm:col-span-6">
+                        <label for="end_date" class="form-label">End Date <span style="color: red;">*</span></label>
+                        <input type="text" id="end_date" class="input border mt-2" placeholder="Select end date">
+                    </div>
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>Status <span style="color: red;">*</span></label>
+                        <select id="inputBookingStatus" class="input w-full border mt-2 select" required>
+                            <option disabled selected hidden value="">-- Select Status --</option>
+                            <option value="pending_payment">Pending Payment</option>
+                            <option value="pending_install">Pending Install</option>
+                            <option value="ongoing">Ongoing</option>
+                            <option value="completed">Completed</option>
+                            <option value="dismantle">Dismantle</option>          
+                        </select>
+                    </div>
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>Artwork by <span style="color: red;">*</span></label>
+                        <select id="inputBookingArtworkBy" class="input w-full border mt-2 select" required>
+                            <option disabled selected hidden value="">-- Select Artwork by --</option>
+                            <option value="Client">Client</option>
+                            <option value="Bluedale">Bluedale</option>
+                        </select>
+                    </div>
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>DBP Approval <span style="color: red;">*</span></label>
+                        <select id="inputBookingDBPApproval" class="input w-full border mt-2 select" required>
+                            <option disabled selected hidden value="">-- Select DBP Approval --</option>
+                            <option value="NA">Not Available</option>
+                            <option value="In Review">In Review</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
+                    </div>
+                    <div class="col-span-12 sm:col-span-12">
+                        <label>Remarks <span style="color: red;">*</span></label>
+                        <!-- <input type="text" class="input w-full border mt-2 flex-1" id="inputBookingRemarks" value="" required> -->
+                        <textarea class="input w-full border mt-2 flex-1" id="inputBookingRemarks" rows="5" required></textarea>
+                    </div>
+                </div>
+
+                <div class="px-5 py-3 text-right border-t border-gray-200 dark:border-dark-5">
+                    <button type="submit" class="button w-20 bg-theme-1 text-white" id="inputBookingSubmit">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div> 
+</div>
 <!-- Create Modal End -->
 
 
@@ -320,7 +412,7 @@
         </div>
     </div>
 </div>
-<!-- END: Service Request Reject Modal -->
+<!-- END: Billboard Booking Delete Modal -->
 
 <!-- Edit Modal -->
 <div class="modal" id="editBookingModal">
@@ -331,17 +423,19 @@
         <form>
             <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Status</label>
+                    <label>Status <span style="color: red;">*</span></label>
                     <select id="editBookingStatus" class="input w-full border mt-2 select" required>
                         <option disabled selected hidden value="">-- Select Status --</option>
                         <option value="pending_payment">Pending Payment</option>
                         <option value="pending_install">Pending Install</option>
-                        <option value="ongoing">Ongoing</option>            
+                        <option value="ongoing">Ongoing</option>
+                        <option value="completed">Completed</option>
+                        <option value="dismantle">Dismantle</option>           
                     </select>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Remarks</label>
-                    <input type="text" class="input w-full border mt-2 flex-1" placeholder="Description" id="editBookingRemarks" required>
+                    <label>Remarks <span style="color: red;">*</span></label>
+                    <textarea class="input w-full border mt-2 flex-1" placeholder="Remarks" id="editBookingRemarks" rows="5" required></textarea>
                 </div>
             </div>
 
@@ -352,6 +446,203 @@
     </div>
 </div>
 <!-- END: SR Edit Modal -->
+
+<!-- BEGIN: Inventory Add Modal -->
+<div class="modal items-center justify-center" id="inventoryAddModal">
+    <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-7xl p-6">
+        
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between border-b pb-3 mb-4">
+            <h2 class="text-lg font-semibold">Add Stock Inventory</h2>
+            <!-- <button type="button" onclick="closeInventoryModal()">✖</button> -->
+        </div>
+        <form id="addStockInventoryForm">
+            <div class="mb-4">
+                <label class="block font-medium">Contractor</label>
+                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputContractorName" required>
+                        <option selected value="">Select an option</option>
+                        @foreach ($contractors as $contractor)
+                            <option value="{{ $contractor->id }}">{{ $contractor->name }}</option>
+                        @endforeach
+                        </select>
+            </div>
+            <div class="grid grid-cols-2 gap-8">
+                
+                <!-- LEFT COLUMN: IN INVENTORY -->
+                <div class="bg-orange-50 p-4 rounded-lg">
+                    <h3 class="font-bold text-orange-600 mb-3">Stock In Inventory</h3>
+
+                    <div class="mb-3">
+                        <label class="block">Balance - Contractor</label>
+                        <input type="number" class="input w-full border mt-1" id="balContractor" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="block">Date In</label>
+                        <input type="date" class="input w-full border mt-1" id="inputDateIn">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="block">Remarks</label>
+                        <input type="text" class="input w-full border mt-1" id="inputRemarksIn">
+                    </div>
+                    <div class="flex items-center sm:py-3 border-gray-200 dark:border-dark-5">
+                        <h2 class="font-medium text-base mr-auto">Add Sites</h2>
+                    </div>
+                    <div id="siteInContainer">
+                        <div class="siteIn">
+                            <div class="mb-3">
+                                <label class="block">Client/Contractor</label>
+                                <select class="input w-full border mt-2 select2" name="clients_in[]">
+                                <option selected value="">Select an option</option>
+                                <!-- @foreach ($clientcompany as $clientcomp)
+                                    <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
+                                @endforeach
+                                </select> -->
+                                    <optgroup label="Clients">
+                                        @foreach ($clientcompany as $clientcomp)
+                                            <option value="client-{{ $clientcomp->id }}">
+                                                {{ $clientcomp->name }}
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+
+                                    <optgroup label="Contractors">
+                                        @foreach ($contractors as $contractor)
+                                            <option value="contractor-{{ $contractor->id }}">
+                                                {{ $contractor->name }}
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block">Site</label>
+                                <select class="input w-full border mt-2 select2" id="inputBillboardIn" name="sites_in[]">
+                                    <option selected value="">Select an option</option>
+                                    @foreach ($billboards as $billboard)
+                                        <option 
+                                            value="{{ $billboard->id }}" 
+                                            data-type="{{ $billboard->type }}" 
+                                            data-size="{{ $billboard->size }}">
+                                            {{ $billboard->site_number }} - {{ $billboard->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block">Type</label>
+                                <input type="text" class="input w-full border mt-1" name="types_in[]" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block">Size</label>
+                                <input type="text" class="input w-full border mt-1" name="sizes_in[]" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block"><strong>Quantity In</strong></label>
+                                <input type="number" class="input w-full border mt-1" name="qtys_in[]">
+                            </div>
+                            <div class="mb-3">
+                                <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteIn(this)">
+                                    Remove
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="siteInAdd()" class="bg-blue-600 text-white px-4 py-2 rounded">Add Site</button>
+                </div>
+
+                <!-- RIGHT COLUMN: OUT INVENTORY -->
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h3 class="font-bold text-green-600 mb-3">Stock Out Inventory</h3>
+
+                    <div class="mb-3">
+                        <label class="block">Bal - BGOC</label>
+                        <input type="number" class="input w-full border mt-1" id="balBgoc" readonly>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="block">Date Out</label>
+                        <input type="date" class="input w-full border mt-1" id="inputDateOut">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="block">Remarks</label>
+                        <input type="text" class="input w-full border mt-1" id="inputRemarksOut">
+                    </div>
+                    <div class="flex items-center sm:py-3 border-gray-200 dark:border-dark-5">
+                        <h2 class="font-medium text-base mr-auto">Add Sites</h2>
+                    </div>
+                    <div id="siteOutContainer">
+                        <div class="siteOut">
+                            <div class="mb-3">
+                                <label class="block">Client/Contractor</label>
+                                <select class="input w-full border mt-2 select2" name="clients_out[]">
+                                <option selected value="">Select an option</option>
+                                <!-- @foreach ($clientcompany as $clientcomp)
+                                    <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
+                                @endforeach -->
+                                    <optgroup label="Clients">
+                                        @foreach ($clientcompany as $clientcomp)
+                                            <option value="client-{{ $clientcomp->id }}">
+                                                {{ $clientcomp->name }}
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+
+                                    <optgroup label="Contractors">
+                                        @foreach ($contractors as $contractor)
+                                            <option value="contractor-{{ $contractor->id }}">
+                                                {{ $contractor->name }}
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block">Site</label>
+                                <select class="input w-full border mt-2 select2" id="inputBillboardOut" name="sites_out[]">
+                                    <option selected value="">Select an option</option>
+                                    @foreach ($billboards as $billboard)
+                                        <option 
+                                            value="{{ $billboard->id }}" 
+                                            data-type="{{ $billboard->type }}" 
+                                            data-size="{{ $billboard->size }}">
+                                            {{ $billboard->site_number }} - {{ $billboard->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block">Type</label>
+                                <input type="text" class="input w-full border mt-1" name="types_out[]" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block">Size</label>
+                                <input type="text" class="input w-full border mt-1" name="sizes_out[]" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block"><strong>Quantity Out</strong></label>
+                                <input type="number" class="input w-full border mt-1" name="qtys_out[]">
+                            </div>
+                            <div class="mb-3">
+                                <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteOut(this)">
+                                    Remove
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="siteOutAdd()" class="bg-blue-600 text-white px-4 py-2 rounded">Add Site</button>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="mt-6 text-right">
+                <button type="button" id="inventoryAddButton" class="bg-blue-600 text-white px-4 py-2 rounded">Submit</button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- END: Inventory Add Modal -->
 @endsection('modal_content')
 
 @section('script')
@@ -369,6 +660,44 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script>
+
+    $('.select2-state').select2({
+        placeholder: "Select a state",
+        allowClear: true,
+        width: '100%'
+    });
+
+    $('.select2-district').select2({
+        placeholder: "Select a district",
+        allowClear: true,
+        width: '100%'
+    });
+
+    $('.select2-location').select2({
+        placeholder: "Select a location",
+        allowClear: true,
+        width: '100%'
+    });
+        
+    // Global search across both tables
+    $('#globalSearchInput').on('keyup', function () {
+        const value = $(this).val().toLowerCase();
+
+        // 🔎 Filter Monthly Booking table manually
+        $('#monthly-ongoing-table tbody tr').each(function () {
+            const match = $(this).text().toLowerCase().indexOf(value) > -1;
+            $(this).toggle(match);
+        });
+
+        // ✅ Re-index No column for visible rows
+        $('#monthly-ongoing-table tbody tr:visible').each(function (i) {
+            $(this).find('td:first').text(i + 1);
+        });
+
+        // 🔎 Filter Check Availability table via DataTable API
+        const dt = $('#billboard_booking_table').DataTable();
+        dt.search(value).draw();
+    });
     
     // <!-- BEGIN: Billboard Booking List Filter -->
     $('#filterBillboardBookingState').on('change', function () {
@@ -452,7 +781,7 @@
     });
     // <!-- END: Billboard Booking List Filter -->
 
-     let startPicker, endPicker;
+    let startPicker, endPicker;
 
     // init datepicker
     function initDatePickers() {
@@ -498,6 +827,36 @@
     document.addEventListener("DOMContentLoaded", function () {
         const modal = document.getElementById('addBookingModal');
 
+        function initDatePickers() {
+            const startDateInput = document.getElementById('start_date');
+            const endDateInput   = document.getElementById('end_date');
+
+            // Destroy any existing pickers before re-init
+            if (startDateInput._flatpickr) startDateInput._flatpickr.destroy();
+            if (endDateInput._flatpickr) endDateInput._flatpickr.destroy();
+
+            const endPicker = flatpickr(endDateInput, {
+                dateFormat: "d/m/Y"
+            });
+
+            const startPicker = flatpickr(startDateInput, {
+                dateFormat: "d/m/Y",
+                onChange: function (selectedDates) {
+                    if (selectedDates.length > 0) {
+                        endPicker.set('minDate', selectedDates[0]);
+                        if (endDateInput.value) {
+                            const endDate = endPicker.parseDate(endDateInput.value, "d/m/Y");
+                            if (endDate < selectedDates[0]) {
+                                endDateInput.value = "";
+                            }
+                        }
+                    } else {
+                        endPicker.set('minDate', null);
+                    }
+                }
+            });
+        }
+
         if (modal) {
             const observer = new MutationObserver(() => {
                 const isVisible = !modal.classList.contains('hidden');
@@ -512,6 +871,15 @@
             });
         }
     });
+
+    // Open modal
+    function openAltEditorModal(element) {
+        cash(element).modal('show');
+    }
+    // Close modal
+    function closeAltEditorModal(element) {
+        cash(element).modal('hide');
+    }
 
     	
     $(document).ready(function() {
@@ -579,7 +947,7 @@
                     },
                     success: function (locations) {
                         locations.forEach(function (location) {
-                            $('#inputBookingLocation').append(`<option value="${location.id}">${location.name}</option>`);
+                            $('#inputBookingLocation').append(`<option value="${location.id}">${location.site_number} - ${location.name}</option>`);
                         });
                     },
                     error: function () {
@@ -597,6 +965,12 @@
 
         $('.select2-client').select2({
             placeholder: "Select a client",
+            allowClear: true,
+            width: '100%'
+        });
+
+        $('.select2-location').select2({
+            placeholder: "Select location",
             allowClear: true,
             width: '100%'
         });
@@ -833,10 +1207,10 @@
                 url: "{{ route('billboard.booking.create') }}",
                 data: {
                     _token          : $('meta[name="csrf-token"]').attr('content'),
-                    client         : document.getElementById("inputBookingCompany").value,
+                    client_id       : document.getElementById("inputBookingCompany").value,
                     state           : document.getElementById("inputBookingState").value,
                     district        : document.getElementById("inputBookingDistrict").value,
-                    location        : document.getElementById("inputBookingLocation").value,
+                    location_id     : document.getElementById("inputBookingLocation").value,
                     start_date      : start_date,
                     end_date        : end_date,
                     status          : document.getElementById("inputBookingStatus").value,
@@ -854,7 +1228,6 @@
 
                     // Clear inputs
                     $('#inputBookingCompany').val('').trigger('change');
-                    $('#inputBookingSiteNo').val('');
                     document.getElementById("inputBookingState").value = "";
                     document.getElementById("inputBookingDistrict").value = "";
                     document.getElementById("inputBookingLocation").value = "";
@@ -884,12 +1257,6 @@
                 }
             });
         }
-
-        $('#inputBookingLocation').on('change', function () {
-            const selectedOption = $(this).find('option:selected');
-            const siteNumber = selectedOption.data('site_number') || '';
-            $('#inputBookingSiteNo').val(siteNumber);
-        });
 
         // Edit Billboard Booking
         function editBooking() {
@@ -929,15 +1296,6 @@
                     window.showSubmitToast(error, "#D32929");
                 }
             });
-        }
-
-        // Open modal
-        function openAltEditorModal(element) {
-            cash(element).modal('show');
-        }
-        // Close modal
-        function closeAltEditorModal(element) {
-            cash(element).modal('hide');
         }
  
         // Setup the in-house users datatable
@@ -985,7 +1343,7 @@
                         return json.data;
                     }
                 },
-                dom: "lBfrtip",
+                dom: "lBrtip",
                 buttons: [{
                         extend: "csv",
                         className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
@@ -1059,11 +1417,23 @@
                         render: function(data, type, row) {
                             let element = ``
                             if (data == 'pending_payment'){
-                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-6 text-white">` + data + `</a>`;
-                            } else if (data == 'ongoing') {
-                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-18 text-black">` + data + `</a>`;
+                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-6 text-white">Pending Payment</a>`;
                             } else if (data == 'pending_install'){
-                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-1 text-white">` + data + `</a>`;
+                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-1 text-white">Pending Install</a>`;
+                            } else if (data == 'ongoing') {
+                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-green-600 text-white">Ongoing</a>`;
+                            } else if (data == 'completed') {
+                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-12 text-black">Completed</a>`;
+                            } else if (data == 'dismantle') {
+                                element = `
+                                    <div class="flex flex-col space-y-2">
+                                        <a class="button p-2 w-32 bg-theme-13 text-white text-center">Dismantle</a>
+                                        <a href="javascript:;" 
+                                        class="button p-2 w-32 bg-theme-1 text-white stock-inventory-btn"
+                                        data-id="${row.id}">
+                                            Stock Inventory
+                                        </a>
+                                    </div>`;
                             }
                             
                             return element;
@@ -1071,16 +1441,27 @@
                     },
                     {
                         data: "remarks",
+                        name: "remarks",
+                        render: function (data, type, row) {
+                            if (!data) return "-"; // handle empty remarks
+
+                            let shortText = data.length > 30 ? data.substr(0, 30) + "..." : data;
+
+                            return `
+                                <span class="remarks-short">${shortText}</span>
+                                ${data.length > 30 ? `<a href="javascript:void(0)" class="read-more text-blue-500 ml-2" data-full="${encodeURIComponent(data)}">Read more</a>` : ""}
+                            `;
+                        }
                     },
                     {
-                        data: "WO_detail",
+                        data: "billboard_id",
                         render: function(data, type, row) {
-                            var a = "{{ route('billboard.booking.index', ['id'=>':data'] )}}".replace(':data', data);
+                            var a = "{{ route('billboard.detail', ['id'=>':data'] )}}".replace(':data', data);
                             let element = 
                             `<div class="flex flex-row">
-                                <a href="javascript:;" id="profile-` + data + `"
-                                    class="button w-24 inline-block mr-2 mb-2 bg-theme-9 text-white" data-toggle="button" onclick="window.open('${a}')" >
-                                    View Detail
+                                <a href="javascript:;" id="${data}"
+                                    class="button w-32 inline-block mr-2 mb-2 bg-theme-9 text-white text-center" data-toggle="button" onclick="window.open('${a}')" >
+                                    Site location
                                 </a>
                             </div>`;
 
@@ -1090,28 +1471,33 @@
                     {
                         data: "id",
                         render: function(data, type, row) {
-                            let element = `
+                            return `
                             <div class="flex items-center space-x-2">
                                 <!-- Edit Button -->
-                                <a href="javascript:;" id="profile-` + data + `"
-                                    class="button w-24 inline-block mr-2 mb-2 bg-theme-1 text-white" data-toggle="button"" >
-                                    Edit
+                                <a href="javascript:;" 
+                                class="edit-booking button w-24 inline-block mr-2 mb-2 bg-theme-1 text-white" 
+                                data-id="${data}">
+                                Edit
                                 </a>
 
                                 <!-- Delete Button -->
-                                <a class="flex items-center text-theme-6" href="javascript:;" data-toggle="modal" data-target="#billboardBookingDeleteModal" id="delete-` + data + `">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 w-4 h-4 mr-1">
+                                <a class="flex items-center text-theme-6" href="javascript:;" 
+                                data-toggle="modal" data-target="#billboardBookingDeleteModal" 
+                                id="delete-${data}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" 
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" 
+                                        stroke-width="1.5" stroke-linecap="round" 
+                                        stroke-linejoin="round" class="feather feather-trash-2 w-4 h-4 mr-1">
                                         <polyline points="3 6 5 6 21 6"></polyline>
-                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4
+                                                a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                                         <line x1="10" y1="11" x2="10" y2="17"></line>
                                         <line x1="14" y1="11" x2="14" y2="17"></line>
                                     </svg> 
                                 </a>
                             </div>`;
-
-                            return element;
                         }
-                    },
+                    }
                 ],
             });
 
@@ -1160,31 +1546,258 @@
             }
 
             // Open modal to edit SR
-            editBookingModal();
+            // editBookingModal();
         };
 
         initBillboardBookingDatatable();
         setupAutoFilter();
 
-        // Open modal to edit Billboard Booking
-        function editBookingModal() {
-            // Remove previous click event listeners
-            $(document).off('click', "[id^='billboard_booking_table'] tbody tr td:not(:last-child)");
+        $(document).on("click", ".read-more", function () {
+            let fullText = decodeURIComponent($(this).data("full"));
+            $("#remarksContent").val(fullText);
 
-            $(document).on('click', "[id^='billboard_booking_table'] tbody tr td:not(:last-child)", function() {
+            // Use your helper instead of jQuery modal
+            openAltEditorModal("#remarksModal");
+        });
 
-                // Grab row client company id
-                booking_id = $(event.target).closest('tr').find('td:nth-last-child(1) a').attr('id').split('-')[1];
+        // Open modal to edit Billboard Booking (only via Edit button)
+        $(document).on("click", ".edit-booking", function () {
+            booking_id = $(this).data("id"); // from data-id attribute
 
-                // Place values to edit form fields in the modal
-                document.getElementById("editBookingStatus").value = $(event.target).closest('tr').find('td:nth-child(' + '8' + ')').text();
-                document.getElementById("editBookingRemarks").value = $(event.target).closest('tr').find('td:nth-child(' + '9' + ')').text();
+            let row = $('#billboard_booking_table')
+                        .DataTable()
+                        .row($(this).closest('tr'))
+                        .data();
 
-                // Open modal
-                var element = "#editBookingModal";
-                openAltEditorModal(element);
+            // Fill form fields
+            $("#editBookingStatus").val(row.status);
+            $("#editBookingRemarks").val(row.remarks);
+
+            // Open modal
+            openAltEditorModal("#editBookingModal");
+        });
+
+        // Open modal to edit Billboard Booking (only via Edit button)
+        $(document).on("click", ".new-job-order", function () {
+            const table = $('#billboard_availability_table').DataTable();
+            const row = table.row($(this).closest('tr')).data();
+
+            if (!row) return;
+
+            // Always reset modal
+            $("#inputBookingForm")[0].reset();
+            $(".select2-client").val("").trigger("change");
+            $(".select2-location").val("").trigger("change");
+
+            $("#inputBookingState").val(row.state_id).trigger("change");
+            $("#hiddenBookingState").val(row.state_id);
+
+            // --- Prefill district after districts load ---
+            $.ajax({
+                url: '{{ route("location.getDistricts") }}',
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    state_id: row.state_id
+                },
+                success: function (districts) {
+                    $('#inputBookingDistrict').empty().append('<option value="">-- Select District --</option>');
+                    districts.forEach(function (district) {
+                        $('#inputBookingDistrict').append(
+                            `<option value="${district.id}">${district.name}</option>`
+                        );
+                    });
+
+                    // Now set the district
+                    $("#inputBookingDistrict").val(row.district_id).trigger("change");
+                    $("#hiddenBookingDistrict").val(row.district_id);
+
+                    // --- Prefill location after locations load ---
+                    $.ajax({
+                        url: '{{ route("location.getLocations") }}',
+                        type: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            district_id: row.district_id
+                        },
+                        success: function (locations) {
+                            $('#inputBookingLocation').empty().append('<option value="">-- Select Location --</option>');
+                            locations.forEach(function (location) {
+                                $('#inputBookingLocation').append(
+                                    `<option value="${location.id}">${location.name}</option>`
+                                );
+                            });
+
+                            // Finally set the location
+                            $("#inputBookingLocation").val(row.location_id).trigger("change");
+                            $("#hiddenBookingLocation").val(row.location_id);
+                        }
+                    });
+                }
+            });
+
+            // Open modal
+            $("#addBookingModal").modal("show");
+        });
+
+        // Open Stock Inventory Modal
+        $(document).on("click", ".stock-inventory-btn", function () {
+            let bookingId     = $(this).data("id");
+            let siteNumber    = $(this).data("site-number");
+            let locationName  = $(this).data("location");
+            let size          = $(this).data("size");
+            let type          = $(this).data("type");
+
+            // Populate modal fields
+            $("#stockBookingId").val(bookingId); // hidden input if needed
+            $("#modalSiteNumber").text(siteNumber);
+            $("#modalLocation").text(locationName);
+            $("#modalSize").text(size);
+            $("#modalType").text(type);
+
+            // Reset form fields
+            $("#addStockInventoryForm")[0].reset();
+            $("#siteInContainer").empty();
+            $("#siteOutContainer").empty();
+
+            // Show modal
+            $("#inventoryAddModal").fadeIn();
+        });
+
+
+
+        // Add New Inventory
+        function inventoryAddButton() {
+            // Gather basic fields
+            let contractor_id = $("#inputContractorName").val();
+            let date_in = $("#inputDateIn").val();
+            let date_out = $("#inputDateOut").val();
+            let remarks_in = $("#inputRemarksIn").val();
+            let remarks_out = $("#inputRemarksOut").val();
+            let balance_contractor = $("#balContractor").val();
+            let balance_bgoc = $("#balBgoc").val();
+
+            // Gather site IN rows
+            let sites_in = [];
+            $("#siteInContainer .siteIn").each(function () {
+                let siteId = $(this).find("select[name='sites_in[]']").val();
+                let rawVal = $(this).find("select[name='clients_in[]']").val();
+                if (!rawVal) return; // skip empty
+
+                let clientType = null, clientId = null;
+                if (rawVal.startsWith("client-")) {
+                    clientType = "client";
+                    clientId = rawVal.replace("client-", "");
+                } else if (rawVal.startsWith("contractor-")) {
+                    clientType = "contractor";
+                    clientId = rawVal.replace("contractor-", "");
+                }
+
+                sites_in.push({
+                    id: siteId || null,
+                    client_type: clientType || null,
+                    client_id: clientId || null,
+                    type: $(this).find("input[name='types_in[]']").val(),
+                    size: $(this).find("input[name='sizes_in[]']").val(),
+                    qty: parseInt($(this).find("input[name='qtys_in[]']").val()) || 0
+                });
+            });
+            
+            // Gather site OUT rows
+            let sites_out = [];
+            $("#siteOutContainer .siteOut").each(function () {
+                let siteId = $(this).find("select[name='sites_out[]']").val();
+                let rawVal = $(this).find("select[name='clients_out[]']").val();
+                if (!rawVal) return; // skip empty
+
+                let clientType = null, clientId = null;
+                if (rawVal.startsWith("client-")) {
+                    clientType = "client";
+                    clientId = rawVal.replace("client-", "");
+                } else if (rawVal.startsWith("contractor-")) {
+                    clientType = "contractor";
+                    clientId = rawVal.replace("contractor-", "");
+                }
+
+                sites_out.push({
+                    id: siteId || null,
+                    client_type: clientType || null,
+                    client_id: clientId || null,
+                    type: $(this).find("input[name='types_out[]']").val(),
+                    size: $(this).find("input[name='sizes_out[]']").val(),
+                    qty: parseInt($(this).find("input[name='qtys_out[]']").val()) || 0
+                });
+            });
+
+            // Send request
+            $.ajax({
+                type: 'POST',
+                url: "{{ route('stockInventory.create') }}",
+                data: JSON.stringify({
+                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    contractor_id: contractor_id,
+                    date_in: date_in,
+                    date_out: date_out,
+                    remarks_in: remarks_in,
+                    remarks_out: remarks_out,
+                    sites_in: sites_in,   // ✅ contains client + site info
+                    sites_out: sites_out, // ✅ contains client + site info
+                    balance_contractor: balance_contractor,
+                    balance_bgoc: balance_bgoc
+                }),
+                contentType: "application/json",   // 👈 send JSON
+                dataType: "json",
+                success: function(response) {
+                    // Close modal after successfully edited
+                    closeAltEditorModal("#inventoryAddModal");
+
+                    // Show successful toast
+                    window.showSubmitToast("Successfully added.", "#91C714");
+
+                    // Reset form
+                    $('#inventoryAddModal input[type="text"], #inventoryAddModal input[type="number"], #inventoryAddModal input[type="date"]').val('');
+                    $('#inventoryAddModal select').val('').trigger('change');
+                    $('#siteInContainer').empty();
+                    $('#siteOutContainer').empty();
+
+                    // Reload table
+                    // $('#inventory_table').DataTable().ajax.reload();
+                    $('#inventory_table').DataTable().ajax.reload(null, false); 
+                },
+                error: function(xhr, status, error) {
+                    // Display the validation error message
+                    var response = JSON.parse(xhr.responseText);
+                    var error = "Error: " + response.error;
+
+                    // Show fail toast
+                    window.showSubmitToast(error, "#D32929");
+                }
+
             });
         }
+
+
+
+
+        // Open modal to edit Billboard Booking
+        // function editBookingModal() {
+        //     // Remove previous click event listeners
+        //     $(document).off('click', "[id^='billboard_booking_table'] tbody tr td:not(:last-child)");
+
+        //     $(document).on('click', "[id^='billboard_booking_table'] tbody tr td:not(:last-child)", function() {
+
+        //         // Grab row client company id
+        //         booking_id = $(event.target).closest('tr').find('td:nth-last-child(1) a').attr('id').split('-')[1];
+
+        //         // Place values to edit form fields in the modal
+        //         document.getElementById("editBookingStatus").value = $(event.target).closest('tr').find('td:nth-child(' + '8' + ')').text();
+        //         document.getElementById("editBookingRemarks").value = $(event.target).closest('tr').find('td:nth-child(' + '9' + ')').text();
+
+        //         // Open modal
+        //         var element = "#editBookingModal";
+        //         openAltEditorModal(element);
+        //     });
+        // }
 
         // Delete billboard ID
         function billboardBookingDeleteButton() {

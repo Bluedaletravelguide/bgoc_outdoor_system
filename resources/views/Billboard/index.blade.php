@@ -27,70 +27,80 @@
     
     <!-- BEGIN: Billboard Filter-->
     <div class="flex flex-col sm:flex-row sm:items-end xl:items-start">
-        <form class="xl:flex sm:mr-auto">
-            <div class="sm:flex items-center sm:mr-4">
+        <form class="xl:flex flex-col sm:mr-auto">
+            <div class="sm:flex items-center sm:mr-4 mb-2">
                 <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Status</label>
                 <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardStatus">
                     <option value="all">All</option>
-                    @foreach ($billboardStatus as $status)
-                        <option value="{{ $status }}">
-                            {{ $status == 1 ? 'Active' : 'Inactive' }}
-                        </option>
-                    @endforeach
+                    <option value="1">Active</option>
+                    <option value="0">Inactive</option>
                 </select>
             </div>
 
             @if (Auth::guard('web')->user()->hasRole(['superadmin', 'admin']))
-            <div class="sm:flex items-center sm:mr-4">
-                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">State</label>
-                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardState">
-                    <option value="all">All</option>
-                    @foreach ($states as $state)
-                        <option value="{{ $state->id }}">{{ $state->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            
+            <!-- Row 1: State & Area -->
+            <div class="sm:flex items-center mb-2">
+                <div class="sm:flex items-center sm:mr-4">
+                    <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">State</label>
+                    <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardState">
+                        <option value="all">All</option>
+                        @foreach ($states as $state)
+                            <option value="{{ $state->id }}">{{ $state->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
 
-            <div class="sm:flex items-center sm:mr-4">
-                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">District</label>
-                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardDistrict">
-                    <option value="all">All</option>
-                    @foreach ($districts as $district)
-                        <option value="{{ $district->id }}">{{ $district->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <br>
-
-            <div class="sm:flex items-center sm:mr-4">
-                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Type</label>
-                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardType">
-                    <option value="all">All</option>
-                    @foreach ($billboardTypes as $type)
-                        <option value="{{ $type }}">{{ $type }}</option>
-                    @endforeach
-                </select>
+                <div class="sm:flex items-center sm:mr-4">
+                    <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Area</label>
+                    <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardDistrict">
+                        <option value="all">All</option>
+                        @foreach ($districts as $district)
+                            <option value="{{ $district->id }}">{{ $district->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
 
-            <div class="sm:flex items-center sm:mr-4">
-                <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Size</label>
-                <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardSize">
-                    <option value="all">All</option>
-                    @foreach ($billboardSize as $size)
-                        <option value="{{ $size }}">{{ $size }}</option>
-                    @endforeach
-                </select>
+            <!-- Row 2: Type, New/Existing, Size -->
+            <div class="sm:flex items-center mb-2">
+                <div class="sm:flex items-center sm:mr-4 mb-2 sm:mb-0">
+                    <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Type</label>
+                    <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardType">
+                        <option value="all">All</option>
+                        @foreach ($billboardTypes as $type)
+                            <option value="{{ $type }}">{{ $type }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="sm:flex items-center sm:mr-4 mb-2 sm:mb-0">
+                    <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">New/Existing</label>
+                    <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardSiteType">
+                        <option value="all">All</option>
+                        <option value="new">New</option>
+                        <option value="existing">Existing</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="existing_1">Existing 1</option>
+                        <option value="existing_2">Existing 2</option>
+                        <option value="existing_3">Existing 3</option>
+                    </select>
+                </div>
+
+                <div class="sm:flex items-center sm:mr-4">
+                    <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Size</label>
+                    <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="filterBillboardSize">
+                        <option value="all">All</option>
+                        @foreach ($billboardSize as $size)
+                            <option value="{{ $size }}">{{ $size }}</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
             @endif
-
-            <!-- <div class="mt-2 xl:mt-0">
-                <button type="button" class="button w-full sm:w-16 bg-theme-32 text-white" id="filterBillboardButton">Filter</button>
-            </div> -->
         </form>
 
-        <div class="text-center"> 
+        <div class="text-center">
+            <!-- Buttons remain the same -->
             <a href="javascript:;" data-toggle="modal" data-target="#addBillboardModal" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-32 text-white">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus w-4 h-4">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -98,32 +108,34 @@
                 </svg>
                 Add New Stock
             </a>
-            <a href="#" id="exportBtn" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-9 text-white" target="_blank">
-                <svg xmlns="http://www.w3.org/2000/svg"
-                    width="24" height="24" viewBox="0 0 24 24"
-                    fill="none" stroke="currentColor"
-                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                    class="feather feather-download w-4 h-4 mr-2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                    <polyline points="7 10 12 15 17 10"/>
-                    <line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
-                Download Details
-            </a>
             <a href="{{ route('stockInventory.index')}}" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-32 text-white">
-                <svg xmlns="http://www.w3.org/2000/svg"
-                    width="24" height="24" viewBox="0 0 24 24"
-                    fill="none" stroke="currentColor"
-                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                    class="feather feather-download w-4 h-4 mr-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-download w-4 h-4 mr-2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                     <polyline points="7 10 12 15 17 10"/>
                     <line x1="12" y1="15" x2="12" y2="3"/>
                 </svg>
                 Inventory
             </a>
-        </div> 
+            <a href="#" id="exportBtnClient" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-12 text-black" target="_blank">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-download w-4 h-4 mr-2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Download Details [CLIENT]
+            </a>
+            <a href="#" id="exportBtn" class="button w-50 mr-2 mb-2 flex items-center justify-center bg-theme-9 text-black" target="_blank">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-download w-4 h-4 mr-2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Download Details [INTERNAL]
+            </a>
+            
+        </div>
     </div>
+
     <!-- END: Billboard Filter -->
 
     <!-- BEGIN: Billboard List -->
@@ -131,15 +143,17 @@
         <table class="table table-report mt-5" id="billboard_table">
             <thead>
                 <tr class="bg-theme-1 text-white">
+                    <th><input type="checkbox" id="select-all-billboards"></th>
                     <th>No</th>
                     <th>Site #</th>
+                    <th>New/Existing</th>
                     <th>Type</th>
                     <th>Size</th>
                     <th>Lighting</th>
                     <th>Location</th>
-                    <th>Region</th>
-                    <th>Date Created</th>
-                    <th>Status</th>
+                    <th>Area</th>
+                    <th style="display:none;">GPS Coordinate</th>
+                    <!-- <th>Status</th> -->
                     <th class="dt-exclude-export dt-no-sort">Show Detail</th>
                     <th class="dt-exclude-export dt-no-sort">Actions</th>
                 </tr>
@@ -161,8 +175,8 @@
                 <form>
                     <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Outdoor Type</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardType">
+                            <label>Outdoor Type <span style="color: red;">*</span></label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardType" required>
                                 <option value="">-- Select Outdoor Type --</option>
                                 <option value="BB">Billboard</option>
                                 <option value="TB">Tempboard</option>
@@ -171,25 +185,37 @@
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Size (H)'x(W)'</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardSize">
+                            <label>Size (H)'x(W)' <span style="color: red;">*</span></label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardSize" required>
                                 <option value="">-- Select Size --</option>
+                                <option value="10x10">10x10</option>
                                 <option value="15x10">15x10</option>
+                                <option value="20x15">20x15</option>
                                 <option value="30x20">30x20</option>
+                                <option value="10x40">10x40</option>
+                                <option value="6x3">6x3</option>
+                                <option value="7x3">7x3</option>
+                                <option value="8x3">8x3</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Lighting</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardLighting">
+                            <label>Lighting <span style="color: red;">*</span></label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardLighting" required>
                                 <option value="">-- Select Lighting --</option>
                                 <option value="None">None</option>
                                 <option value="TNB">TNB</option>
                                 <option value="SOLAR">SOLAR</option>
                             </select>
                         </div>
+
+                        <!-- Separator -->
+                        <div class="col-span-12">
+                            <hr class="my-6 border-t-4 border-black">
+                        </div>
+
                         <div class="col-span-12 sm:col-span-12">
-                            <label>State</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardState">
+                            <label>State <span style="color: red;">*</span></label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardState" required>
                                 <option value="">-- Select State --</option>
                                 @foreach ($states as $state)
                                     <option value="{{ $state->id }}">{{ $state->name }}</option>
@@ -197,24 +223,24 @@
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>District</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardDistrict">
-                                <option value="">-- Select District --</option>
+                            <label>Area <span style="color: red;">*</span></label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardDistrict" required>
+                                <option value="">-- Select Area --</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Council</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardCouncil">
+                            <label>Council <span style="color: red;">*</span></label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardCouncil" required>
                                 <option value="">-- Select Council --</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Location</label>
-                            <input type="text" class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardLocation" placeholder="Enter location name">
+                            <label>Location <span style="color: red;">*</span></label>
+                            <input type="text" class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardLocation" placeholder="Enter location name" required>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>State/Private Land</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardLand">
+                            <label>State/Private Land <span style="color: red;">*</span></label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardLand" required>
                                 <option value="">-- Select option --</option>
                                 <option value="A">A - State Land</option>
                                 <option value="B">B - Private Land</option>
@@ -222,8 +248,14 @@
                                 <option value="D">D - Others</option>
                             </select>
                         </div>
+
+                        <!-- Separator -->
+                        <div class="col-span-12">
+                            <hr class="my-6 border-t-4 border-black">
+                        </div>
+
                         <div class="col-span-12 sm:col-span-12">
-                            <label for="inputGPSCoordinate" class="form-label">GPS Coordinate</label>
+                            <label for="inputGPSCoordinate" class="form-label">GPS Coordinate <span style="color: red;">*</span></label>
                             <input 
                                 type="text" 
                                 class="input w-full border mt-2 flex-1" 
@@ -235,18 +267,48 @@
                             >
                             <small class="text-gray-500">Format: latitude (-90 → 90), longitude (-180 → 180)</small>
                         </div>
+                        <!-- New field for Google Maps URL -->
+                        <div class="col-span-12 sm:col-span-12">
+                            <label for="inputMapsUrl" class="form-label">Google Maps Link</label>
+                            <input 
+                                type="url" 
+                                class="input w-full border mt-2 flex-1" 
+                                id="inputMapsUrl" 
+                                name="gps_url"
+                                placeholder="Paste Google Maps share link (e.g. https://maps.app.goo.gl/xyz123)"
+                                pattern="https:\/\/maps\.app\.goo\.gl\/[A-Za-z0-9]+"
+                            >
+                            <small class="text-gray-500">Paste the short link from Google Maps → Share → Copy Link</small>
+                        </div>
+
+                        <!-- Separator -->
+                        <div class="col-span-12">
+                            <hr class="my-6 border-t-4 border-black">
+                        </div>
+
                         <div class="col-span-12 sm:col-span-12">
                             <label for="inputBillboardTrafficVolume" class="form-label">Traffic Volume</label>
                             <input 
                                 type="number" 
                                 class="input w-full border mt-2 flex-1" 
                                 id="inputBillboardTrafficVolume" 
-                                name="traffic_volume"
-                                min="0" 
+                                name="traffic_volume" 
                                 step="1" 
                                 placeholder="e.g. 50000" 
                                 required
                             >
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>Site Type</label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputBillboardSiteType">
+                                <option value="">-- Select option --</option>
+                                <option value="new">New</option>
+                                <option value="existing">Existing</option>
+                                <option value="rejected">Rejected</option>
+                                <option value="existing_1">Existing 1</option>
+                                <option value="existing_2">Existing 2</option>
+                                <option value="existing_3">Existing 3</option>
+                            </select>
                         </div>
                     </div>
 
@@ -270,7 +332,7 @@
                     <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                         <div class="col-span-12 sm:col-span-12">
                             <input type="hidden" id="editBillboardModalId" name="id">
-                            <label>Outdoor Type</label>
+                            <label>Outdoor Type <span style="color: red;">*</span></label>
                             <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardType" disabled>
                                 <option value="">-- Select Outdoor Type --</option>
                                 <option value="BB">Billboard</option>
@@ -280,24 +342,36 @@
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Billboard Size</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardSize">
+                            <label>Billboard Size <span style="color: red;">*</span></label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardSize" required>
                                 <option value="">-- Select Size --</option>
+                                <option value="10x10">10x10</option>
                                 <option value="15x10">15x10</option>
+                                <option value="20x15">20x15</option>
                                 <option value="30x20">30x20</option>
+                                <option value="10x40">10x40</option>
+                                <option value="6x3">6x3</option>
+                                <option value="7x3">7x3</option>
+                                <option value="8x3">8x3</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Lighting</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardLighting">
+                            <label>Lighting <span style="color: red;">*</span></label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardLighting" required>
                                 <option value="">-- Select Lighting --</option>
                                 <option value="None">None</option>
                                 <option value="TNB">TNB</option>
                                 <option value="SOLAR">SOLAR</option>
                             </select>
                         </div>
+
+                        <!-- Separator -->
+                        <div class="col-span-12">
+                            <hr class="my-6 border-t-4 border-black">
+                        </div>
+
                         <div class="col-span-12 sm:col-span-12">
-                            <label>State</label>
+                            <label>State <span style="color: red;">*</span></label>
                             <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardState"  disabled>
                                 <option value="">-- Select State --</option>
                                 @foreach ($states as $state)
@@ -306,23 +380,29 @@
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>District</label>
-                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardDistrict" disabled>
-                                <option value="">-- Select District --</option>
+                            <label>Area <span style="color: red;">*</span></label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardDistrict" required>
+                                <option value="">-- Select Area --</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Council</label>
+                            <label>Council <span style="color: red;">*</span></label>
                             <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardCouncil" disabled>
                                 <option value="">-- Select Council --</option>
                             </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
-                            <label>Location</label>
+                            <label>Location <span style="color: red;">*</span></label>
                             <input type="text" class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardLocation" placeholder="Enter location name">
                         </div>
+
+                        <!-- Separator -->
+                        <div class="col-span-12">
+                            <hr class="my-6 border-t-4 border-black">
+                        </div>
+
                         <div class="col-span-12 sm:col-span-12">
-                            <label for="editGPSCoordinate" class="form-label">GPS Coordinate</label>
+                            <label for="editGPSCoordinate" class="form-label">GPS Coordinate <span style="color: red;">*</span></label>
                             <input 
                                 type="text" 
                                 class="input w-full border mt-2 flex-1" 
@@ -334,8 +414,37 @@
                             <small class="text-gray-500">Format: latitude, longitude</small>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
+                            <label for="editGPSUrl" class="form-label">GPS URL (Google Maps)</label>
+                            <input 
+                                type="url" 
+                                class="input w-full border mt-2 flex-1" 
+                                id="editGPSUrl" 
+                                name="gps_url"
+                                placeholder="https://maps.app.goo.gl/xyz123"
+                            >
+                            <small class="text-gray-500">Example: https://maps.app.goo.gl/xxxxx</small>
+                        </div>
+
+                        <!-- Separator -->
+                        <div class="col-span-12">
+                            <hr class="my-6 border-t-4 border-black">
+                        </div>
+
+                        <div class="col-span-12 sm:col-span-12">
                             <label>Traffic Volume</label>
                             <input type="text" class="input w-full border mt-2 flex-1" id="editBillboardTrafficVolume" value="" required>
+                        </div>
+                        <div class="col-span-12 sm:col-span-12">
+                            <label>Site Type</label>
+                            <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="editBillboardSiteType">
+                                <option value="">-- Select option --</option>
+                                <option value="new">New</option>
+                                <option value="existing">Existing</option>
+                                <option value="rejected">Rejected</option>
+                                <option value="existing_1">Existing 1</option>
+                                <option value="existing_2">Existing 2</option>
+                                <option value="existing_3">Existing 3</option>
+                            </select>
                         </div>
                         <div class="col-span-12 sm:col-span-12">
                             <label>Status</label>
@@ -381,6 +490,49 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
+
+    // Global array
+    let selectedBillboards = [];
+
+    // Row checkbox clicked
+    $('#billboard_table').on('change', 'input.billboard-checkbox', function() {
+        let id = $(this).val().toString(); // always string
+        if ($(this).is(':checked')) {
+            if (!selectedBillboards.includes(id)) selectedBillboards.push(id);
+        } else {
+            selectedBillboards = selectedBillboards.filter(i => i != id);
+        }
+    });
+
+    // Select all checkbox
+    $('#select-all-billboards').on('click', function() {
+        let isChecked = $(this).is(':checked');
+        $('#billboard_table tbody input.billboard-checkbox').each(function() {
+            let id = $(this).val().toString();
+            $(this).prop('checked', isChecked);
+            if (isChecked) {
+                if (!selectedBillboards.includes(id)) selectedBillboards.push(id);
+            } else {
+                selectedBillboards = selectedBillboards.filter(i => i != id);
+            }
+        });
+    });
+
+    // Restore on redraw
+    $('#billboard_table').on('draw.dt', function() {
+        $('#billboard_table tbody input.billboard-checkbox').each(function() {
+            let id = $(this).val().toString();
+            $(this).prop('checked', selectedBillboards.includes(id));
+        });
+
+        // Update "select all"
+        let allChecked = $('#billboard_table tbody input.billboard-checkbox').length === 
+                        $('#billboard_table tbody input.billboard-checkbox:checked').length;
+        $('#select-all-billboards').prop('checked', allChecked);
+    });
+
+
+
     $('#filterBillboardState').on('change', function () {
         let stateId = $(this).val();
 
@@ -422,25 +574,86 @@
     document.getElementById('exportBtn').addEventListener('click', function (e) {
         e.preventDefault();
 
-        // Read values from your filter fields
-        let state = document.getElementById('filterBillboardState')?.value || 'all';
-        let district = document.getElementById('filterBillboardDistrict')?.value || 'all';
-        let type = document.getElementById('filterBillboardType')?.value || 'all';
-        let size = document.getElementById('filterBillboardSize')?.value || 'all';
-        let status = document.getElementById('filterBillboardStatus')?.value || 'all';
+        // Read filters
+        let state     = document.getElementById('filterBillboardState')?.value || 'all';
+        let district  = document.getElementById('filterBillboardDistrict')?.value || 'all';
+        let type      = document.getElementById('filterBillboardType')?.value || 'all';
+        let site_type = document.getElementById('filterBillboardSiteType')?.value || 'all';
+        let size      = document.getElementById('filterBillboardSize')?.value || 'all';
+        let status    = document.getElementById('filterBillboardStatus')?.value || 'all';
 
-        // Build query string
-        let query = new URLSearchParams({
+        // Build params
+        let params = {
             state_id: state,
             district_id: district,
             type: type,
+            site_type: site_type,
             size: size,
             status: status
-        }).toString();
+        };
+
+        // ✅ Add selectedBillboards if any
+        if (selectedBillboards.length > 0) {
+            params.billboard_ids = selectedBillboards.join(',');
+        }
+
+        // Build query string
+        let query = new URLSearchParams(params).toString();
 
         // Redirect with query string
         let exportUrl = '{{ route("billboards.export.pdf") }}' + '?' + query;
         window.open(exportUrl, '_blank');
+
+        // ✅ After opening, clear selections
+        selectedBillboards = []; // reset array
+        document.querySelectorAll('.billboard-checkbox').forEach(cb => cb.checked = false);
+        let selectAll = document.getElementById('select-all-billboards');
+        if (selectAll) {
+            selectAll.checked = false;
+        }
+    });
+
+
+    document.getElementById('exportBtnClient').addEventListener('click', function (e) {
+        e.preventDefault();
+
+        // Read filters
+        let state     = document.getElementById('filterBillboardState')?.value || 'all';
+        let district  = document.getElementById('filterBillboardDistrict')?.value || 'all';
+        let type      = document.getElementById('filterBillboardType')?.value || 'all';
+        let site_type = document.getElementById('filterBillboardSiteType')?.value || 'all';
+        let size      = document.getElementById('filterBillboardSize')?.value || 'all';
+        let status    = document.getElementById('filterBillboardStatus')?.value || 'all';
+
+        // Build params
+        let params = {
+            state_id: state,
+            district_id: district,
+            type: type,
+            site_type: site_type,
+            size: size,
+            status: status
+        };
+
+        // ✅ Add selectedBillboards if any
+        if (selectedBillboards.length > 0) {
+            params.billboard_ids = selectedBillboards.join(',');
+        }
+
+        // Build query string
+        let query = new URLSearchParams(params).toString();
+
+        // Redirect with query string
+        let exportUrl = '{{ route("billboards.export.pdf.client") }}' + '?' + query;
+        window.open(exportUrl, '_blank');
+
+        // ✅ After opening, clear selections
+        selectedBillboards = []; // reset array
+        document.querySelectorAll('.billboard-checkbox').forEach(cb => cb.checked = false);
+        let selectAll = document.getElementById('select-all-billboards');
+        if (selectAll) {
+            selectAll.checked = false;
+        }
     });
 
 
@@ -454,272 +667,14 @@
 
         const table = tableElement.DataTable();
 
-        $('#filterBillboardStatus, #filterBillboardState, #filterBillboardDistrict, #filterBillboardType, #filterBillboardSize').on('change', function () {
+        $('#filterBillboardStatus, #filterBillboardState, #filterBillboardDistrict, #filterBillboardType, #filterBillboardSiteType, #filterBillboardSize').on('change', function () {
             table.ajax.reload();
         });
     }
-
-    // Add site to In Inventory
-    function siteInAdd() {
-        let html = `
-            <br><div class="siteIn">
-                <div class="mb-3">
-                    <label class="block">Site</label>
-                    <select class="input w-full border mt-2 select2" name="sites_in[]">
-                        <option selected value="">Select an option</option>
-                        @foreach ($billboards as $billboard)
-                            <option 
-                                value="{{ $billboard->id }}" 
-                                data-type="{{ $billboard->type }}" 
-                                data-size="{{ $billboard->size }}">
-                                {{ $billboard->site_number }} - {{ $billboard->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="block">Type</label>
-                    <input type="text" class="input w-full border mt-1" name="types_in[]" readonly>
-                </div>
-                <div class="mb-3">
-                    <label class="block">Size</label>
-                    <input type="text" class="input w-full border mt-1" name="sizes_in[]" readonly>
-                </div>
-                <div class="mb-3">
-                    <label class="block"><strong>Quantity In</strong></label>
-                    <input type="number" class="input w-full border mt-1" name="qtys_in[]">
-                </div>
-                <div class="mb-3">
-                    <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteIn(this)">
-                        Remove
-                    </a>
-                </div>
-            </div>`;
-
-        // Append
-        $("#siteInContainer").append(html);
-
-        // Re-init select2 for all .select2 (new + old)
-        $("#siteInContainer .select2").select2({
-            width: '100%'
-        });
-
-        updateTotalIn();
-    }
-
-    function removeSiteIn(el) {
-        el.closest(".siteIn").remove();
-        updateTotalIn();
-    }
-
-    // Add site to Out Inventory
-    function siteOutAdd() {
-        let html = `
-            <br><div class="siteOut">
-                <div class="mb-3">
-                    <label class="block">Site</label>
-                    <select class="input w-full border mt-2 select2" name="sites_out[]" required>
-                        <option selected value="">Select an option</option>
-                        @foreach ($billboards as $billboard)
-                            <option 
-                                value="{{ $billboard->id }}" 
-                                data-type="{{ $billboard->type }}" 
-                                data-size="{{ $billboard->size }}">
-                                {{ $billboard->site_number }} - {{ $billboard->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="block">Type</label>
-                    <input type="text" class="input w-full border mt-1" name="types_out[]" readonly>
-                </div>
-                <div class="mb-3">
-                    <label class="block">Size</label>
-                    <input type="text" class="input w-full border mt-1" name="sizes_out[]" readonly>
-                </div>
-                <div class="mb-3">
-                    <label class="block"><strong>Quantity Out</strong></label>
-                    <input type="number" class="input w-full border mt-1" name="qtys_out[]" required>
-                </div>
-                <div class="mb-3">
-                    <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteOut(this)">
-                        Remove
-                    </a>
-                </div>
-            </div>`;
-        
-        $("#siteOutContainer").append(html);
-
-        // Re-init select2
-        $("#siteOutContainer .select2").select2({
-            width: '100%'
-        });
-
-        updateTotalOut();
-    }
-
-    function removeSiteOut(el) {
-        el.closest(".siteOut").remove();
-        updateTotalOut();
-    }
-
-    // Add In Site (Edit)
-    function siteInEditAdd() {
-        let html = `
-            <div class="siteInEdit">
-                <div class="mb-3">
-                    <label class="block">Site</label>
-                    <select class="input w-full border mt-2 select2" name="sites_in_edit[]">
-                        <option selected value="">Select an option</option>
-                        @foreach ($billboards as $billboard)
-                            <option 
-                                value="{{ $billboard->id }}" 
-                                data-type="{{ $billboard->type }}" 
-                                data-size="{{ $billboard->size }}">
-                                {{ $billboard->site_number }} - {{ $billboard->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="block">Type</label>
-                    <input type="text" class="input w-full border mt-1" name="types_in_edit[]" readonly>
-                </div>
-                <div class="mb-3">
-                    <label class="block">Size</label>
-                    <input type="text" class="input w-full border mt-1" name="sizes_in_edit[]" readonly>
-                </div>
-                <div class="mb-3">
-                    <label class="block"><strong>Quantity In</strong></label>
-                    <input type="number" class="input w-full border mt-1" name="qtys_in_edit[]">
-                </div>
-                <div class="mb-3">
-                    <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteInEdit(this)">
-                        Remove
-                    </a>
-                </div>
-            </div>`;
-        
-        $("#siteInEditContainer").append(html);
-
-        // Re-init select2
-        $("#siteInEditContainer .select2").select2({
-            width: '100%'
-        });
-    }
-
-    function removeSiteInEdit(el) {
-        el.closest(".siteInEdit").remove();
-    }
-
-    // Add Out Site (Edit)
-    function siteOutEditAdd() {
-        let html = `
-            <div class="siteOutEdit">
-                <div class="mb-3">
-                    <label class="block">Site</label>
-                    <select class="input w-full border mt-2 select2" name="sites_out_edit[]">
-                        <option selected value="">Select an option</option>
-                        @foreach ($billboards as $billboard)
-                            <option 
-                                value="{{ $billboard->id }}" 
-                                data-type="{{ $billboard->type }}" 
-                                data-size="{{ $billboard->size }}">
-                                {{ $billboard->site_number }} - {{ $billboard->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="block">Type</label>
-                    <input type="text" class="input w-full border mt-1" name="types_out_edit[]" readonly>
-                </div>
-                <div class="mb-3">
-                    <label class="block">Size</label>
-                    <input type="text" class="input w-full border mt-1" name="sizes_out_edit[]" readonly>
-                </div>
-                <div class="mb-3">
-                    <label class="block"><strong>Quantity Out</strong></label>
-                    <input type="number" class="input w-full border mt-1" name="qtys_out_edit[]">
-                </div>
-                <div class="mb-3">
-                    <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteOutEdit(this)">
-                        Remove
-                    </a>
-                </div>
-            </div>`;
-
-        $("#siteOutEditContainer").append(html);
-
-        // Re-init select2
-        $("#siteOutEditContainer .select2").select2({
-            width: '100%'
-        });
-    }
-
-    function removeSiteOutEdit(el) {
-        el.closest(".siteOutEdit").remove();
-    }
-
-    // Handle auto-fill Type & Size for ADD modal
-    $(document).on('change', '#siteInContainer .select2, #siteOutContainer .select2', function() {
-        let selected = $(this).find(':selected');
-        let type = selected.data('type') || '';
-        let size = selected.data('size') || '';
-
-        // find the nearest .siteIn or .siteOut row
-        let row = $(this).closest('.siteIn, .siteOut');
-        row.find('input[name="types_in[]"], input[name="types_out[]"]').val(type);
-        row.find('input[name="sizes_in[]"], input[name="sizes_out[]"]').val(size);
-    });
-
-    // Handle auto-fill Type & Size for EDIT modal
-    $(document).on('change', '#siteInEditContainer .select2, #siteOutEditContainer .select2', function() {
-        let selected = $(this).find(':selected');
-        let type = selected.data('type') || '';
-        let size = selected.data('size') || '';
-
-        let row = $(this).closest('.siteInEdit, .siteOutEdit');
-        row.find('input[name="types_in_edit[]"], input[name="types_out_edit[]"]').val(type);
-        row.find('input[name="sizes_in_edit[]"], input[name="sizes_out_edit[]"]').val(size);
-    });
-
-    // Function to calculate total In
-    function updateTotalIn() {
-        let total = 0;
-        document.querySelectorAll("input[name='qtys_in[]']").forEach(function(input) {
-            let val = parseInt(input.value) || 0;
-            total += val;
-        });
-        document.getElementById("balContractor").value = total;
-    }
-
-    // Function to calculate total Out
-    function updateTotalOut() {
-        let total = 0;
-        document.querySelectorAll("input[name='qtys_out[]']").forEach(function(input) {
-            let val = parseInt(input.value) || 0;
-            total += val;
-        });
-        document.getElementById("balBgoc").value = total;
-    }
-
-    // Attach events when typing in Quantity fields
-    $(document).on("input", "input[name='qtys_in[]']", function() {
-        updateTotalIn();
-    });
-
-    $(document).on("input", "input[name='qtys_out[]']", function() {
-        updateTotalOut();
-    });
-
-    
     
     $(document).ready(function() {
         // Global variables
         var filterBillboardStatus;
-
         document.getElementById("billboardDeleteButton").addEventListener("click", billboardDeleteButton);
 
         // Initialize Select2 with search
@@ -729,12 +684,26 @@
             width: '100%'
         });
 
+        // Initialize Select2 with tagging enabled
+        $('#inputBillboardDistrict').select2({
+            tags: true,
+            placeholder: "-- Select or Add Area --",
+            allowClear: true,
+        });
+
+        $('#editBillboardDistrict').select2({
+            tags: true,   // ✅ allow typing new values
+            placeholder: "-- Select or Type Area --",
+            allowClear: true,
+            width: '100%'
+        });
+
         // When "State" is changed in add form
         $('#inputBillboardState').on('change', function () {
             let stateId = $(this).val();
 
-            // Reset District & Council dropdowns
-            $('#inputBillboardDistrict').empty().append('<option value="">-- Select District --</option>');
+            // Reset Area & Council
+            $('#inputBillboardDistrict').empty().append('<option value="">-- Select Area --</option>');
             $('#inputBillboardCouncil').empty().append('<option value="">-- Select Council --</option>');
 
             if (stateId !== '') {
@@ -747,8 +716,12 @@
                     },
                     success: function (districts) {
                         districts.forEach(function (district) {
-                            $('#inputBillboardDistrict').append(`<option value="${district.id}">${district.name}</option>`);
+                            let option = new Option(district.name, district.id, false, false);
+                            $('#inputBillboardDistrict').append(option);
                         });
+
+                        // Refresh select2 options after AJAX load
+                        $('#inputBillboardDistrict').trigger('change');
                     },
                     error: function () {
                         alert('Failed to load districts.');
@@ -757,12 +730,10 @@
             }
         });
 
-        // When "District" is changed in add form
+        // When district changes → load councils
         $('#inputBillboardDistrict').on('change', function () {
-            let stateId = $('#inputBillboardState').val();   // ✅ get the selected state
-            let districtId = $(this).val();
+            let stateId = $('#inputBillboardState').val();
 
-            // Reset Council dropdown
             $('#inputBillboardCouncil').empty().append('<option value="">-- Select Council --</option>');
 
             if (stateId !== '') {
@@ -771,7 +742,7 @@
                     type: 'POST',
                     data: {
                         _token: '{{ csrf_token() }}',
-                        state_id: stateId   // ✅ Correct
+                        state_id: stateId
                     },
                     success: function (councils) {
                         councils.forEach(function (council) {
@@ -868,60 +839,69 @@
                         d.state     = $('#filterBillboardState').val();
                         d.district  = $('#filterBillboardDistrict').val();
                         d.type      = $('#filterBillboardType').val();
+                        d.site_type = $('#filterBillboardSiteType').val();
                         d.size      = $('#filterBillboardSize').val();
                     },
                     dataSrc: function(json) {
-                        console.log(json);
                         json.recordsTotal       = json.recordsTotal;
                         json.recordsFiltered    = json.recordsFiltered;
                         return json.data;
                     }
                 },
                 dom: "lBfrtip",
-                buttons: [{
-                        extend: "csv",
-                        className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
-                        title: $fileName,
-                        exportOptions: {
-                            columns: ":not(.dt-exclude-export)"
-                        },
-                        init: function(api, node, config) {
-                            $(node).removeClass('dt-button');
-                            $(node).removeClass('buttons-html5');
-                        },
-                    },
+                buttons: [
                     {
-                        extend: "excel",
+                        text: "Export Excel",
                         className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
-                        title: $fileName,
-                        exportOptions: {
-                            columns: ":not(.dt-exclude-export)"
-                        },
-                        init: function(api, node, config) {
-                            $(node).removeClass('dt-button');
-                            $(node).removeClass('buttons-html5');
-                        },
-                    },
-                    {
-                        extend: "print",
-                        className: "button w-24 rounded-full shadow-md mr-1 mb-2 bg-theme-7 text-white",
-                        title: $fileName,
-                        // including printing image
-                        exportOptions: {
-                            columns: ":not(.dt-exclude-export)",
-                            stripHtml: false,
-                        },
-                        init: function(api, node, config) {
-                            $(node).removeClass('dt-button');
-                            $(node).removeClass('buttons-html5');
-                        },
-                    },
+                        action: function () {
+                            
+                            let form = $('<form>', {
+                                method: 'POST',
+                                action: "{{ route('billboards.export') }}"
+                            });
+
+                            // Add filters as hidden inputs
+                            form.append($('<input>', {type: 'hidden', name: '_token', value: $('meta[name="csrf-token"]').attr('content')}));
+
+                            // Add selected IDs if any
+                            if (selectedBillboards.length > 0) {
+                                form.append($('<input>', {type: 'hidden', name: 'billboard_ids', value: selectedBillboards.join(',')}));
+                            }
+
+                            form.append($('<input>', {type: 'hidden', name: 'status', value: $('#filterBillboardStatus').val()}));
+                            form.append($('<input>', {type: 'hidden', name: 'state', value: $('#filterBillboardState').val()}));
+                            form.append($('<input>', {type: 'hidden', name: 'district', value: $('#filterBillboardDistrict').val()}));
+                            form.append($('<input>', {type: 'hidden', name: 'type', value: $('#filterBillboardType').val()}));
+                            form.append($('<input>', {type: 'hidden', name: 'site_type', value: $('#filterBillboardSiteType').val()}));
+                            form.append($('<input>', {type: 'hidden', name: 'size', value: $('#filterBillboardSize').val()}));
+
+                            form.appendTo('body').submit().remove();
+
+                            // ✅ After opening, clear selections
+                            selectedBillboards = []; // reset array
+                            document.querySelectorAll('.billboard-checkbox').forEach(cb => cb.checked = false);
+                            let selectAll = document.getElementById('select-all-billboards');
+                            if (selectAll) {
+                                selectAll.checked = false;
+                            }
+                        }
+                    }
                 ],
+
                 columnDefs: [{
                     targets: 'dt-no-sort',
                     orderable: false
                 }],
                 columns: [
+                    {
+                        data: "id",
+                        orderable: false,
+                        searchable: false,
+                        render: function(data) {
+                            let checked = selectedBillboards.includes(data) ? 'checked' : '';
+                            return `<input type="checkbox" class="billboard-checkbox" value="${data}" ${checked}>`;
+                        }
+                    },
                     {
                         data: null, // <-- important
                         name: 'no',
@@ -933,6 +913,9 @@
                     },
                     {
                         data: "site_number",
+                    },
+                    {
+                        data: "site_type",
                     },
                     {
                         data: "type",
@@ -950,27 +933,22 @@
                         data: "region",
                     },
                     {
-                        data: "created_at",
-                    },
-                    {
-                        data: "status",
-                        type: "readonly",
-                        render: function(data, type, row) {
-                            let element = ``
-                            if (data == 1){
-                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-9 text-white">ACTIVE</a>`;
-                            } else if (data == 0){
-                                element = `<a class="p-2 w-24 rounded-full mr-1 mb-2 bg-theme-6 text-white">INACTIVE</a>`;
-                            }
-                            
-                            return element;
+                        data: "gps_latitude",   // point to a valid field
+                        name: "gps_coordinate",
+                        visible: false,         // keep hidden in UI
+                        render: function (data, type, row) {
+                            let lat = row.gps_latitude ? row.gps_latitude : "";
+                            let lng = row.gps_longitude ? row.gps_longitude : "";
+                            return (lat && lng) ? `${lat}, ${lng}` : "";
                         }
                     },
                     {
                         data: "id",
                         render: function(data, type, row) {
                             var a = "{{ route('billboard.detail', ['id'=>':data'] )}}".replace(':data', data);
-                            let mapUrl = `https://www.google.com/maps?q=${row.gps_latitude},${row.gps_longitude}`;
+                            let mapUrl = row.gps_url && row.gps_url.trim() !== ""
+                                ? row.gps_url
+                                : `https://www.google.com/maps?q=${row.gps_latitude},${row.gps_longitude}`;
                             let element = 
                                 `<div class="flex flex-row">
                                     <a href="javascript:;" id="detail-` + data + `"
@@ -1006,8 +984,10 @@
                                     data-location="${row.location_name}"
                                     data-gps_latitude="${row.gps_latitude}"
                                     data-gps_longitude="${row.gps_longitude}"
+                                    data-gps_url="${row.gps_url}"
                                     data-traffic_volume="${row.traffic_volume}"
                                     data-status="${row.status}"
+                                    data-site_type="${row.site_type}"
                                 >
                                     Edit
                                 </a>
@@ -1082,11 +1062,6 @@
                 }
             }
 
-            @if (Auth::guard('web')->user()->can('work_order.edit'))
-            // Open modal to edit Billboard
-            workOrderEditModal();
-            @endif
-
             // billboardEditModal();
         };
 
@@ -1107,9 +1082,12 @@
             const latitude = $this.data('gps_latitude');
             const longitude = $this.data('gps_longitude');
             $('#editGPSCoordinate').val(latitude + ', ' + longitude);
+            $('#editGPSUrl').val($this.data('gps_url'));
             
             $('#editBillboardTrafficVolume').val($this.data('traffic_volume'));
             $('#editBillboardStatus').val($this.data('status'));
+            $('#editBillboardSiteType').val($this.data('site_type'));
+            
             $('#editBillboardModalId').val(billboardID);
 
             // Get IDs
@@ -1126,10 +1104,18 @@
                 _token: '{{ csrf_token() }}',
                 state_id: stateID
             }, function (districts) {
-                $('#editBillboardDistrict').empty().append(`<option value="">-- Select District --</option>`);
+                $('#editBillboardDistrict').empty().append(`<option value="">-- Select Area --</option>`);
                 districts.forEach(function (d) {
                     $('#editBillboardDistrict').append(`<option value="${d.id}">${d.name}</option>`);
                 });
+
+                // ✅ if districtID is not in list (user had custom one before), add it manually
+                if (districtID && !$('#editBillboardDistrict option[value="' + districtID + '"]').length) {
+                    $('#editBillboardDistrict').append(
+                        `<option value="${districtID}" selected>${districtID}</option>`
+                    );
+                }
+
                 $('#editBillboardDistrict').val(districtID).trigger('change');
 
                 // ✅ Fetch councils after districts load
@@ -1163,7 +1149,7 @@
             if (stateID) {
                 // districts
                 $.get('/get-districts/' + stateID, function (data) {
-                    let options = '<option value="">-- Select District --</option>';
+                    let options = '<option value="">-- Select Area --</option>';
                     data.forEach(function (district) {
                         options += `<option value="${district.id}">${district.name}</option>`;
                     });
@@ -1181,7 +1167,7 @@
             }
         });
 
-        // 🔄 On District change => fetch locations
+        // 🔄 On Area change => fetch locations
         $('#editBillboardDistrict').on('change', function () {
             let districtID = $(this).val();
             $('#editBillboardLocation').html('<option value="">-- Loading Locations --</option>');
@@ -1203,9 +1189,6 @@
         // Add New Billboard
         function billboardAddButton() {
 
-            // document.getElementById("billboardAddButton").disabled = true;
-            // document.getElementById('billboardAddButton').style.display = 'none';
-
             $.ajax({
                 type: 'POST',
                 url: "{{ route('billboard.create') }}",
@@ -1219,8 +1202,10 @@
                     council         : document.getElementById("inputBillboardCouncil").value,
                     land            : document.getElementById("inputBillboardLand").value,
                     location        : document.getElementById("inputBillboardLocation").value,
-                    gpsCoordinate   : document.getElementById("inputGPSCoordinate").value,
+                    gps_coordinate  : document.getElementById("inputGPSCoordinate").value,
+                    gps_url         : document.getElementById("inputMapsUrl").value,
                     trafficvolume   : document.getElementById("inputBillboardTrafficVolume").value,
+                    siteType        : document.getElementById("inputBillboardSiteType").value,   
                 },
                 success: function(response) {
                     // Close modal after successfully edited
@@ -1235,19 +1220,17 @@
                     document.getElementById("inputBillboardSize").value = "";
                     document.getElementById("inputBillboardLighting").value = "";
                     document.getElementById("inputBillboardState").value = "";
-                    document.getElementById("inputBillboardDistrict").value = "";
+                    $('#inputBillboardDistrict').val(null).trigger('change');
                     document.getElementById("inputBillboardCouncil").value = "";
                     document.getElementById("inputBillboardLand").value = "";
                     document.getElementById("inputBillboardLocation").value = "";
                     document.getElementById("inputGPSCoordinate").value = "";
+                    document.getElementById("inputMapsUrl").value = "";
                     document.getElementById("inputBillboardTrafficVolume").value = "";
+                    document.getElementById("inputBillboardSiteType").value = "";
 
                     // Reload table
                     $('#billboard_table').DataTable().ajax.reload();
-                    
-                    // Reset the button visibility and enable it for next submission
-                    // document.getElementById("billboardAddButton").disabled = false;
-                    // document.getElementById('billboardAddButton').style.display = 'inline-block';  // Shows the button again
                 },
                 error: function(xhr, status, error) {
                     // Display the validation error message
@@ -1276,9 +1259,12 @@
                     district_id: $('#editBillboardDistrict').val(),
                     council_id: $('#editBillboardCouncil').val(),
                     location_name: $('#editBillboardLocation').val(), // 👈 send as name
-                    gpsCoordinate: $('#editGPSCoordinate').val(),
+                    gps_coordinate: $('#editGPSCoordinate').val(),
+                    gps_url: $('#editGPSUrl').val(),
                     traffic_volume: $('#editBillboardTrafficVolume').val(),
                     status: $('#editBillboardStatus').val(),
+                    site_type: $('#editBillboardSiteType').val(),
+                    
                     
                 },
                 success: function(response) {
@@ -1288,6 +1274,9 @@
 
                     // Show successful toast
                     window.showSubmitToast("Successfully added.", "#91C714");
+
+                    // Reload table
+                    $('#billboard_table').DataTable().ajax.reload();
 
                     // Clean fields
                     document.getElementById("editBillboardModalId").value = "";
@@ -1301,15 +1290,16 @@
                     document.getElementById("editGPSLongitude").value = "";
                     document.getElementById("editGPSLatitude").value = "";
                     document.getElementById("editGPSCoordinate").value = "";
+                    document.getElementById("editGPSUrl").value = "";
                     document.getElementById("editBillboardTrafficVolume").value = "";
                     document.getElementById("editBillboardStatus").value = "";
-
-                    // Reload table
-                    $('#billboard_table').DataTable().ajax.reload();
+                    document.getElementById("editBillboardSiteType").value = "";
                     
                     // Reset the button visibility and enable it for next submission
                     document.getElementById("billboardEditButton").disabled = false;
                     document.getElementById('billboardEditButton').style.display = 'inline-block';  // Shows the button again
+
+                    
                 },
                 error: function(xhr, status, error) {
                     // Display the validation error message
@@ -1348,6 +1338,7 @@
                 $('#editGPSLatitude').val(latitude);
                 $('#editGPSLongitude').val(longitude);
                 $('#editGPSCoordinate').val(longitude);
+                $('#editGPSUrl').val(row.data('gps_url') || "");
                 // Combined GPS coordinate field
                 if (latitude && longitude) {
                     $('#editGPSCoordinate').val(latitude + ', ' + longitude);
@@ -1356,6 +1347,8 @@
                 }
                 $('#editBillboardTrafficVolume').val(traffic);
                 $('#editBillboardStatus').val(status);
+                $('#editBillboardSiteType').val(site_type);
+                
 
                 // Trigger state change to load districts
                 $('#editBillboardState').val(stateID).trigger('change');

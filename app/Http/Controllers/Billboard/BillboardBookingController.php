@@ -14,6 +14,8 @@ use App\Models\Billboard;
 use App\Models\BillboardBooking;
 use App\Models\MonthlyOngoingJob;
 use App\Models\BillboardImage;
+use App\Models\Client;
+use App\Models\Contractor;
 use App\Models\State;
 use App\Models\District;
 use App\Models\Location;
@@ -58,7 +60,22 @@ class BillboardBookingController extends Controller
         $locations = Location::rightJoin('billboards', 'billboards.location_id' , 'locations.id')
         ->orderBy('name', 'ASC')->get();
 
-        return view('billboard.booking.index', compact('companies', 'states', 'districts', 'locations'));
+        // Get clients data
+        $clients = Client::leftJoin('client_companies', 'client_companies.id', '=', 'clients.company_id')
+        ->select('clients.*', 'client_companies.name as company_name')
+        ->where('clients.status', '=', '1')
+        ->get();
+
+        // Get client company data
+        $clientcompany = ClientCompany::all();
+
+        // Get contractor data
+        $contractors = Contractor::all();
+
+        // Get billboard data
+        $billboards = Billboard::leftJoin('locations', 'billboards.location_id', '=', 'locations.id')->get();
+
+        return view('billboard.booking.index', compact('companies', 'states', 'districts', 'locations', 'clients', 'contractors', 'clientcompany', 'billboards'));
     }
 
     /**
@@ -83,13 +100,14 @@ class BillboardBookingController extends Controller
             6 => 'status',
             7 => 'remarks',
             8 => 'id',
+            9 => 'billboard_id',
         );
 
         $limit              = $request->input('length');
         $start              = $request->input('start');
         $orderColumnIndex   = $request->input('order.0.column');
-        $orderColumnName    = $columns[$orderColumnIndex];
-        $orderDirection     = $request->input('order.0.dir');
+        $orderColumnName    = $columns[$orderColumnIndex] ?? 'billboard_bookings.id';
+        $orderDirection     = $request->input('order.0.dir', 'desc');
 
         $filters = $this->extractFilters($request);
 
@@ -112,7 +130,8 @@ class BillboardBookingController extends Controller
             });
         }
 
-        $query->orderBy('billboard_bookings.id', 'desc');
+        $query->orderBy($orderColumnName, $orderDirection)
+            ->orderBy('billboard_bookings.id', 'desc');
 
         
 
@@ -140,6 +159,7 @@ class BillboardBookingController extends Controller
                 'created_at'            => $created_at,
                 'status'                => $d->status,
                 'id'                    => $d->id,
+                'billboard_id'          => $d->billboard_id,
             );
 
             $data[] = $nestedData;
@@ -166,20 +186,55 @@ class BillboardBookingController extends Controller
         $role = $user->roles->pluck('name')[0];
         $userID = $this->user->id;
 
-        $location           = $request->location;
-        $client            = $request->client;
-        $start_date         = $request->start_date;
-        $end_date           = $request->end_date;
-        $status             = $request->status;
-        $artwork_by         = $request->artwork_by;
-        $dbp_approval       = $request->dbp_approval;
-        $remarks            = $request->remarks;
+        // ✅ Validation
+        $validator = Validator::make($request->all(), [
+            'location_id'   => 'required|exists:locations,id',
+            'client_id'     => 'required|exists:client_companies,id',
+            'start_date'    => 'required|date_format:d/m/Y',
+            'end_date'      => 'required|date_format:d/m/Y|after_or_equal:start_date',
+            'status'        => 'required',
+            'artwork_by'    => 'required|string|max:255',
+            'dbp_approval'  => 'required',
+            'remarks'       => 'required|string|max:1000',
+        ], [
+            // ✅ Custom error messages
+            'location_id.required'  => 'Please select a location.',
+            'location_id.exists'    => 'The selected location is invalid.',
+            'client_id.required'    => 'Please select a client.',
+            'client_id.exists'      => 'The selected client is invalid.',
+            'start_date.required'   => 'Start date is required.',
+            'start_date.date_format'=> 'Start date must be in dd/mm/yyyy format.',
+            'end_date.required'     => 'End date is required.',
+            'end_date.date_format'  => 'End date must be in dd/mm/yyyy format.',
+            'end_date.after_or_equal'=> 'End date must be the same or after the start date.',
+            'status.required'       => 'Status is required.',
+            'artwork_by.required'       => 'Artwork by is required.',
+            'dbp_approval.required'       => 'DBP Approval is required.',
+            'remarks.required'       => 'Remarks is required.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()->first()], 422);
+        }
+
+        // ✅ Extract validated data
+        $validated    = $validator->validated();
+
+        // ✅ Parse dates safely after validation
+        $location_id  = $validated['location_id'];
+        $client_id    = $validated['client_id'];
+        $start_date   = Carbon::createFromFormat('d/m/Y', $validated['start_date'])->format('Y-m-d');
+        $end_date     = Carbon::createFromFormat('d/m/Y', $validated['end_date'])->format('Y-m-d');
+        $status       = $validated['status'];
+        $artwork_by   = $validated['artwork_by'] ?? null;
+        $dbp_approval = $validated['dbp_approval'] ?? null;
+        $remarks      = $validated['remarks'] ?? null;
 
         try {
 
             DB::beginTransaction();
             
-            $billboard  = Billboard::where('location_id', $location)->first();
+            $billboard  = Billboard::where('location_id', $location_id)->first();
 
             if (!$billboard ) {
                 return response()->json(['error' => 'Billboard not found for the selected location.'], 404);
@@ -214,7 +269,7 @@ class BillboardBookingController extends Controller
             //Create a new service request
             $booking = BillboardBooking::create([
                 'billboard_id'      => $billboard->id,
-                'company_id'        => $client,
+                'company_id'        => $client_id,
                 'job_order_no'      => $jobOrderNo,
                 'start_date'        => $start_date,
                 'end_date'          => $end_date,
@@ -246,48 +301,31 @@ class BillboardBookingController extends Controller
     public function edit(Request $request)
     {
 
-        $booking_id   = $request->booking_id;
-        $status       = $request->status;
-        $remarks      = $request->remarks;
+        // ✅ Validation rules
+        $validator = Validator::make($request->all(), [
+            'booking_id' => 'required|exists:billboard_bookings,id',
+            'status'     => 'required', // adjust allowed statuses
+            'remarks'    => 'required|string|max:1000',
+        ], [
+            // ✅ Custom error messages
+            'booking_id.required' => 'Booking ID is required.',
+            'booking_id.exists'   => 'The selected booking does not exist.',
+            'status.required'     => 'Status is required.',
+            'status.in'           => 'Invalid status selected.',
+            'remarks.required'    => 'Remarks is required.',
+            'remarks.string'      => 'Remarks must be a valid text.',
+            'remarks.max'         => 'Remarks cannot exceed 1000 characters.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()->first()], 422);
+        }
+
+        $validated   = $validator->validated();
+        $booking_id  = $validated['booking_id'];
+        $status      = $validated['status'];
+        $remarks     = $validated['remarks'] ?? null;
         
-        //Validation rules
-        // $validator = Validator::make(
-        //     $request->all(),
-        //     [
-        //         'original_workOrder_id' => [
-        //             'required',
-        //             'string',
-        //             'max:700',
-        //             Rule::exists('work_order','id')->whereNot('status', 'VERIFICATION_PASSED'),
-        //             Rule::exists('work_order','id')->whereNot('priority', $priority),
-        //         ],
-        //         'priority' => [
-        //             'required',
-        //             'string',
-        //             'in: 1,2,3,4',
-        //             // Rule::exists('work_order')->where(fn($query)=>
-        //             //     $query->where('id', $original_workOrder_id) 
-        //             //         ->where('priority', '!=', $priority) 
-                        
-        //             // ),
-        //             // Rule::exists('work_order')->where('id', $original_workOrder_id),
-        //             //'exists:work_order,priority,id,' . $original_workOrder_id . '0',
-        //         ],
-        //     ],
-
-        //     [
-        //         'original_workOrder_id.exists' => 'Work order is not allowed to be edited in VERIFICATION_PASSED phse',
-
-        //         'priority.required' => 'The "Priority" field is required.',
-        //         'priority.in'       => 'The value of "Priority" field is incorrect.',
-        //         //'priority.exists'   => 'The "Priority" field is no change',
-        //     ],
-        // );
-
-        // Handle failed validations
-        // if ($validator->fails()) {
-        //     return response()->json(['error' => $validator->errors()->first()], 422);
-        // }
         try {
             // Ensure all queries successfully executed
             DB::beginTransaction();
@@ -423,26 +461,11 @@ class BillboardBookingController extends Controller
         return $pdf->download($filename . '.pdf');
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
     public function getMonthlyOngoingJobs(Request $request)
     {
         $filters = $this->extractFilters($request);
-        $orderColumn = $request->input('order.0.column', 'id'); 
-        $orderDir    = $request->input('order.0.dir', 'desc');
 
         $query = $this->baseBookingQuery();
-
         $this->applyBookingFilters($query, $filters);
 
         // search (same as DataTable)
@@ -457,27 +480,6 @@ class BillboardBookingController extends Controller
             });
         }
 
-        // order (use DataTable column mapping)
-        $columns = [
-            0 => 'billboards.site_number',
-            1 => 'client_companies.name',
-            2 => 'locations.name',
-            3 => 'billboard_bookings.start_date',
-            4 => 'billboard_bookings.end_date',
-            5 => 'duration', // virtual
-            6 => 'billboard_bookings.status',
-            7 => 'billboard_bookings.remarks',
-            8 => 'billboard_bookings.id',
-        ];
-
-        $orderColumnIndex = $filters['order_column_index'] ?? 8; // default to id
-        $orderColumnName = $columns[$orderColumnIndex] ?? 'billboard_bookings.id';
-        $orderDir = $filters['order_dir'] ?? 'desc';
-
-        $query->orderBy($orderColumnName, $orderDir)
-            ->orderBy('billboard_bookings.id', 'desc');
-
-
         $jobs = $query->get();
 
         $data = [];
@@ -485,10 +487,8 @@ class BillboardBookingController extends Controller
         foreach ($jobs as $job) {
             $start = Carbon::parse($job->start_date);
             $end = Carbon::parse($job->end_date);
-            $duration = $start->diffInDays($end) + 1;
 
             $months = array_fill(1, 12, '');
-
             $monthStatuses = MonthlyOngoingJob::where('booking_id', $job->id)
                 ->where('year', $filters['year'])
                 ->pluck('status', 'month');
@@ -504,13 +504,20 @@ class BillboardBookingController extends Controller
                 'type' => $job->billboard->type ?? '',
                 'start_date' => $job->start_date ? Carbon::parse($job->start_date)->format('d/m/y') : null,
                 'end_date' => $job->end_date ? Carbon::parse($job->end_date)->format('d/m/y') : null,
-                'duration' => ($job->start_date && $job->end_date) ? Carbon::parse($job->start_date)->diffInMonths(Carbon::parse($job->end_date)) + 1 : null,
+                'duration' => ($job->start_date && $job->end_date) ? $start->diffInMonths($end) + 1 : null,
                 'months' => array_values($months),
             ];
         }
 
+        // Sort by location name alphabetically
+        $data = collect($data)
+            ->sortBy(fn($item) => $item['location'] ?? '')
+            ->values()
+            ->all();
+
         return response()->json(['data' => $data]);
     }
+
 
     private function extractFilters(Request $request)
     {
@@ -534,6 +541,7 @@ class BillboardBookingController extends Controller
     {
         return BillboardBooking::select(
             'billboard_bookings.*',
+            'billboards.id as billboard_id',
             'billboards.site_number as site_number',
             'client_companies.name as company_name',
             'locations.id as location_id',
@@ -566,55 +574,6 @@ class BillboardBookingController extends Controller
             ->when(!empty($filters['status']), fn($q) => $q->where('billboard_bookings.status', $filters['status']))
             ->when(!empty($filters['client']), fn($q) => $q->where('billboard_bookings.company_id', $filters['client']));
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     public function updateJobMonthlyStatus(Request $request)
     {
@@ -649,58 +608,7 @@ class BillboardBookingController extends Controller
 
         return response()->json(['message' => 'Status updated']);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     
-
-    
-
-    /**
-     * Update status of work order
-     */
-    public function update(Request $request){
-
-        $statusUpdated = $request->update_status;
-
-        //Point to relevant function based on the new work order status need to assign 
-        if($statusUpdated == 'STARTED') {
-            $result = $this->updateStatus_AssignTechnician($request) ;
-
-        } elseif($statusUpdated == 'COMPLETED') {
-            $result = $this->updateStatus_Completed($request) ;
-
-        } else {
-            return response()->json(['error' => 'Incorrect process or no value is applied.' ], 422); 
-        }
-         
-        return $result;
-    }
-
-    
-
     /**
      * View billboard details
      */
@@ -804,9 +712,5 @@ class BillboardBookingController extends Controller
         //     // You can return an error message or redirect the user
         //     return response()->json(['error' => 'No record found with the provided ID'], 404);
         // }
-    }
-
-    
-
-    
+    } 
 }

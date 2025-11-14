@@ -23,18 +23,6 @@
             <div class="flex flex-col sm:flex-row sm:items-end xl:items-start">
                 <!-- BEGIN: Filter -->
                 <form class="xl:flex sm:mr-auto">
-                    <div class="sm:flex items-center sm:mr-4">
-                        <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Company Name</label>
-                        <select class="input w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto border" id="inputCompanyName">
-                        <option selected value="">Select an option</option>
-                        @foreach ($clientcompany as $clientcomp)
-                            <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
-                        @endforeach
-                        </select>
-                    </div>
-                    <div class="mt-2 xl:mt-0">
-                        <button type="button" class="button w-full sm:w-16 bg-theme-32 text-white" id="filterClientButton">Filter</button>
-                    </div>
                 </form>
                 <!-- END: Filter -->
 
@@ -167,18 +155,11 @@
         var lastClickedLink;
 
         // Listen to below buttons
-        document.getElementById("filterClientButton").addEventListener("click", filterClientButton);
         document.getElementById("contractorAddButton").addEventListener("click", contractorAddButton);
         document.getElementById("contractorDeleteButton").addEventListener("click", contractorDeleteButton);
 
-        // When "filterClientButton" button is clicked, initiate initClientCompanyDatatable
-        function filterClientButton() {
-            filterClientCompany = document.getElementById("inputCompanyName").value;
-            initContractorDatatable(filterClientCompany);
-        };
-
         // When page first loads, load table
-        filterClientButton();
+        initContractorDatatable();
 
         // When any submit button is clicked
         (function() {
@@ -511,17 +492,6 @@
                 openAltEditorModal(element);
             });
         }
-
-        var filterClientCompany;
-
-        // When "filterClientButton" button is clicked, initiate filterClientCompany
-        function filterClientButton() {
-            filterClientCompany = document.getElementById("inputCompanyName").value;
-            initContractorDatatable(filterClientCompany);
-        };
-
-        // When page first loads, load tables
-        filterClientButton();
 
         // Store the ID of the last clicked modal when it's triggered
         (function() {

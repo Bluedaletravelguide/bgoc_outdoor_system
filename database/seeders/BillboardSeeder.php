@@ -34,7 +34,6 @@ class BillboardSeeder extends Seeder
 
         $bgocAsClient = [
             [
-                'company_prefix' => 'BGOC',
                 'name' => 'Bluedale Group of Companies',
                 'address' => $faker->address,
                 'phone' => $faker->phoneNumber,
@@ -50,7 +49,6 @@ class BillboardSeeder extends Seeder
         // Create 10 client companies
         for ($i = 1; $i <= 10; $i++) {
             DB::table('client_companies')->insert([
-                'company_prefix' => strtoupper($faker->lexify('????')),
                 'name' => $faker->company,
                 'address' => $faker->address,
                 'phone' => $faker->phoneNumber,

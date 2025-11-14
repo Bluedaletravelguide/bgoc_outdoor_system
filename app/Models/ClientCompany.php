@@ -17,7 +17,6 @@ class ClientCompany extends Model
     protected $table = 'client_companies';
 
     protected $fillable = [
-        'company_prefix',
         'name',
         'address',
         'phone',

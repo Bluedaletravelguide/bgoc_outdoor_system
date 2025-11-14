@@ -46,10 +46,16 @@ class LocationController extends Controller
     {
         $districtId = $request->district_id;
 
-        $locations = Location::where('district_id', $districtId)
-            ->select('id', 'name')
-            ->orderBy('name')
-            ->get();
+        $locations = Location::join('billboards', 'billboards.location_id', '=', 'locations.id')
+        ->where('locations.district_id', $districtId)
+        ->select(
+            'locations.id as id',
+            'locations.name as name',
+            'billboards.id as billboard_id',
+            'billboards.site_number'
+        )
+        ->orderBy('locations.name')
+        ->get();
 
         return response()->json($locations);
     }

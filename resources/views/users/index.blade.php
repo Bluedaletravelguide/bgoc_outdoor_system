@@ -101,15 +101,15 @@
         <form>
             <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Name</label>
+                    <label>Name <span style="color: red;">*</span></label>
                     <input type="text" class="input w-full border mt-2 flex-1" placeholder="Name" id="usersEditName" required>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Username</label>
+                    <label>Username <span style="color: red;">*</span></label>
                     <input type="text" class="input w-full border mt-2 flex-1" placeholder="System Login Username" id="usersEditUsername" required>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Role</label>
+                    <label>Role <span style="color: red;">*</span></label>
                     <select class="input w-full border mt-2 flex-1" id="usersEditRole" required>
                         <option value="superadmin">Superadmin</option>
                         <option value="admin">Admin</option>
@@ -119,7 +119,7 @@
                     </select>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Email</label>
+                    <label>Email <span style="color: red;">*</span></label>
                     <input type="email" class="input w-full border mt-2 flex-1" placeholder="example@gmail.com" id="usersEditEmail" required>
                 </div>
             </div>
@@ -141,15 +141,15 @@
         <form>
             <div class="p-5 grid grid-cols-12 gap-4 gap-y-3">
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Name</label>
+                    <label>Name <span style="color: red;">*</span></label>
                     <input type="text" class="input w-full border mt-2 flex-1" placeholder="Name" id="usersAddName" required>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Username</label>
+                    <label>Username <span style="color: red;">*</span></label>
                     <input type="text" class="input w-full border mt-2 flex-1" placeholder="Username" id="usersAddUsername" required>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Role</label>
+                    <label>Role <span style="color: red;">*</span></label>
                     <select class="input w-full border mt-2 flex-1" id="usersAddRole" required>
                         <option value="superadmin">Superadmin</option>
                         <option value="admin">Admin</option>
@@ -159,15 +159,15 @@
                     </select>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Password</label>
+                    <label>Password <span style="color: red;">*</span></label>
                     <input type="password" class="input w-full border mt-2 flex-1" placeholder="Password" id="usersAddPassword" required>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Password Confirmation</label>
+                    <label>Password Confirmation <span style="color: red;">*</span></label>
                     <input type="password" class="input w-full border mt-2 flex-1" placeholder="Password" id="usersAddPasswordConfirmation" required>
                 </div>
                 <div class="col-span-12 sm:col-span-12">
-                    <label>Email</label>
+                    <label>Email <span style="color: red;">*</span></label>
                     <input type="email" class="input w-full border mt-2 flex-1" placeholder="example@gmail.com" id="usersAddEmail" required>
                 </div>
             </div>

@@ -59,29 +59,35 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/billboard/update', [BillboardController::class, 'update'])->name('billboard.update');
     // Route::get('/notification', [PushNotificationController::class, 'notificationHistory']);
     Route::get('/billboards/export/pdf', [BillboardController::class, 'exportListPdf'])->name('billboards.export.pdf');
+    Route::get('/billboards/export/pdf/client', [BillboardController::class, 'exportListPdfClient'])->name('billboards.export.pdf.client');
+    Route::post('/billboards/export', [BillboardController::class, 'exportExcel'])->name('billboards.export');
+
 
 
     // Billboard Detail
     Route::get('/billboardDetail/{id}', [BillboardController::class, 'redirectNewTab'])->name('billboard.detail');
-    Route::post('/workOrderProfile/addActivity', [WorkOrderProfileController::class, 'create'])->name('workOrderProfile.create');
-    Route::post('/workOrderProfile/deleteComment', [WorkOrderProfileController::class, 'deleteComment'])->name('workOrderProfile.deleteComment');
-    Route::post('/workOrderProfile/store', [WorkOrderProfileController::class, 'store'])->name('workOrderProfile.store');
-    Route::post('/workOrderProfile/temp-upload', [WorkOrderProfileController::class, 'tempUpload'])->name('tempUpload');
+    Route::post('/billboardDetail/upload-img', [BillboardController::class, 'uploadImage'])->name('billboard.uploadImage');
+    Route::post('/billboardDetail/delete-img', [BillboardController::class, 'deleteImage'])->name('billboard.deleteImage');
+
     Route::get('/billboard/{id}/download', [BillboardController::class, 'downloadPdf'])->name('billboard.download');
+    Route::get('/billboard/{id}/download/client', [BillboardController::class, 'downloadPdfClient'])->name('billboard.download.client');
 
     // Billboard Booking
     Route::get('/billboardBooking', [BillboardBookingController::class, 'index'])->name('billboard.booking.index');
     Route::get('/billboard/monthly/ongoing', [BillboardBookingController::class, 'getMonthlyOngoingJobs'])->name('billboard.monthly.ongoing');
     Route::post('/billboard/monthly/ongoing', [BillboardBookingController::class, 'updateJobMonthlyStatus'])->name('jobs.update.monthly.status');
-    Route::post('/billboardBooking/list', [BillboardBookingController::class, 'list'])->name('billboard.booking.list');
+    // Route::post('/billboardBooking/list', [BillboardBookingController::class, 'list'])->name('billboard.booking.list');
     Route::post('/booking/create', [BillboardBookingController::class, 'create'])->name('billboard.booking.create');
     Route::post('/booking/edit', [BillboardBookingController::class, 'edit'])->name('billboard.booking.edit');
     Route::post('/booking/delete', [BillboardBookingController::class, 'delete'])->name('billboard.booking.delete');
 
     // Billboard Availability
     Route::get('/billboardAvailability', [BillboardAvailabilityController::class, 'index'])->name('billboard.availability.index');
+    Route::post('/billboardAvailability/list', [BillboardAvailabilityController::class, 'list'])->name('billboard.booking.list');
+    Route::post('/billboardAvailability', [BillboardAvailabilityController::class, 'update'])->name('billboard.availability.update');
     Route::post('/booking/availability', [BillboardAvailabilityController::class, 'getBillboardAvailability'])->name('billboard.checkAvailability');
     Route::get('/billboard/monthly-availability', [BillboardAvailabilityController::class, 'getMonthlyBookingAvailability'])->name('billboard.monthly.availability');
+    Route::post('/billboard/update-status', [BillboardAvailabilityController::class, 'updateStatus'])->name('billboard.update.status');
 
     // Clients
     Route::get('/clients', [ClientsController::class, 'index'])->name('clients.index');
@@ -219,7 +225,6 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/workOrderProfile/addActivity', [WorkOrderProfileController::class, 'create'])->name('workOrderProfile.create');
     Route::post('/workOrderProfile/deleteComment', [WorkOrderProfileController::class, 'deleteComment'])->name('workOrderProfile.deleteComment');
     Route::post('/workOrderProfile/store', [WorkOrderProfileController::class, 'store'])->name('workOrderProfile.store');
-    Route::post('/workOrderProfile/temp-upload', [WorkOrderProfileController::class, 'tempUpload'])->name('tempUpload');
 
     
     // Notification Controllers
