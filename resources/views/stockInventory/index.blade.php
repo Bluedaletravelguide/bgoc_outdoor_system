@@ -143,7 +143,7 @@
 <!-- BEGIN: Inventory Add Modal -->
 <div class="modal items-center justify-center" id="inventoryAddModal">
     <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-7xl p-6">
-        
+
         <!-- Modal Header -->
         <div class="flex items-center justify-between border-b pb-3 mb-4">
             <h2 class="text-lg font-semibold">Add Stock Inventory</h2>
@@ -159,90 +159,77 @@
                         @endforeach
                         </select>
             </div>
-            <div class="grid grid-cols-2 gap-8">
-                
-                <!-- LEFT COLUMN: IN INVENTORY -->
-                <div class="bg-orange-50 p-4 rounded-lg">
-                    <h3 class="font-bold text-orange-600 mb-3">Stock In Inventory</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- LEFT COLUMN: Stock IN -->
+                <div class="card-elegant p-6 bg-stock-in">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-orange-500"></span>
+                        Stock In Inventory
+                    </h3>
 
-                    <div class="mb-3">
-                        <label class="block">Balance - Contractor</label>
-                        <input type="number" class="input w-full border mt-1" id="balContractor" readonly>
+                    <div class="mb-4">
+                        <label class="small-caps block mb-2">Balance - Contractor</label>
+                        <input type="number" class="input-elegant w-full" id="balContractor" readonly>
                     </div>
-                    <div class="mb-3">
-                        <label class="block">Date In</label>
-                        <input type="date" class="input w-full border mt-1" id="inputDateIn">
+                    <div class="mb-4">
+                        <label class="small-caps block mb-2">Date In</label>
+                        <input type="date" class="input-elegant w-full" id="inputDateIn">
                     </div>
-                    
-                    <div class="mb-3">
-                        <label class="block">Remarks</label>
-                        <input type="text" class="input w-full border mt-1" id="inputRemarksIn">
+                    <div class="mb-4">
+                        <label class="small-caps block mb-2">Remarks</label>
+                        <input type="text" class="input-elegant w-full" id="inputRemarksIn">
                     </div>
-                    <div class="flex items-center sm:py-3 border-gray-200 dark:border-dark-5">
-                        <h2 class="font-medium text-base mr-auto">Add Sites</h2>
-                    </div>
-                    <div id="siteInContainer">
-                        <div class="siteIn">
-                            <div class="mb-3">
-                                <label class="block">Client/Contractor</label>
-                                <select class="input w-full border mt-2 select2" name="clients_in[]">
-                                <option selected value="">Select an option</option>
-                                <!-- @foreach ($clientcompany as $clientcomp)
-                                    <option value="{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
-                                @endforeach
-                                </select> -->
-                                    <optgroup label="Clients">
-                                        @foreach ($clientcompany as $clientcomp)
-                                            <option value="client-{{ $clientcomp->id }}">
-                                                {{ $clientcomp->name }}
+
+                    <div class="border-t border-gray-200 pt-4 mt-4">
+                        <h4 class="small-caps mb-4">Add Sites</h4>
+                        <div id="siteInContainer">
+                            <div class="siteIn space-y-4">
+                                <div>
+                                    <label class="small-caps block mb-2">Client/Contractor</label>
+                                    <select class="select-elegant w-full select2" name="clients_in[]">
+                                        <option selected value="">Select an option</option>
+                                        <optgroup label="Clients">
+                                            @foreach ($clientcompany as $clientcomp)
+                                                <option value="client-{{ $clientcomp->id }}">{{ $clientcomp->name }}</option>
+                                            @endforeach
+                                        </optgroup>
+                                        <optgroup label="Contractors">
+                                            @foreach ($contractors as $contractor)
+                                                <option value="contractor-{{ $contractor->id }}">{{ $contractor->name }}</option>
+                                            @endforeach
+                                        </optgroup>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="small-caps block mb-2">Site</label>
+                                    <select class="select-elegant w-full select2" name="sites_in[]">
+                                        <option selected value="">Select an option</option>
+                                        @foreach ($billboards as $billboard)
+                                            <option value="{{ $billboard->id }}" data-type="{{ $billboard->type }}" data-size="{{ $billboard->size }}">
+                                                {{ $billboard->site_number }} - {{ $billboard->name }}
                                             </option>
                                         @endforeach
-                                    </optgroup>
-
-                                    <optgroup label="Contractors">
-                                        @foreach ($contractors as $contractor)
-                                            <option value="contractor-{{ $contractor->id }}">
-                                                {{ $contractor->name }}
-                                            </option>
-                                        @endforeach
-                                    </optgroup>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="block">Site</label>
-                                <select class="input w-full border mt-2 select2" id="inputBillboardIn" name="sites_in[]">
-                                    <option selected value="">Select an option</option>
-                                    @foreach ($billboards as $billboard)
-                                        <option 
-                                            value="{{ $billboard->id }}" 
-                                            data-type="{{ $billboard->type }}" 
-                                            data-size="{{ $billboard->size }}">
-                                            {{ $billboard->site_number }} - {{ $billboard->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="block">Type</label>
-                                <input type="text" class="input w-full border mt-1" name="types_in[]" readonly>
-                            </div>
-                            <div class="mb-3">
-                                <label class="block">Size</label>
-                                <input type="text" class="input w-full border mt-1" name="sizes_in[]" readonly>
-                            </div>
-                            <div class="mb-3">
-                                <label class="block"><strong>Quantity In</strong></label>
-                                <input type="number" class="input w-full border mt-1" name="qtys_in[]">
-                            </div>
-                            <div class="mb-3">
-                                <a href="javascript:void(0);" class="button bg-theme-6 text-white" onclick="removeSiteIn(this)">
-                                    Remove
-                                </a>
+                                    </select>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="small-caps block mb-2">Type</label>
+                                        <input type="text" class="input-elegant w-full" id="editTypeOut" readonly>
+                                    </div>
+                                    <div>
+                                        <label class="small-caps block mb-2">Size</label>
+                                        <input type="text" class="input-elegant w-full" id="editSizeOut" readonly>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="small-caps block mb-2">Quantity Out</label>
+                                    <input type="number" class="input-elegant w-full" id="editQtyOut">
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <button type="button" onclick="siteInAdd()" class="bg-blue-600 text-white px-4 py-2 rounded">Add Site</button>
                 </div>
+            </div>
 
                 <!-- RIGHT COLUMN: OUT INVENTORY -->
                 <div class="bg-green-50 p-4 rounded-lg">
@@ -257,7 +244,7 @@
                         <label class="block">Date Out</label>
                         <input type="date" class="input w-full border mt-1" id="inputDateOut">
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="block">Remarks</label>
                         <input type="text" class="input w-full border mt-1" id="inputRemarksOut">
@@ -296,9 +283,9 @@
                                 <select class="input w-full border mt-2 select2" id="inputBillboardOut" name="sites_out[]">
                                     <option selected value="">Select an option</option>
                                     @foreach ($billboards as $billboard)
-                                        <option 
-                                            value="{{ $billboard->id }}" 
-                                            data-type="{{ $billboard->type }}" 
+                                        <option
+                                            value="{{ $billboard->id }}"
+                                            data-type="{{ $billboard->type }}"
                                             data-size="{{ $billboard->size }}">
                                             {{ $billboard->site_number }} - {{ $billboard->name }}
                                         </option>
@@ -340,7 +327,7 @@
 <!-- BEGIN: Inventory Edit Modal -->
 <div class="modal items-center justify-center" id="inventoryEditModal">
     <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-7xl p-6">
-        
+
         <!-- Modal Header -->
         <div class="flex items-center justify-between border-b pb-3 mb-4">
             <h2 class="text-lg font-semibold">Edit Stock Inventory</h2>
@@ -358,7 +345,7 @@
                         </select>
             </div>
             <div class="grid grid-cols-2 gap-8">
-                
+
                 <!-- LEFT COLUMN: IN INVENTORY -->
                 <div class="bg-orange-50 p-4 rounded-lg">
                     <h3 class="font-bold text-orange-600 mb-3">Stock In Inventory</h3>
@@ -393,9 +380,9 @@
                         <select class="input w-full border mt-2 select2" id="editBillboardIn">
                             <option selected value="">Select an option</option>
                             @foreach ($billboards as $billboard)
-                                <option 
-                                    value="{{ $billboard->id }}" 
-                                    data-type="{{ $billboard->type }}" 
+                                <option
+                                    value="{{ $billboard->id }}"
+                                    data-type="{{ $billboard->type }}"
                                     data-size="{{ $billboard->size }}">
                                     {{ $billboard->site_number }} - {{ $billboard->name }}
                                 </option>
@@ -452,9 +439,9 @@
                         <select class="input w-full border mt-2 select2" id="editBillboardOut">
                             <option selected value="">Select an option</option>
                             @foreach ($billboards as $billboard)
-                                <option 
-                                    value="{{ $billboard->id }}" 
-                                    data-type="{{ $billboard->type }}" 
+                                <option
+                                    value="{{ $billboard->id }}"
+                                    data-type="{{ $billboard->type }}"
                                     data-size="{{ $billboard->size }}">
                                     {{ $billboard->site_number }} - {{ $billboard->name }}
                                 </option>
@@ -474,7 +461,7 @@
                         <input type="number" class="input w-full border mt-1" id="editQtyOut">
                     </div>
 
-                    
+
                 </div>
             </div>
 
@@ -563,9 +550,9 @@
                     <select class="input w-full border mt-2 select2" name="sites_in[]">
                         <option selected value="">Select an option</option>
                         @foreach ($billboards as $billboard)
-                            <option 
-                                value="{{ $billboard->id }}" 
-                                data-type="{{ $billboard->type }}" 
+                            <option
+                                value="{{ $billboard->id }}"
+                                data-type="{{ $billboard->type }}"
                                 data-size="{{ $billboard->size }}">
                                 {{ $billboard->site_number }} - {{ $billboard->name }}
                             </option>
@@ -595,10 +582,11 @@
         $("#siteInContainer").append(html);
 
         // Re-init select2 for all .select2 (new + old)
+        const $addModal = $('#inventoryAddModal');
         $("#siteInContainer .select2").select2({
-            width: '100%'
+        width: '100%',
+        dropdownParent: $addModal
         });
-
         updateTotalIn();
     }
 
@@ -636,9 +624,9 @@
                     <select class="input w-full border mt-2 select2" name="sites_out[]" required>
                         <option selected value="">Select an option</option>
                         @foreach ($billboards as $billboard)
-                            <option 
-                                value="{{ $billboard->id }}" 
-                                data-type="{{ $billboard->type }}" 
+                            <option
+                                value="{{ $billboard->id }}"
+                                data-type="{{ $billboard->type }}"
                                 data-size="{{ $billboard->size }}">
                                 {{ $billboard->site_number }} - {{ $billboard->name }}
                             </option>
@@ -663,13 +651,16 @@
                     </a>
                 </div>
             </div>`;
-        
+
         $("#siteOutContainer").append(html);
 
         // Re-init select2
+        const $addModal = $('#inventoryAddModal');
         $("#siteOutContainer .select2").select2({
-            width: '100%'
+        width: '100%',
+        dropdownParent: $addModal
         });
+
 
         updateTotalOut();
     }
@@ -680,16 +671,15 @@
     }
 
     // Handle auto-fill Type & Size for ADD modal
-    $(document).on('change', '#siteInContainer .select2, #siteOutContainer .select2', function() {
-        let selected = $(this).find(':selected');
-        let type = selected.data('type') || '';
-        let size = selected.data('size') || '';
-
-        // find the nearest .siteIn or .siteOut row
-        let row = $(this).closest('.siteIn, .siteOut');
+    $(document).on('change', 'select[name="sites_in[]"], select[name="sites_out[]"]', function() {
+        const selected = $(this).find(':selected');
+        const type = selected.data('type') || '';
+        const size = selected.data('size') || '';
+        const row = $(this).closest('.siteIn, .siteOut');
         row.find('input[name="types_in[]"], input[name="types_out[]"]').val(type);
         row.find('input[name="sizes_in[]"], input[name="sizes_out[]"]').val(size);
     });
+
 
     // Function to calculate total In
     function updateTotalIn() {
@@ -720,27 +710,6 @@
         updateTotalOut();
     });
 
-    // // Function to update total IN for edit modal
-    // function updateTotalInEdit() {
-    //     let val = parseInt(document.getElementById("editQtyIn").value) || 0;
-    //     document.getElementById("editBalanceContractor").value = val;
-    // }
-
-    // // Function to update total OUT for edit modal
-    // function updateTotalOutEdit() {
-    //     let val = parseInt(document.getElementById("editQtyOut").value) || 0;
-    //     document.getElementById("editBalanceBgoc").value = val;
-    // }
-
-    // // Attach events when typing in Quantity fields
-    // document.getElementById("editQtyIn").addEventListener("input", updateTotalInEdit);
-    // document.getElementById("editQtyOut").addEventListener("input", updateTotalOutEdit);
-
-    // // Initialize totals when modal opens
-    // function initEditTotals() {
-    //     updateTotalInEdit();
-    //     updateTotalOutEdit();
-    // }
 
     // Update total IN
     function updateTotalInEdit() {
@@ -770,62 +739,37 @@
         updateTotalOutEdit();
     }
 
-
-
-
     $(document).ready(function() {
-        
+
         // Global variables
         var filterClientCompany;
         var inventoryId;
         var lastClickedLink;
-        let transactionInId = null; 
-        let transactionOutId = null; 
+        let transactionInId = null;
+        let transactionOutId = null;
         let stockInventoryId = null;
 
         // Listen to below buttons
         document.getElementById("inventoryDeleteButton").addEventListener("click", inventoryDeleteButton);
 
-        // When "filterClientButton" button is clicked, initiate initClientCompanyDatatable
-        // function filterClientButton() {
-        //     filterClientCompany = document.getElementById("fliterClient").value;
-        //     // initStockInventoryDatatable(filterClientCompany);
-        // };
 
-        // When page first loads, load table
-        // filterClientButton();
+       const $addModal = $('#inventoryAddModal');
 
-        // Initialize Select2 with search
         $('.select2').select2({
-            placeholder: "Select an option",
-            allowClear: true,
-            width: '100%'
+        placeholder: "Select an option",
+        allowClear: true,
+        width: '100%',
+        dropdownParent: $addModal
         });
 
-        // $('#inventoryAddButton').on('click', function (e) {
-        //     e.preventDefault();
-        //     inventoryAddButton();
-        // });
+
 
         document.getElementById("inventoryAddButton").addEventListener("click", function (e) {
             e.preventDefault();
             inventoryAddButton();
         });
 
-        // ✅ IMPROVED MODAL FUNCTIONS
-        // Function to properly show modal
-        // function showModal(modalId) {
-        //     $(modalId).removeClass('hidden').addClass('flex').css('display', 'flex');
-        // }
 
-        // Function to properly hide modal
-        // function hideModal(modalId) {
-        //     $(modalId).removeClass('flex').addClass('hidden').css('display', 'none');
-        //     // Reset the current transaction ID when closing
-        //     if (modalId === '#inventoryEditModal') {
-        //         currentTransactionId = null;
-        //     }
-        // }
 
         // Open modal
         function openAltEditorModal(element) {
@@ -895,7 +839,7 @@
                     qty: parseInt($(this).find("input[name='qtys_in[]']").val()) || 0
                 });
             });
-            
+
             // Gather site OUT rows
             let sites_out = [];
             $("#siteOutContainer .siteOut").each(function () {
@@ -955,7 +899,7 @@
 
                     // Reload table
                     // $('#inventory_table').DataTable().ajax.reload();
-                    $('#inventory_table').DataTable().ajax.reload(null, false); 
+                    $('#inventory_table').DataTable().ajax.reload(null, false);
                 },
                 error: function(xhr, status, error) {
                     // Display the validation error message
@@ -970,7 +914,7 @@
         }
 
 
-        // Edit Client 
+        // Edit Client
         function editContractor() {
             var company = document.getElementById("contractorEditCompanyName").value;
             var name = document.getElementById("contractorEditPICName").value;
@@ -1094,7 +1038,7 @@
 
             },
             columns: [
-                { 
+                {
                     data: null,
                     name: 'no',
                     orderable: false,
@@ -1136,14 +1080,14 @@
                                 data-stock-inventory-id="${row.stock_inventory_id}">
                                 Edit
                                 </a>
-                                <a href="javascript:;" class="text-theme-6" 
-                                    data-toggle="modal" 
-                                    data-transaction-id="${transactionId}" 
+                                <a href="javascript:;" class="text-theme-6"
+                                    data-toggle="modal"
+                                    data-transaction-id="${transactionId}"
                                     data-transaction-type="${typeLabel}"
-                                    data-target="#inventoryDeleteModal" 
-                                    id="delete-${transactionId}" 
+                                    data-target="#inventoryDeleteModal"
+                                    id="delete-${transactionId}"
                                     title="Delete ${typeLabel} Transaction">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" 
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4"
                                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <polyline points="3 6 5 6 21 6"></polyline>
                                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4
@@ -1208,9 +1152,6 @@
             }
         });
 
-
-
-
         // // Optional: close when clicking outside modal box
         // $(document).on('click', '#inventoryEditModal', function (e) {
         //     if ($(e.target).is('#inventoryEditModal')) {
@@ -1231,7 +1172,7 @@
         //         client_in_id: btn.data('client_in_id'),
         //         client_out_id: btn.data('client_out_id')
         //     }); // Debug log
-            
+
         //     // Contractor & balances
         //     $('#editContractorName').val(btn.data('contractor-id')); // Use contractor ID, not name
         //     $('#editBalanceContractor').val(btn.data('balance_contractor'));
@@ -1248,14 +1189,14 @@
         //     // Client & Site IN
         //     let clientInId = btn.data('client_in_id');
         //     let siteInId = btn.data('site_in_id');
-            
+
         //     if (clientInId) {
         //         $('#editClientIn').val(clientInId).trigger('change');
         //     }
-            
+
         //     if (siteInId) {
         //         $('#editBillboardIn').val(siteInId).trigger('change');
-                
+
         //         // Set type, size, and quantity for IN
         //         $('#editTypeIn').val(btn.data('type_in') || '');
         //         $('#editSizeIn').val(btn.data('size_in') || '');
@@ -1265,14 +1206,14 @@
         //     // Client & Site OUT
         //     let clientOutId = btn.data('client_out_id');
         //     let siteOutId = btn.data('site_out_id');
-            
+
         //     if (clientOutId) {
         //         $('#editClientOut').val(clientOutId).trigger('change');
         //     }
-            
+
         //     if (siteOutId) {
         //         $('#editBillboardOut').val(siteOutId).trigger('change');
-                
+
         //         // Set type, size, and quantity for OUT
         //         $('#editTypeOut').val(btn.data('type_out') || '');
         //         $('#editSizeOut').val(btn.data('size_out') || '');
@@ -1391,11 +1332,6 @@
         });
 
 
-
-
-
-
-
         // ✅ FIXED FORM SUBMISSION HANDLER
         $('#inventoryEditForm').off('submit').on('submit', function(e) {
             e.preventDefault();
@@ -1447,32 +1383,6 @@
         });
 
         setupAutoFilter();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         var filterClientCompany;
 
         // When "filterClientButton" button is clicked, initiate filterClientCompany
